@@ -1,0 +1,125 @@
+# ==============================================================================
+# CONFIGURATION (https://doc.rust-lang.org/cargo/reference/manifest.html)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+[package]
+name = "typed-ident"
+version = "0.0.1"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+authors = ["Sigseis <sigseis@protonmail.com>"]
+categories = ["no-std", "no-std::no-alloc", "text-processing"]
+description = "Type-safe identifier validation, inspection, and mutation."
+documentation = "https://docs.rs/typed-ident"
+keywords = ["camel", "case", "ident", "snake", "string"]
+repository = "https://github.com/sigseis/typed-ident"
+
+# ------------------------------------------------------------------------------
+[package.metadata.docs.rs]
+all-features = true
+
+# ------------------------------------------------------------------------------
+[dependencies]
+unicode-general-category = { version = "1", optional = true }
+unicode-ident = { version = "1", optional = true }
+unicode-segmentation = { version = "1", optional = true }
+
+# ------------------------------------------------------------------------------
+[dev-dependencies]
+clap = { version = "4", features = ["derive"]}
+clap_derive = "4"
+convert_case = "0.12"
+criterion = { version = "0.8", features = ["html_reports"]}
+heck = "0.5"
+rand = "0.10"
+
+# ------------------------------------------------------------------------------
+# For examples, benches, etc.
+# ------------------------------------------------------------------------------
+[profile.release]
+codegen-units = 1
+lto = "thin"
+panic = "abort"
+
+# ==============================================================================
+# FEATURES
+# ==============================================================================
+[features]
+
+# ------------------------------------------------------------------------------
+# The default configuration is set with things that most people will want.
+#
+# Justification:
+#
+# * Presets make it so that you don't have to configure your own identifiers.
+# * Since most folks are going to work with Rust code, likely you want unicode.
+# ------------------------------------------------------------------------------
+default = [
+    "presets",
+    "unicode",
+]
+
+# ------------------------------------------------------------------------------
+# Optionally, you can enable modules that contain allocation routines.
+# ------------------------------------------------------------------------------
+alloc = []
+
+# ------------------------------------------------------------------------------
+# Optionally, you can enable the presets that we provide in `presets` module.
+# ------------------------------------------------------------------------------
+presets = []
+
+# ------------------------------------------------------------------------------
+# If Unicode is enabled, we will need to have XID and segmentation support.
+# ------------------------------------------------------------------------------
+unicode = [
+    "dep:unicode-ident",
+    "dep:unicode-segmentation",
+]
+
+# ------------------------------------------------------------------------------
+# For strict identifiers, we need to remove combining marks from chunk start.
+# ------------------------------------------------------------------------------
+unicode-strict = [
+    "dep:unicode-general-category",
+    "unicode",
+]
+
+# ==============================================================================
+# BENCHMARKS
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+[[bench]]
+name = "ident"
+harness = false
+
+# ==============================================================================
+# EXAMPLES
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+[[example]]
+name = "api"
+required-features = ["alloc", "presets", "unicode", "unicode-strict"]
+
+# ==============================================================================
+# COMPARISON EXAMPLES
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+[[example]]
+name = "conversion-ccase"
+path = "examples/comparison/conversion/ccase.rs"
+
+# ------------------------------------------------------------------------------
+[[example]]
+name = "conversion-heck"
+path = "examples/comparison/conversion/heck.rs"
+
+# ------------------------------------------------------------------------------
+[[example]]
+name = "conversion-typed"
+path = "examples/comparison/conversion/typed.rs"
+required-features = ["alloc", "presets", "unicode"]
