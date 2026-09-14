@@ -13,6 +13,7 @@ mod buffer;
 pub mod convert;
 mod fragment;
 mod ident;
+mod intermediate;
 mod segment;
 
 // =============================================================================
@@ -31,3 +32,4 @@ pub type StringSegment = crate::core::Segment<char, std_alloc::string::String>;
 // -----------------------------------------------------------------------------
 pub use buffer::*;
 pub use convert::ConvertibleIdentifier;
+use intermediate::*;

@@ -20,7 +20,7 @@ fn join_fragments<I: Identifier + ?Sized>(cli: &Cli, delim: I::Delimiter) -> Opt
     println!("starting join operations...");
     for fragment in cli.input.iter() {
         println!("  joining '{ident}' + '{fragment}' ->");
-        if let Err(error) = ident.push_bounded_str_with(fragment, delim) {
+        if let Err(error) = ident.push_bounded_with(fragment, delim) {
             return Some(error);
         }
         println!("    success: {ident}");

@@ -24,7 +24,7 @@ let lower_snake = identifier.to_lower_snake_canonical();
 println!("as lower-snake: {lower_snake}"); // "http_server"
 
 // Decorate and mutate.
-let decorated = identifier.with_circumfix_str("__", "__")?;
+let decorated = identifier.with_circumfix("__", "__")?;
 println!("with decoration: {decorated}"); // "__HTTPServer__"
 
 // And more! :)
@@ -36,7 +36,7 @@ println!("with decoration: {decorated}"); // "__HTTPServer__"
 After constructing a valid [`Ident`], there are *many* operations that you can perform on it.
 
 * [`cast`] - Zero-cost conversion from one identifier to another (in cases where the target is a superset representation).
-* [`join_str`] - Append a string onto the end of an identifier while preserving chunk boundaries.
+* [`join`] - Append a string onto the end of an identifier while preserving chunk boundaries.
 * [`segments`] - Break the identifier into its smallest semantically meaningful segments ("identifier words", and delimiters).
 * [`trim_decorative_delims`] - Remove unnecessary delimiters from each end of the identifier.
 * [`as_<case>_<format>`] - display formatting identifiers as different formats (e.g. [`as_lower_camel`], [`as_upper_kebab`], etc.)
@@ -54,7 +54,7 @@ After constructing a valid [`Ident`], there are *many* operations that you can p
 [`Fragment`]: crate::core::Fragment
 [`Ident`]: crate::core::Ident
 [`cast`]: crate::core::Ident::cast
-[`join_str`]: crate::core::Ident::join_str
+[`join`]: crate::core::Ident::join
 [`replace`]: crate::core::Ident::replace
 [`segments`]: crate::core::Fragment::segments
 [`split_at`]: crate::core::Ident::split_at

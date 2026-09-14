@@ -3,6 +3,7 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+use crate::syntax::SubsetOf;
 use crate::syntax::delimiter::AppendClosed;
 use core::fmt::Debug;
 use core::hash::Hash;
@@ -67,7 +68,7 @@ use core::hash::Hash;
 /// For example, this would be an ***INCORRECT*** implementation:
 ///
 /// ```
-/// # use typed_ident::syntax::delimiter::Delimiter;
+/// # use typed_ident::syntax::*;
 /// #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 /// enum BadDelimiter {
 ///     FoundAtStart,
@@ -93,12 +94,14 @@ use core::hash::Hash;
 ///         }
 ///     }
 /// }
+///
+/// impl SubsetOf<BadDelimiter> for BadDelimiter {}
 /// ```
 ///
 /// [`is_chunk_delim`]: Delimiter::is_chunk_delim
 /// [`is_ident_start_delim`]: Delimiter::is_ident_start_delim
 pub trait Delimiter:
-    Copy + Clone + Debug + Eq + Hash + Ord + PartialEq + PartialOrd + Sized
+    Copy + Clone + Debug + Eq + Hash + Ord + PartialEq + PartialOrd + SubsetOf<Self> + Sized
 {
     /// Whether or not a fragment containing only this type of delimiters would
     /// be considered append-closed.

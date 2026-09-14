@@ -6,10 +6,10 @@
 use crate::helpers::{
     Boundaries, Format, OptionsExt, SpecificOptions, TestIdent, TestResult, TypeLabel,
 };
+use typed_ident::Identifier;
 use typed_ident::presets::generic::*;
 use typed_ident::syntax::boundary::{Options, options};
 use typed_ident::syntax::profile::{Ascii, CharProfile, Strict, Unicode};
-use typed_ident::{Identifier, Segment};
 
 // =============================================================================
 // MACRO
@@ -178,11 +178,7 @@ fn test_ident_pass<I: Identifier + TypeLabel + ?Sized>(
         let mut buffer = I::new_ident_buffer();
         buffer.reserve(test.name.len());
         for segment in test.segments(boundaries) {
-            let result = match &segment {
-                Segment::Chunk(chunk) => buffer.push_str(chunk),
-                Segment::Delim(delim) => buffer.push(*delim),
-            };
-            if let Err(error) = result {
+            if let Err(error) = buffer.push(&segment) {
                 eprintln!(
                     "⛔ {test}: {type_label}: unable to re-construct ident buffer from segments"
                 );
@@ -207,11 +203,7 @@ fn test_ident_pass<I: Identifier + TypeLabel + ?Sized>(
         let mut buffer = I::new_fragment_buffer();
         buffer.reserve(test.name.len());
         for segment in test.segments(boundaries) {
-            let result = match &segment {
-                Segment::Chunk(chunk) => buffer.push_str(chunk),
-                Segment::Delim(delim) => buffer.push(*delim),
-            };
-            if let Err(error) = result {
+            if let Err(error) = buffer.push(&segment) {
                 eprintln!(
                     "⛔ {test}: {type_label}: unable to re-construct fragment buffer from segments"
                 );

@@ -3,8 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::syntax::Segmentation;
 use crate::syntax::profile::{AppendClosed, CharProfile};
+use crate::syntax::{Segmentation, SubsetOf};
 
 // =============================================================================
 // TYPES
@@ -23,7 +23,7 @@ use crate::syntax::profile::{AppendClosed, CharProfile};
 /// If you need more complex validation, such as the emoji profile which must
 /// validate a specific ordering of special characters for emoji handling, you
 /// need to use a wrapper type to add that extra validation.
-pub trait Profile: Sized {
+pub trait Profile: SubsetOf<Self> + Sized {
     /// Whether or not a fragment containing characters in this profile are
     /// append-closed.
     ///
