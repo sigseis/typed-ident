@@ -12,6 +12,7 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+use crate::syntax::SubsetOf;
 use crate::syntax::delimiter::{AppendClosed, Delimiter, TryFromCharError};
 
 // =============================================================================
@@ -131,3 +132,8 @@ impl core::fmt::Display for NotDelimited {
         Ok(())
     }
 }
+
+// -----------------------------------------------------------------------------
+/// Proof: It's always safe to implement this against yourself.
+// -----------------------------------------------------------------------------
+impl SubsetOf<NotDelimited> for NotDelimited {}

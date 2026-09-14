@@ -3,8 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::alloc::FragmentBuf;
-use crate::core::error::{Error, ErrorKind};
+use crate::alloc::{FragmentBuf, IntoIntermediate};
+use crate::core::error::Error;
 use crate::core::{Chunk, Fragment, Ident};
 use crate::syntax::{Boundary, CasedProfile, Delimiter, UnitDelimiter};
 use core::ops::RangeBounds;
@@ -136,7 +136,7 @@ impl<B, D, P> IdentBuf<B, D, P> {
     /// let mut buffer = LowerCamelIdentBuf::new();
     /// assert_eq!(buffer.as_ident(), None);
     ///
-    /// buffer.push_str("ident")?;
+    /// buffer.push("ident")?;
     /// assert_eq!(buffer.as_ident(), Some(LowerCamelIdent::new("ident")?));
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -167,7 +167,7 @@ impl<B, D, P> IdentBuf<B, D, P> {
     /// let mut buffer = LowerCamelIdentBuf::new();
     /// assert_eq!(buffer.as_ident_or(fallback), fallback);
     ///
-    /// buffer.push_str("ident")?;
+    /// buffer.push("ident")?;
     /// assert_eq!(buffer.as_ident_or(fallback), "ident");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -200,7 +200,7 @@ impl<B, D, P> IdentBuf<B, D, P> {
     /// let mut buffer = LowerCamelIdentBuf::new();
     /// assert_eq!(buffer.as_ident_or_anonymous(), "_");
     ///
-    /// buffer.push_str("ident")?;
+    /// buffer.push("ident")?;
     /// assert_eq!(buffer.as_ident_or_anonymous(), "ident");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```

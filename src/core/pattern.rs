@@ -26,6 +26,8 @@ pub trait Pattern: private::Sealed {
     fn find(self, s: &str) -> Option<usize>;
     fn match_indices(self, s: &str) -> Self::MatchIndices<'_>;
     fn matches(self, s: &str) -> Self::Matches<'_>;
+    #[cfg(feature = "alloc")]
+    fn replace(self, s: &str, replace_with: &str) -> std_alloc::string::String;
     fn rfind(self, s: &str) -> Option<usize>;
     fn rmatch_indices(self, s: &str) -> Self::RMatchIndices<'_>;
     fn rmatches(self, s: &str) -> Self::RMatches<'_>;
@@ -70,6 +72,11 @@ macro_rules! impl_pattern {
             #[inline(always)]
             fn matches(self, s: &str) -> Self::Matches<'_> {
                 s.matches(self)
+            }
+            #[cfg(feature = "alloc")]
+            #[inline(always)]
+            fn replace(self, s: &str, replace_with: &str) -> std_alloc::string::String {
+                s.replace(self, replace_with)
             }
             #[inline(always)]
             fn rfind(self, s: &str) -> Option<usize> {

@@ -91,9 +91,12 @@ macro_rules! impl_buffer_methods {
             /// # Ok::<(), Error>(())
             /// ```
             #[inline]
-            pub fn insert(&mut self, idx: usize, c: char) -> Result<(), Error> {
-                let mut buffer = [0; 4];
-                self.insert_str(idx, c.encode_utf8(&mut buffer))
+            pub fn insert<F>(&mut self, idx: usize, fragment: F) -> Result<(), Error>
+            where
+                F: IntoIntermediate<B, D, P>,
+            {
+                let fragment = fragment.into_intermediate()?;
+                crate::alloc::buffer::$op::new(self).insert_str(idx, fragment.as_ref())
             }
 
             #[doc = include_str!("docs/methods/insert_bounded.md")]
@@ -131,11 +134,12 @@ macro_rules! impl_buffer_methods {
             /// # Ok::<(), Error>(())
             /// ```
             #[inline]
-            pub fn insert_bounded(&mut self, idx: usize, c: char) -> Result<(), Error>
+            pub fn insert_bounded<F>(&mut self, idx: usize, fragment: F) -> Result<(), Error>
             where
                 D: Default,
+                F: IntoIntermediate<B, D, P>,
             {
-                self.insert_bounded_with(idx, c, Default::default())
+                self.insert_bounded_with(idx, fragment, Default::default())
             }
 
             #[doc = include_str!("docs/methods/insert_bounded_fragment.md")]
@@ -154,12 +158,12 @@ macro_rules! impl_buffer_methods {
             ///
             /// // Inserting at the beginning is ~prepend.
             /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_fragment_with(
+            /// assert!(example.insert_bounded_with(
             ///     0,
             ///     UpperCamelFragment::new("HAT")?,
             ///     LowLine,
             /// ).is_ok()); // Bounded because of `HAT` rules.
-            /// assert!(example.insert_bounded_fragment_with(
+            /// assert!(example.insert_bounded_with(
             ///     0,
             ///     UpperCamelFragment::new("HAT")?,
             ///     LowLine,
@@ -168,12 +172,12 @@ macro_rules! impl_buffer_methods {
             ///
             /// // Inserting at the end is ~append.
             /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_fragment_with(
+            /// assert!(example.insert_bounded_with(
             ///     example.len(),
             ///     UpperCamelFragment::new("lower")?,
             ///     LowLine,
             /// ).is_err()); // "UpperCamel_lower" != UpperCamel casing
-            /// assert!(example.insert_bounded_fragment_with(
+            /// assert!(example.insert_bounded_with(
             ///     example.len(),
             ///     UpperCamelFragment::new("Camel")?,
             ///     LowLine,
@@ -183,12 +187,12 @@ macro_rules! impl_buffer_methods {
             /// // Inserting in the middle can be tricky, as your insertions
             /// // may invalidate the buffer's invariants in surprising ways.
             /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_fragment_with(
+            /// assert!(example.insert_bounded_with(
             ///     2,
             ///     UpperCamelFragment::new("HAT")?,
             ///     LowLine,
             /// ).is_err()); // "UpHAT_perCamel" != UpperCamel casing
-            /// assert!(example.insert_bounded_fragment_with(
+            /// assert!(example.insert_bounded_with(
             ///     5,
             ///     UpperCamelFragment::new("HAT")?,
             ///     LowLine,
@@ -197,133 +201,17 @@ macro_rules! impl_buffer_methods {
             /// # Ok::<(), Error>(())
             /// ```
             #[inline]
-            pub fn insert_bounded_fragment_with(
+            pub fn insert_bounded_with<F>(
                 &mut self,
                 idx: usize,
-                fragment: &Fragment<B, D, P>,
+                fragment: F,
                 delim: D,
-            ) -> Result<(), Error> {
-                crate::alloc::buffer::$op::new(self).insert_bounded_str(idx, fragment.as_str(), delim.as_char())
-            }
-
-            #[doc = include_str!("docs/methods/insert_bounded.md")]
-            #[doc = include_str!("docs/sections/unicode_warning.md")]
-            #[doc = include_str!("docs/sections/panics.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::from_str("UpperCamel")?;"#)]
-            ///
-            /// // Inserting at the beginning is ~prepend.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_with(0, 'V', LowLine).is_ok()); // Bounded because of `HAT` rules.
-            /// assert!(example.insert_bounded_with(0, 'V', LowLine).is_ok()); // But another `V` would not be.
-            /// assert_eq!(example, "V_VUpperCamel");
-            ///
-            /// // Inserting at the end is ~append.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_with(example.len(), 'i', LowLine).is_err()); // "UpperCamel_i" != UpperCamel casing
-            /// assert!(example.insert_bounded_with(example.len(), 'V', LowLine).is_ok()); // Because of `CAMEL` boundary.
-            /// assert_eq!(example, "UpperCamelV");
-            ///
-            /// // Inserting in the middle can be tricky, as your insertions
-            /// // may invalidate the buffer's invariants in surprising ways.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_with(2, 'V', LowLine).is_err()); // "Up_V_perCamel" != UpperCamel casing
-            /// assert!(example.insert_bounded_with(5, 'V', LowLine).is_ok()); // Surprisingly a `CAMEL` & `HAT` boundary.
-            /// assert_eq!(example, "UpperVCamel");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn insert_bounded_with(&mut self, idx: usize, c: char, delim: D) -> Result<(), Error> {
-                let mut buffer = [0; 4];
-                self.insert_bounded_str_with(idx, c.encode_utf8(&mut buffer), delim)
-            }
-
-            #[doc = include_str!("docs/methods/insert_delim.md")]
-            #[doc = include_str!("docs/sections/panics.md")]
-            #[doc = include_str!("docs/methods/insert_delim.errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::from_str("UpperCamel")?;"#)]
-            ///
-            /// // Inserting at the beginning is ~prepend.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delim(0).is_ok());
-            /// assert_eq!(example, "_UpperCamel");
-            ///
-            /// // Inserting at the end is ~append.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delim(example.len()).is_ok());
-            /// assert_eq!(example, "UpperCamel_");
-            ///
-            /// // Inserting in the middle can be tricky, as your insertions
-            /// // may invalidate the buffer's invariants in surprising ways.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delim(2).is_err()); // "Up_perCamel" != UpperCamel casing
-            /// assert!(example.insert_delim(5).is_ok());
-            /// assert_eq!(example, "Upper_Camel");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn insert_delim(&mut self, idx: usize) -> Result<(), Error>
+            ) -> Result<(), Error>
             where
-                D: Default,
-            {
-                self.insert_delim_with(idx, D::default())
-            }
-
-            #[doc = include_str!("docs/methods/insert_delim.md")]
-            #[doc = include_str!("docs/sections/panics.md")]
-            #[doc = include_str!("docs/methods/insert_delim.errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::from_str("UpperCamel")?;"#)]
-            ///
-            /// // Inserting at the beginning is ~prepend.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delim_with(0, LowLine).is_ok());
-            /// assert_eq!(example, "_UpperCamel");
-            ///
-            /// // Inserting at the end is ~append.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delim_with(example.len(), LowLine).is_ok());
-            /// assert_eq!(example, "UpperCamel_");
-            ///
-            /// // Inserting in the middle can be tricky, as your insertions
-            /// // may invalidate the buffer's invariants in surprising ways.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delim_with(2, LowLine).is_err()); // "Up_perCamel" != UpperCamel casing
-            /// assert!(example.insert_delim_with(5, LowLine).is_ok());
-            /// assert_eq!(example, "Upper_Camel");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn insert_delim_with(&mut self, idx: usize, delim: D) -> Result<(), Error> {
-                let mut buffer = [0; 4];
-                let delim = delim.as_char().encode_utf8(&mut buffer);
-                let fragment = Fragment::new_unchecked(delim);
-                self.insert_fragment(idx, fragment)
+                F: IntoIntermediate<B, D, P>,
+                {
+                let fragment = fragment.into_intermediate()?;
+                crate::alloc::buffer::$op::new(self).insert_bounded_str(idx, fragment.as_ref(), delim.as_char())
             }
 
             #[doc = include_str!("docs/methods/insert_delimited.md")]
@@ -359,11 +247,12 @@ macro_rules! impl_buffer_methods {
             /// # Ok::<(), Error>(())
             /// ```
             #[inline]
-            pub fn insert_delimited(&mut self, idx: usize, c: char) -> Result<(), Error>
+            pub fn insert_delimited<F>(&mut self, idx: usize, fragment: F) -> Result<(), Error>
             where
                 D: Default,
+                F: IntoIntermediate<B, D, P>,
             {
-                self.insert_delimited_with(idx, c, D::default())
+                self.insert_delimited_with(idx, fragment, D::default())
             }
 
             #[doc = include_str!("docs/methods/insert_delimited_fragment.md")]
@@ -382,7 +271,7 @@ macro_rules! impl_buffer_methods {
             ///
             /// // Inserting at the beginning is ~prepend.
             /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_fragment_with(
+            /// assert!(example.insert_delimited_with(
             ///     0,
             ///     UpperCamelFragment::new("HAT")?,
             ///     LowLine,
@@ -391,12 +280,12 @@ macro_rules! impl_buffer_methods {
             ///
             /// // Inserting at the end is ~append.
             /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_fragment_with(
+            /// assert!(example.insert_delimited_with(
             ///     example.len(),
             ///     UpperCamelFragment::new("lower")?,
             ///     LowLine,
             /// ).is_err()); // "UpperCamel_lower" != UpperCamel casing
-            /// assert!(example.insert_delimited_fragment_with(
+            /// assert!(example.insert_delimited_with(
             ///     example.len(),
             ///     UpperCamelFragment::new("Camel")?,
             ///     LowLine,
@@ -406,12 +295,12 @@ macro_rules! impl_buffer_methods {
             /// // Inserting in the middle can be tricky, as your insertions
             /// // may invalidate the buffer's invariants in surprising ways.
             /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_fragment_with(
+            /// assert!(example.insert_delimited_with(
             ///     2,
             ///     UpperCamelFragment::new("HAT")?,
             ///     LowLine,
             /// ).is_err()); // "Up_HAT_perCamel" != UpperCamel casing
-            /// assert!(example.insert_delimited_fragment_with(
+            /// assert!(example.insert_delimited_with(
             ///     5,
             ///     UpperCamelFragment::new("HAT")?,
             ///     LowLine,
@@ -420,431 +309,16 @@ macro_rules! impl_buffer_methods {
             /// # Ok::<(), Error>(())
             /// ```
             #[inline]
-            pub fn insert_delimited_fragment_with(
+            pub fn insert_delimited_with<F>(
                 &mut self,
                 idx: usize,
-                fragment: &Fragment<B, D, P>,
+                fragment: F,
                 delim: D,
-            ) -> Result<(), Error> {
-                crate::alloc::buffer::$op::new(self).insert_delimited_str(idx, fragment.as_str(), delim.as_char())
-            }
-
-            #[doc = include_str!("docs/methods/insert_delimited.md")]
-            #[doc = include_str!("docs/sections/panics.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::from_str("UpperCamel")?;"#)]
-            ///
-            /// // Inserting at the beginning is ~prepend.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_with(0, 'V', LowLine).is_ok());
-            /// assert_eq!(example, "V_UpperCamel");
-            ///
-            /// // Inserting at the end is ~append.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_with(example.len(), 'i', LowLine).is_err()); // "UpperCamel_i" != UpperCamel casing
-            /// assert!(example.insert_delimited_with(example.len(), 'V', LowLine).is_ok());
-            /// assert_eq!(example, "UpperCamel_V");
-            ///
-            /// // Inserting in the middle can be tricky, as your insertions
-            /// // may invalidate the buffer's invariants in surprising ways.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_with(2, 'V', LowLine).is_err()); // "Up_V_perCamel" != UpperCamel casing
-            /// assert!(example.insert_delimited_with(5, 'V', LowLine).is_ok());
-            /// assert_eq!(example, "Upper_V_Camel");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn insert_delimited_with(&mut self, idx: usize, c: char, delim: D) -> Result<(), Error> {
-                let mut buffer = [0; 4];
-                self.insert_delimited_str_with(idx, c.encode_utf8(&mut buffer), delim)
-            }
-
-            #[doc = include_str!("docs/methods/insert_bounded_fragment.md")]
-            #[doc = include_str!("docs/sections/panics.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::from_str("UpperCamel")?;"#)]
-            ///
-            /// // Inserting at the beginning is ~prepend.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_fragment(
-            ///     0,
-            ///     UpperCamelFragment::new("HAT")?).is_ok()
-            /// ); // Bounded because of `HAT` rules.
-            /// assert!(example.insert_bounded_fragment(
-            ///     0,
-            ///     UpperCamelFragment::new("HAT")?).is_ok()
-            /// ); // But another would not be.
-            /// assert_eq!(example, "HAT_HATUpperCamel");
-            ///
-            /// // Inserting at the end is ~append.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_fragment(
-            ///     example.len(),
-            ///     UpperCamelFragment::new("lower")?).is_err()
-            /// ); // "UpperCamel_lower" != UpperCamel casing
-            /// assert!(example.insert_bounded_fragment(
-            ///     example.len(),
-            ///     UpperCamelFragment::new("Camel")?).is_ok()
-            /// ); // Because of `CAMEL` boundary.
-            /// assert_eq!(example, "UpperCamelCamel");
-            ///
-            /// // Inserting in the middle can be tricky, as your insertions
-            /// // may invalidate the buffer's invariants in surprising ways.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_fragment(
-            ///     2,
-            ///     UpperCamelFragment::new("HAT")?).is_err()
-            /// ); // "UpHAT_perCamel" != UpperCamel casing
-            /// assert!(example.insert_bounded_fragment(
-            ///     5,
-            ///     UpperCamelFragment::new("HAT")?).is_ok()
-            /// ); // Surprisingly a `CAMEL` & `HAT` boundary.
-            /// assert_eq!(example, "UpperHATCamel");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn insert_bounded_fragment(
-                &mut self,
-                idx: usize,
-                fragment: &Fragment<B, D, P>,
-            ) -> Result<(), Error>
-            where
-                D: Default,
-            {
-                self.insert_bounded_fragment_with(idx, fragment, D::default())
-            }
-
-            #[doc = include_str!("docs/methods/insert_delimited_fragment.md")]
-            #[doc = include_str!("docs/sections/panics.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::from_str("UpperCamel")?;"#)]
-            ///
-            /// // Inserting at the beginning is ~prepend.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_fragment(
-            ///     0,
-            ///     UpperCamelFragment::new("HAT")?).is_ok()
-            /// );
-            /// assert_eq!(example, "HAT_UpperCamel");
-            ///
-            /// // Inserting at the end is ~append.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_fragment(
-            ///     example.len(),
-            ///     UpperCamelFragment::new("lower")?).is_err()
-            /// ); // "Upper_Camel_lower" != UpperCamel casing
-            /// assert!(example.insert_delimited_fragment(
-            ///     example.len(),
-            ///     UpperCamelFragment::new("Camel")?).is_ok()
-            /// );
-            /// assert_eq!(example, "UpperCamel_Camel");
-            ///
-            /// // Inserting in the middle can be tricky, as your insertions
-            /// // may invalidate the buffer's invariants in surprising ways.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_fragment(
-            ///     2,
-            ///     UpperCamelFragment::new("HAT")?).is_err()
-            /// ); // "Up_HAT_perCamel" != UpperCamel casing
-            /// assert!(example.insert_delimited_fragment(
-            ///     5,
-            ///     UpperCamelFragment::new("HAT")?).is_ok()
-            /// ); // Surprisingly a `CAMEL` & `HAT` boundary.
-            /// assert_eq!(example, "Upper_HAT_Camel");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn insert_delimited_fragment(
-                &mut self,
-                idx: usize,
-                fragment: &Fragment<B, D, P>,
-            ) -> Result<(), Error>
-            where
-                D: Default,
-            {
-                self.insert_delimited_fragment_with(idx, fragment, D::default())
-            }
-
-            #[doc = include_str!("docs/methods/insert_fragment.md")]
-            #[doc = include_str!("docs/sections/panics.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use presets::unicode::upper_camel::UpperCamelFragment;
-            /// # use presets::unicode::upper_camel::UpperCamelFragmentBuf;
-            /// let mut buffer = UpperCamelFragmentBuf::from_str("UpperCamel")?;
-            ///
-            /// // Inserting at the beginning is ~prepend.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_fragment(
-            ///     0,
-            ///     UpperCamelFragment::new("HAT")?,
-            /// ).is_ok());
-            /// assert_eq!(example, "HATUpperCamel");
-            ///
-            /// // Inserting at the end is ~append.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_fragment(
-            ///     example.len(),
-            ///     UpperCamelFragment::new("lower")?,
-            /// ).is_ok());
-            /// assert!(example.insert_fragment(
-            ///     example.len(),
-            ///     UpperCamelFragment::new("Camel")?,
-            /// ).is_ok());
-            /// assert_eq!(example, "UpperCamellowerCamel");
-            ///
-            /// // Inserting in the middle can be tricky, as your insertions
-            /// // may invalidate the buffer's invariants in surprising ways.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_fragment(
-            ///     2,
-            ///     UpperCamelFragment::new("HAT_")?,
-            /// ).is_err()); // "UpHAT_perCamel" != UpperCamel casing
-            /// assert!(example.insert_fragment(
-            ///     5,
-            ///     UpperCamelFragment::new("HAT")?,
-            /// ).is_ok());
-            /// assert_eq!(example, "UpperHATCamel");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn insert_fragment(
-                &mut self,
-                idx: usize,
-                fragment: &Fragment<B, D, P>,
-            ) -> Result<(), Error> {
-                crate::alloc::buffer::$op::new(self).insert_str(idx, fragment.as_str())
-            }
-
-            #[doc = include_str!("docs/methods/insert_str.md")]
-            #[doc = include_str!("docs/sections/panics.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::from_str("UpperCamel")?;"#)]
-            ///
-            /// // Inserting at the beginning is ~prepend.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_str(0, "HAT").is_ok());
-            /// assert_eq!(example, "HATUpperCamel");
-            ///
-            /// // Inserting at the end is ~append.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_str(example.len(),"lower").is_ok());
-            /// assert!(example.insert_str(example.len(),"Camel").is_ok());
-            /// assert_eq!(example, "UpperCamellowerCamel");
-            ///
-            /// // Inserting in the middle can be tricky, as your insertions
-            /// // may invalidate the buffer's invariants in surprising ways.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_str(2,"HAT_").is_err()); // "UpHAT_perCamel" != UpperCamel casing
-            /// assert!(example.insert_str(5,"HAT").is_ok());
-            /// assert_eq!(example, "UpperHATCamel");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn insert_str(&mut self, idx: usize, s: &str) -> Result<(), Error> {
-                self.insert_fragment(idx, Fragment::new(s)?)
-            }
-
-            #[doc = include_str!("docs/methods/insert_bounded_str.md")]
-            #[doc = include_str!("docs/sections/panics.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::from_str("UpperCamel")?;"#)]
-            ///
-            /// // Inserting at the beginning is ~prepend.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_str(0, "HAT").is_ok()); // Bounded because of `HAT` rules.
-            /// assert!(example.insert_bounded_str(0, "HAT").is_ok()); // But another would not be.
-            /// assert_eq!(example, "HAT_HATUpperCamel");
-            ///
-            /// // Inserting at the end is ~append.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_str(example.len(), "lower").is_err()); // "UpperCamel_lower" != UpperCamel casing
-            /// assert!(example.insert_bounded_str(example.len(), "Camel").is_ok()); // Because of `CAMEL` boundary.
-            /// assert_eq!(example, "UpperCamelCamel");
-            ///
-            /// // Inserting in the middle can be tricky, as your insertions
-            /// // may invalidate the buffer's invariants in surprising ways.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_str(2, "HAT").is_err()); // "UpHAT_perCamel" != UpperCamel casing
-            /// assert!(example.insert_bounded_str(5, "HAT").is_ok()); // Surprisingly a `CAMEL` & `HAT` boundary.
-            /// assert_eq!(example, "UpperHATCamel");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn insert_bounded_str(&mut self, idx: usize, s: &str) -> Result<(), Error>
-            where
-                D: Default,
-            {
-                self.insert_bounded_fragment_with(idx, Fragment::new(s)?, D::default())
-            }
-
-            #[doc = include_str!("docs/methods/insert_bounded_str.md")]
-            #[doc = include_str!("docs/sections/panics.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::from_str("UpperCamel")?;"#)]
-            ///
-            /// // Inserting at the beginning is ~prepend.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_str_with(0, "HAT", LowLine).is_ok()); // Bounded because of `HAT` rules.
-            /// assert!(example.insert_bounded_str_with(0, "HAT", LowLine).is_ok()); // But another would not be.
-            /// assert_eq!(example, "HAT_HATUpperCamel");
-            ///
-            /// // Inserting at the end is ~append.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_str_with(example.len(), "lower", LowLine).is_err()); // "UpperCamel_lower" != UpperCamel casing
-            /// assert!(example.insert_bounded_str_with(example.len(), "Camel", LowLine).is_ok()); // Because of `CAMEL` boundary.
-            /// assert_eq!(example, "UpperCamelCamel");
-            ///
-            /// // Inserting in the middle can be tricky, as your insertions
-            /// // may invalidate the buffer's invariants in surprising ways.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_bounded_str_with(2, "HAT", LowLine).is_err()); // "UpHAT_perCamel" != UpperCamel casing
-            /// assert!(example.insert_bounded_str_with(5, "HAT", LowLine).is_ok()); // Surprisingly a `CAMEL` & `HAT` boundary.
-            /// assert_eq!(example, "UpperHATCamel");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn insert_bounded_str_with(&mut self, idx: usize, s: &str, delim: D) -> Result<(), Error> {
-                self.insert_bounded_fragment_with(idx, Fragment::new(s)?, delim)
-            }
-
-            #[doc = include_str!("docs/methods/insert_delimited_str.md")]
-            #[doc = include_str!("docs/sections/panics.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::from_str("UpperCamel")?;"#)]
-            ///
-            /// // Inserting at the beginning is ~prepend.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_str(0, "HAT").is_ok());
-            /// assert_eq!(example, "HAT_UpperCamel");
-            ///
-            /// // Inserting at the end is ~append.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_str(example.len(), "lower").is_err()); // "UpperCamel_lower" != UpperCamel casing
-            /// assert!(example.insert_delimited_str(example.len(), "Camel").is_ok());
-            /// assert_eq!(example, "UpperCamel_Camel");
-            ///
-            /// // Inserting in the middle can be tricky, as your insertions
-            /// // may invalidate the buffer's invariants in surprising ways.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_str(2, "HAT").is_err()); // "Up_HAT_perCamel" != UpperCamel casing
-            /// assert!(example.insert_delimited_str(5, "HAT").is_ok());
-            /// assert_eq!(example, "Upper_HAT_Camel");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn insert_delimited_str(&mut self, idx: usize, s: &str) -> Result<(), Error>
-            where
-                D: Default,
-            {
-                self.insert_delimited_fragment_with(idx, Fragment::new(s)?, D::default())
-            }
-
-            #[doc = include_str!("docs/methods/insert_delimited_str.md")]
-            #[doc = include_str!("docs/sections/panics.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::from_str("UpperCamel")?;"#)]
-            ///
-            /// // Inserting at the beginning is ~prepend.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_str_with(0, "HAT", LowLine).is_ok());
-            /// assert_eq!(example, "HAT_UpperCamel");
-            ///
-            /// // Inserting at the end is ~append.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_str_with(example.len(), "lower", LowLine).is_err()); // "UpperCamel_lower" != UpperCamel casing
-            /// assert!(example.insert_delimited_str_with(example.len(), "Camel", LowLine).is_ok());
-            /// assert_eq!(example, "UpperCamel_Camel");
-            ///
-            /// // Inserting in the middle can be tricky, as your insertions
-            /// // may invalidate the buffer's invariants in surprising ways.
-            /// let mut example = buffer.clone();
-            /// assert!(example.insert_delimited_str_with(2, "HAT", LowLine).is_err()); // "Up_HAT_perCamel" != UpperCamel casing
-            /// assert!(example.insert_delimited_str_with(5, "HAT", LowLine).is_ok());
-            /// assert_eq!(example, "Upper_HAT_Camel");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn insert_delimited_str_with(
-                &mut self,
-                idx: usize,
-                s: &str,
-                delim: D,
-            ) -> Result<(), Error> {
-                self.insert_delimited_fragment_with(idx, Fragment::new(s)?, delim)
+            ) -> Result<(), Error> where
+                F: IntoIntermediate<B, D, P>,
+                {
+                let fragment = fragment.into_intermediate()?;
+                crate::alloc::buffer::$op::new(self).insert_delimited_str(idx, fragment.as_ref(), delim.as_char())
             }
 
             #[doc = include_str!("docs/methods/push.md")]
@@ -871,9 +345,10 @@ macro_rules! impl_buffer_methods {
             /// # Ok::<(), Error>(())
             /// ```
             #[inline]
-            pub fn push(&mut self, c: char) -> Result<(), Error> {
-                let mut buffer = [0; 4];
-                self.push_str(c.encode_utf8(&mut buffer))
+            pub fn push<F>(&mut self, fragment: F) -> Result<(), Error> where
+                F: IntoIntermediate<B, D, P>,
+            {
+                self.insert(self.len(), fragment)
             }
 
             #[doc = include_str!("docs/methods/push_bounded.md")]
@@ -906,17 +381,18 @@ macro_rules! impl_buffer_methods {
             /// assert_eq!(buffer, "O_KoK");
             ///
             /// // If there's already a delimiter, another would not be inserted.
-            /// assert!(buffer.push_delim().is_ok());
+            /// assert!(buffer.push(LowLine).is_ok());
             /// assert!(buffer.push_bounded('K').is_ok());
             /// assert_eq!(buffer, "O_KoK_K");
             /// # Ok::<(), Error>(())
             /// ```
             #[inline]
-            pub fn push_bounded(&mut self, c: char) -> Result<(), Error>
+            pub fn push_bounded<F>(&mut self, fragment: F) -> Result<(), Error>
             where
                 D: Default,
+                F: IntoIntermediate<B, D, P>,
             {
-                self.push_bounded_with(c, D::default())
+                self.insert_bounded(self.len(), fragment)
             }
 
             #[doc = include_str!("docs/methods/push_bounded.md")]
@@ -949,79 +425,17 @@ macro_rules! impl_buffer_methods {
             /// assert_eq!(buffer, "O_KoK");
             ///
             /// // If there's already a delimiter, another would not be inserted.
-            /// assert!(buffer.push_delim().is_ok());
+            /// assert!(buffer.push(LowLine).is_ok());
             /// assert!(buffer.push_bounded_with('K', LowLine).is_ok());
             /// assert_eq!(buffer, "O_KoK_K");
             /// # Ok::<(), Error>(())
             /// ```
             #[inline]
-            pub fn push_bounded_with(&mut self, c: char, delim: D) -> Result<(), Error> {
-                let mut buffer = [0; 4];
-                self.push_bounded_str_with(c.encode_utf8(&mut buffer), delim)
-            }
-
-            #[doc = include_str!("docs/methods/push_delim.md")]
-            #[doc = include_str!("docs/methods/push_delim.errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use syntax::delimiter::LowLine;
-            /// # use presets::unicode::upper_camel::UpperCamelFragmentBuf;
-            /// let mut buffer = UpperCamelFragmentBuf::new();
-            ///
-            /// // For all preset and provided delimiters, you can push them anywhere in
-            /// // an identifier. Unless you have a custom delimiter, it's always safe to push.
-            /// assert!(buffer.push_delim_with(LowLine).is_ok());
-            /// # Ok::<(), Error>(())
-            /// ```
-            ///
-            /// Example Failure:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::*;
-            /// # use syntax::delimiter::LowLine;
-            /// # use presets::unicode::upper_camel::UpperCamelFragmentBuf;
-            /// #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-            /// struct DollarStart;
-            ///
-            /// impl Delimiter for DollarStart {
-            ///     fn as_char(&self) -> char {
-            ///         '$'
-            ///     }
-            ///     fn from_ident_start(c: char) -> Option<Self> {
-            ///         match c {
-            ///             '$' => Some(Self),
-            ///             _ => None,
-            ///         }
-            ///     }
-            ///     fn from_chunk_delim(c: char) -> Option<Self> {
-            ///         None
-            ///     }
-            /// }
-            ///
-            /// type DollarStartFragmentBuf = FragmentBuf<
-            ///     boundary::Standard,
-            ///     DollarStart,
-            ///     profile::Mixed<profile::Unicode>,
-            /// >;
-            ///
-            /// let mut buffer = DollarStartFragmentBuf::new();
-            ///
-            /// // Okay to push one `$` in, because it may be the start fragment.
-            /// assert!(buffer.push_delim_with(DollarStart).is_ok());
-            ///
-            /// // But you definitely cannot push another in - that's invalid.
-            /// assert!(buffer.push_delim_with(DollarStart).is_err());
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn push_delim_with(&mut self, delim: D) -> Result<(), Error> {
-                crate::alloc::buffer::$op::new(self).push_delim(delim)
+            pub fn push_bounded_with<F>(&mut self, fragment: F, delim: D) -> Result<(), Error>
+            where
+                F: IntoIntermediate<B, D, P>,
+            {
+                self.insert_bounded_with(self.len(), fragment, delim)
             }
 
             #[doc = include_str!("docs/methods/push_delimited.md")]
@@ -1048,17 +462,18 @@ macro_rules! impl_buffer_methods {
             /// assert_eq!(buffer, "O_K");
             ///
             /// // If there's already a delimiter, another would not be inserted.
-            /// assert!(buffer.push_delim().is_ok());
+            /// assert!(buffer.push(LowLine).is_ok());
             /// assert!(buffer.push_delimited('K').is_ok());
             /// assert_eq!(buffer, "O_K_K");
             /// # Ok::<(), Error>(())
             /// ```
             #[inline]
-            pub fn push_delimited(&mut self, c: char) -> Result<(), Error>
+            pub fn push_delimited<F>(&mut self, fragment: F) -> Result<(), Error>
             where
                 D: Default,
+                F: IntoIntermediate<B, D, P>,
             {
-                self.push_delimited_with(c, D::default())
+                self.insert_delimited(self.len(), fragment)
             }
 
             #[doc = include_str!("docs/methods/push_delimited.md")]
@@ -1085,454 +500,17 @@ macro_rules! impl_buffer_methods {
             /// assert_eq!(buffer, "O_K");
             ///
             /// // If there's already a delimiter, another would not be inserted.
-            /// assert!(buffer.push_delim().is_ok());
+            /// assert!(buffer.push(LowLine).is_ok());
             /// assert!(buffer.push_delimited_with('K', LowLine).is_ok());
             /// assert_eq!(buffer, "O_K_K");
             /// # Ok::<(), Error>(())
             /// ```
             #[inline]
-            pub fn push_delimited_with(&mut self, c: char, delim: D) -> Result<(), Error> {
-                let mut buffer = [0; 4];
-                self.push_delimited_str_with(c.encode_utf8(&mut buffer), delim)
-            }
-
-            #[doc = include_str!("docs/methods/push_delim.md")]
-            #[doc = include_str!("docs/methods/push_delim.errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use presets::unicode::upper_camel::UpperCamelFragmentBuf;
-            /// let mut buffer = UpperCamelFragmentBuf::new();
-            ///
-            /// // For all preset and provided delimiters, you can push them anywhere in
-            /// // an identifier. Unless you have a custom delimiter, it's always safe to push.
-            /// assert!(buffer.push_delim().is_ok());
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn push_delim(&mut self) -> Result<(), Error>
+            pub fn push_delimited_with<F>(&mut self, fragment: F, delim: D) -> Result<(), Error>
             where
-                D: Default,
+                F: IntoIntermediate<B, D, P>,
             {
-                self.push_delim_with(D::default())
-            }
-
-            #[doc = include_str!("docs/methods/push_fragment.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::new();"#)]
-            ///
-            /// // This would be valid, because it might be a continuation fragment.
-            /// assert!(buffer.push_fragment(UpperCamelFragment::new("Valid")?).is_ok());
-            ///
-            /// // You can add more lowercase at the end, since there's no delimiter.
-            /// assert!(buffer.push_fragment(UpperCamelFragment::new("push")?).is_ok());
-            ///
-            /// // But, you cannot add it to the end if there's a delimiter present.
-            /// // At least for `UpperCamelIdent`, which dictates chunks start uppercase.
-            /// buffer.push('_')?;
-            /// assert!(buffer.push_fragment(UpperCamelFragment::new("push")?).is_err());
-            ///
-            /// // If your string is valid for the configuration though, it is allowed.
-            /// assert!(buffer.push_fragment(UpperCamelFragment::new("Push")?).is_ok());
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn push_fragment(&mut self, fragment: &Fragment<B, D, P>) -> Result<(), Error> {
-                self.insert_fragment(self.len(), fragment)
-            }
-
-            #[doc = include_str!("docs/methods/push_bounded_fragment.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::new();"#)]
-            ///
-            /// // If there's no data at the start, there's nothing to bound against.
-            /// assert!(buffer.push_bounded_fragment(
-            ///     UpperCamelFragment::new("Valid")?
-            /// ).is_ok());
-            /// assert_eq!(buffer, "Valid");
-            ///
-            /// // But the very next bounded push would need to bound the contents.
-            /// // As such, you cannot select an invalid character.
-            /// assert!(buffer.push_bounded_fragment(
-            ///     UpperCamelFragment::new("lower")?
-            /// ).is_err()); // "Valid_lower" != UpperCamel casing
-            /// assert!(buffer.push_bounded_fragment(
-            ///     UpperCamelFragment::new("Upper")?
-            /// ).is_ok()); // A `CAMEL` boundary.
-            /// assert_eq!(buffer, "ValidUpper");
-            ///
-            /// // If the character on its own cannot form a boundary, a delimiter
-            /// // will be inserted first.
-            /// assert!(buffer.push_bounded_fragment(
-            ///     UpperCamelFragment::new("2fast")?
-            /// ).is_ok());
-            /// assert_eq!(buffer, "ValidUpper_2fast");
-            ///
-            /// // If there's already a delimiter, another would not be inserted.
-            /// assert!(buffer.push_delim().is_ok());
-            /// assert!(buffer.push_bounded_fragment(
-            ///     UpperCamelFragment::new("2furious")?
-            /// ).is_ok());
-            /// assert_eq!(buffer, "ValidUpper_2fast_2furious");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn push_bounded_fragment(&mut self, fragment: &Fragment<B, D, P>) -> Result<(), Error>
-            where
-                D: Default,
-            {
-                self.insert_bounded_fragment_with(self.len(), fragment, D::default())
-            }
-
-            #[doc = include_str!("docs/methods/push_bounded_fragment.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::new();"#)]
-            ///
-            /// // If there's no data at the start, there's nothing to bound against.
-            /// assert!(buffer.push_bounded_fragment_with(
-            ///     UpperCamelFragment::new("Valid")?,
-            ///     LowLine,
-            /// ).is_ok());
-            /// assert_eq!(buffer, "Valid");
-            ///
-            /// // But the very next bounded push would need to bound the contents.
-            /// // As such, you cannot select an invalid character.
-            /// assert!(buffer.push_bounded_fragment_with(
-            ///     UpperCamelFragment::new("lower")?,
-            ///     LowLine,
-            /// ).is_err()); // "Valid_lower" != UpperCamel casing
-            /// assert!(buffer.push_bounded_fragment_with(
-            ///     UpperCamelFragment::new("Upper")?,
-            ///     LowLine,
-            /// ).is_ok()); // A `CAMEL` boundary.
-            /// assert_eq!(buffer, "ValidUpper");
-            ///
-            /// // If the character on its own cannot form a boundary, a delimiter
-            /// // will be inserted first.
-            /// assert!(buffer.push_bounded_fragment_with(
-            ///     UpperCamelFragment::new("2fast")?,
-            ///     LowLine,
-            /// ).is_ok());
-            /// assert_eq!(buffer, "ValidUpper_2fast");
-            ///
-            /// // If there's already a delimiter, another would not be inserted.
-            /// assert!(buffer.push_delim().is_ok());
-            /// assert!(buffer.push_bounded_fragment_with(
-            ///     UpperCamelFragment::new("2furious")?,
-            ///     LowLine,
-            /// ).is_ok());
-            /// assert_eq!(buffer, "ValidUpper_2fast_2furious");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn push_bounded_fragment_with(
-                &mut self,
-                fragment: &Fragment<B, D, P>,
-                delim: D,
-            ) -> Result<(), Error> {
-                self.insert_bounded_fragment_with(self.len(), fragment, delim)
-                    .map_err(|e| e.with_error_kind(ErrorKind::FailedPush))
-            }
-
-            #[doc = include_str!("docs/methods/push_delimited_fragment.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::new();"#)]
-            ///
-            /// // If there's no data at the start, there's nothing to delimit against.
-            /// assert!(buffer.push_delimited_fragment(
-            ///     UpperCamelFragment::new("Valid")?
-            /// ).is_ok());
-            /// assert_eq!(buffer, "Valid");
-            ///
-            /// // But the very next delimited push would need to delimit the contents.
-            /// // As such, you cannot select an invalid character.
-            /// assert!(buffer.push_delimited_fragment(
-            ///     UpperCamelFragment::new("lower")?
-            /// ).is_err()); // "Valid_lower" != UpperCamel casing
-            /// assert!(buffer.push_delimited_fragment(
-            ///     UpperCamelFragment::new("Upper")?
-            /// ).is_ok());
-            /// assert_eq!(buffer, "Valid_Upper");
-            ///
-            /// // If there's already a delimiter, another would not be inserted.
-            /// assert!(buffer.push_delim().is_ok());
-            /// assert!(buffer.push_delimited_fragment(
-            ///     UpperCamelFragment::new("2fast2furious")?
-            /// ).is_ok());
-            /// assert_eq!(buffer, "Valid_Upper_2fast2furious");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn push_delimited_fragment(&mut self, fragment: &Fragment<B, D, P>) -> Result<(), Error>
-            where
-                D: Default,
-            {
-                self.insert_delimited_fragment_with(self.len(), fragment, D::default())
-                    .map_err(|e| e.with_error_kind(ErrorKind::FailedPush))
-            }
-
-            #[doc = include_str!("docs/methods/push_delimited_fragment.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::new();"#)]
-            ///
-            /// // If there's no data at the start, there's nothing to delimit against.
-            /// assert!(buffer.push_delimited_fragment_with(
-            ///     UpperCamelFragment::new("Valid")?,
-            ///     LowLine,
-            /// ).is_ok());
-            /// assert_eq!(buffer, "Valid");
-            ///
-            /// // But the very next delimited push would need to delimit the contents.
-            /// // As such, you cannot select an invalid character.
-            /// assert!(buffer.push_delimited_fragment_with(
-            ///     UpperCamelFragment::new("lower")?,
-            ///     LowLine,
-            /// ).is_err()); // "Valid_lower" != UpperCamel casing
-            /// assert!(buffer.push_delimited_fragment_with(
-            ///     UpperCamelFragment::new("Upper")?,
-            ///     LowLine,
-            /// ).is_ok());
-            /// assert_eq!(buffer, "Valid_Upper");
-            ///
-            /// // If there's already a delimiter, another would not be inserted.
-            /// assert!(buffer.push_delim().is_ok());
-            /// assert!(buffer.push_delimited_fragment_with(
-            ///     UpperCamelFragment::new("2fast2furious")?,
-            ///     LowLine,
-            /// ).is_ok());
-            /// assert_eq!(buffer, "Valid_Upper_2fast2furious");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn push_delimited_fragment_with(
-                &mut self,
-                fragment: &Fragment<B, D, P>,
-                delim: D,
-            ) -> Result<(), Error> {
-                self.insert_delimited_fragment_with(self.len(), fragment, delim)
-                    .map_err(|e| e.with_error_kind(ErrorKind::FailedPush))
-            }
-
-            #[doc = include_str!("docs/methods/push_str.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::new();"#)]
-            ///
-            /// // You can only push strings that are valid at the given position.
-            /// assert!(buffer.push_str("Ok").is_ok());
-            /// assert!(buffer.push_str("computer").is_ok());
-            /// assert_eq!(buffer, "Okcomputer");
-            ///
-            /// // But you have to be mindful of the format to avoid pushing
-            /// // invalid characters. Most commonly, after delimiters.
-            /// buffer.push('_')?;
-            /// assert!(buffer.push_str("invalid").is_err());
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn push_str(&mut self, s: &str) -> Result<(), Error> {
-                self.push_fragment(Fragment::new(s)?)
-            }
-
-            #[doc = include_str!("docs/methods/push_bounded_str.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::new();"#)]
-            ///
-            /// // If there's no data at the start, there's nothing to bound against.
-            /// assert!(buffer.push_bounded_str("Ok").is_ok());
-            ///
-            /// // But the very next bounded push would need to bound the contents.
-            /// // As such, you cannot select an invalid string.
-            /// assert!(buffer.push_bounded_str("computer").is_err()); // "Ok_computer" != UpperCamel casing
-            /// assert!(buffer.push_bounded_str("Computer").is_ok());
-            /// assert_eq!(buffer, "OkComputer");
-            ///
-            /// // Some pushes may require a delimiter.
-            /// assert!(buffer.push_bounded_str("2fast").is_ok());
-            /// assert_eq!(buffer, "OkComputer_2fast");
-            ///
-            /// // If there's already a delimiter, another would not be inserted.
-            /// assert!(buffer.push_delim().is_ok());
-            /// assert!(buffer.push_bounded_str("2furious").is_ok());
-            /// assert_eq!(buffer, "OkComputer_2fast_2furious");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn push_bounded_str(&mut self, s: &str) -> Result<(), Error>
-            where
-                D: Default,
-            {
-                self.push_bounded_str_with(s, D::default())
-            }
-
-            #[doc = include_str!("docs/methods/push_bounded_str.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::new();"#)]
-            ///
-            /// // If there's no data at the start, there's nothing to bound against.
-            /// assert!(buffer.push_bounded_str_with("Ok", LowLine).is_ok());
-            ///
-            /// // But the very next bounded push would need to bound the contents.
-            /// // As such, you cannot select an invalid string.
-            /// assert!(buffer.push_bounded_str_with("computer", LowLine).is_err()); // "Ok_computer" != UpperCamel casing
-            /// assert!(buffer.push_bounded_str_with("Computer", LowLine).is_ok());
-            /// assert_eq!(buffer, "OkComputer");
-            ///
-            /// // Some pushes may require a delimiter.
-            /// assert!(buffer.push_bounded_str_with("2fast", LowLine).is_ok());
-            /// assert_eq!(buffer, "OkComputer_2fast");
-            ///
-            /// // If there's already a delimiter, another would not be inserted.
-            /// assert!(buffer.push_delim().is_ok());
-            /// assert!(buffer.push_bounded_str_with("2furious", LowLine).is_ok());
-            /// assert_eq!(buffer, "OkComputer_2fast_2furious");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn push_bounded_str_with(&mut self, s: &str, delim: D) -> Result<(), Error> {
-                self.push_bounded_fragment_with(Fragment::new(s)?, delim)
-            }
-
-            #[doc = include_str!("docs/methods/push_delimited_str.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::new();"#)]
-            ///
-            /// // If there's no data at the start, there's nothing to delimit against.
-            /// assert!(buffer.push_delimited_str("Ok").is_ok());
-            ///
-            /// // But the very next delimited push would need to delimit the contents.
-            /// // As such, you cannot select an invalid string.
-            /// assert!(buffer.push_delimited_str("computer").is_err()); // "Ok_computer" != UpperCamel casing
-            /// assert!(buffer.push_delimited_str("Computer").is_ok());
-            /// assert_eq!(buffer, "Ok_Computer");
-            ///
-            /// // If there's already a delimiter, another would not be inserted.
-            /// assert!(buffer.push_delim().is_ok());
-            /// assert!(buffer.push_delimited_str("2fast2furious").is_ok());
-            /// assert_eq!(buffer, "Ok_Computer_2fast2furious");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn push_delimited_str(&mut self, s: &str) -> Result<(), Error>
-            where
-                D: Default,
-            {
-                self.push_delimited_str_with(s, D::default())
-            }
-
-            #[doc = include_str!("docs/methods/push_delimited_str.md")]
-            #[doc = include_str!("docs/sections/errors.md")]
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use typed_ident::presets::unicode::upper_camel::*;
-            #[doc = concat!("let mut buffer = UpperCamel", stringify!($name), r#"::new();"#)]
-            ///
-            /// // If there's no data at the start, there's nothing to delimit against.
-            /// assert!(buffer.push_delimited_str_with("Ok", LowLine).is_ok());
-            ///
-            /// // But the very next delimited push would need to delimit the contents.
-            /// // As such, you cannot select an invalid string.
-            /// assert!(buffer.push_delimited_str_with("computer", LowLine).is_err()); // "Ok_computer" != UpperCamel casing
-            /// assert!(buffer.push_delimited_str_with("Computer", LowLine).is_ok());
-            /// assert_eq!(buffer, "Ok_Computer");
-            ///
-            /// // If there's already a delimiter, another would not be inserted.
-            /// assert!(buffer.push_delim().is_ok());
-            /// assert!(buffer.push_delimited_str_with("2fast2furious", LowLine).is_ok());
-            /// assert_eq!(buffer, "Ok_Computer_2fast2furious");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn push_delimited_str_with(&mut self, s: &str, delim: D) -> Result<(), Error> {
-                self.push_delimited_fragment_with(Fragment::new(s)?, delim)
+                self.insert_delimited_with(self.len(), fragment, delim)
             }
 
             #[doc = include_str!("docs/methods/remove.md")]
@@ -1610,75 +588,13 @@ macro_rules! impl_buffer_methods {
             /// # Ok::<(), Error>(())
             /// ```
             #[inline]
-            pub fn replace_range<R>(&mut self, range: R, replace_with: &str) -> Result<(), Error>
+            pub fn replace_range<R, F>(&mut self, range: R, replace_with: F) -> Result<(), Error>
             where
                 R: RangeBounds<usize>,
+                F: IntoIntermediate<B, D, P>,
             {
-                self.replace_range_fragment(range, Fragment::new(replace_with)?)
-            }
-
-            #[doc = include_str!("docs/methods/replace_range.md")]
-            #[doc = include_str!("docs/sections/panics.md")]
-            ///
-            /// # Errors
-            ///
-            /// Returns `Err` if the fragment formed from the combination of `self` and
-            /// `to` is invalid at any replacement index. If invalid, an [`Error`] is
-            /// returned with the [`error_kind`] set to `FailedReplaceLeft` or
-            /// `FailedReplaceRight` (if the replacement succeeded, but the
-            /// remainder could not be appended).
-            ///
-            /// The value [`byte_offset`] *WILL* be set from this function, and it will
-            /// be set to the index that caused the failure from the original fragment
-            /// (`self`).
-            ///
-            /// [`Error`]: crate::Error
-            /// [`error_kind`]: crate::Error::error_kind
-            /// [`byte_offset`]: crate::Error::byte_offset
-            ///
-            /// # Examples
-            ///
-            /// Basic Usage:
-            ///
-            /// ```
-            /// # use typed_ident::*;
-            /// # use typed_ident::syntax::delimiter::*;
-            /// # use presets::unicode::upper_camel::*;
-            /// let buffer = UpperCamelFragmentBuf::from_str("Upper_Camel")?;
-            ///
-            /// // Examples replacing various ranges.
-            /// let replacement = UpperCamelFragment::new("R")?;
-            /// let mut example = buffer.clone();
-            /// assert!(example.replace_range_fragment(4..7, replacement).is_ok());
-            /// assert_eq!(example, "UppeRamel");
-            ///
-            /// let mut example = buffer.clone();
-            /// assert!(example.replace_range_fragment(4..=7, replacement).is_ok());
-            /// assert_eq!(example, "UppeRmel");
-            ///
-            /// let mut example = buffer.clone();
-            /// assert!(example.replace_range_fragment(..7, replacement).is_ok());
-            /// assert_eq!(example, "Ramel");
-            ///
-            /// let mut example = buffer.clone();
-            /// assert!(example.replace_range_fragment(..=7, replacement).is_ok());
-            /// assert_eq!(example, "Rmel");
-            ///
-            /// let mut example = buffer.clone();
-            /// assert!(example.replace_range_fragment(4.., replacement).is_ok());
-            /// assert_eq!(example, "UppeR");
-            /// # Ok::<(), Error>(())
-            /// ```
-            #[inline]
-            pub fn replace_range_fragment<R>(
-                &mut self,
-                range: R,
-                replace_with: &Fragment<B, D, P>,
-            ) -> Result<(), Error>
-            where
-                R: RangeBounds<usize>,
-            {
-                crate::alloc::buffer::$op::new(self).replace_range_str(range, replace_with.as_str())
+                let replace_with = replace_with.into_intermediate()?;
+                crate::alloc::buffer::$op::new(self).replace_range_str(range, replace_with.as_ref())
             }
         }
 
@@ -1927,7 +843,7 @@ macro_rules! impl_buffer_methods {
             /// assert!(buffer.capacity() >= 10);
             /// buffer.shrink_to(5);
             /// assert_eq!(buffer.capacity(), 5);
-            /// buffer.push_str("example")?;
+            /// buffer.push("example")?;
             /// assert!(buffer.capacity() >= 7);
             /// buffer.shrink_to(0);
             /// assert_eq!(buffer.capacity(), 7);
@@ -1950,7 +866,7 @@ macro_rules! impl_buffer_methods {
             /// assert!(buffer.capacity() >= 10);
             /// buffer.shrink_to_fit();
             /// assert_eq!(buffer.capacity(), 0);
-            /// buffer.push_str("example")?;
+            /// buffer.push("example")?;
             /// assert!(buffer.capacity() >= 7);
             /// buffer.shrink_to_fit();
             /// assert_eq!(buffer.capacity(), 7);

@@ -3,7 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::error::{Error, ErrorKind};
+use crate::alloc::IntoIntermediate;
+use crate::core::error::Error;
 use crate::core::{Chunk, Fragment, Ident};
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
 use core::marker::PhantomData;

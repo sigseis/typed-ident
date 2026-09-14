@@ -8,7 +8,7 @@ use crate::common::{Format, Profile as CliProfile};
 use std::process::ExitCode;
 use typed_ident::Error;
 use typed_ident::syntax::profile::{AppendClosed, Ascii, CharProfile, Profile, Unicode};
-use typed_ident::syntax::segmentation;
+use typed_ident::syntax::{SubsetOf, segmentation};
 
 // =============================================================================
 // TYPES: ASCII Open
@@ -44,6 +44,9 @@ impl Profile for AsciiOpen {
 // -----------------------------------------------------------------------------
 impl CharProfile for AsciiOpen {}
 
+// -----------------------------------------------------------------------------
+impl SubsetOf<AsciiOpen> for AsciiOpen {}
+
 // =============================================================================
 // TYPES: Unicode Open
 // =============================================================================
@@ -77,6 +80,9 @@ impl Profile for UnicodeOpen {
 
 // -----------------------------------------------------------------------------
 impl CharProfile for UnicodeOpen {}
+
+// -----------------------------------------------------------------------------
+impl SubsetOf<UnicodeOpen> for UnicodeOpen {}
 
 // =============================================================================
 // COMMAND: Profile Configurations

@@ -235,12 +235,6 @@ impl<'a, const IDENT: bool, B: Boundary, D: Delimiter, P: CasedProfile>
     }
 
     #[inline]
-    pub fn push_delim(self, delim: D) -> Result<(), Error> {
-        self.buffer.push(delim.as_char());
-        self.finish(ErrorKind::FailedPush)
-    }
-
-    #[inline]
     pub fn remove(mut self, idx: usize) -> Result<(), Error> {
         self.prepare_for_removal();
         self.buffer.remove(idx);
