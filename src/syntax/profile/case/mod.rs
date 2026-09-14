@@ -4,10 +4,12 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+mod camel;
 mod cased_profile;
 mod lower;
 mod lower_camel;
 mod mixed;
+mod uniform;
 mod upper;
 mod upper_camel;
 
@@ -16,9 +18,11 @@ mod upper_camel;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+pub use camel::*;
 pub use cased_profile::*;
 pub use lower::*;
 pub use lower_camel::*;
 pub use mixed::*;
+pub use uniform::*;
 pub use upper::*;
 pub use upper_camel::*;

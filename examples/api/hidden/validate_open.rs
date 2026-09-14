@@ -24,20 +24,20 @@ impl Profile for AsciiOpen {
     type Segmentation = segmentation::Char;
 
     #[inline(always)]
-    fn is_ident_start(c: char) -> bool {
-        Ascii::is_ident_start(c)
-    }
-    #[inline(always)]
-    fn is_chunk_start(c: char) -> bool {
-        Ascii::in_profile(c)
-    }
-    #[inline(always)]
-    fn in_profile(c: char) -> bool {
-        Ascii::in_profile(c)
+    fn is_chunk_char(c: char) -> bool {
+        Ascii::is_chunk_char(c)
     }
     #[inline(always)]
     fn is_chunk_continue(c: char) -> bool {
-        Ascii::in_profile(c)
+        Ascii::is_chunk_continue(c)
+    }
+    #[inline(always)]
+    fn is_chunk_start(c: char) -> bool {
+        Ascii::is_chunk_start(c)
+    }
+    #[inline(always)]
+    fn is_ident_start_char(c: char) -> bool {
+        Ascii::is_ident_start_char(c)
     }
 }
 
@@ -58,20 +58,20 @@ impl Profile for UnicodeOpen {
     type Segmentation = segmentation::Grapheme;
 
     #[inline(always)]
-    fn is_ident_start(c: char) -> bool {
-        Unicode::is_ident_start(c)
-    }
-    #[inline(always)]
-    fn is_chunk_start(c: char) -> bool {
-        Unicode::in_profile(c)
-    }
-    #[inline(always)]
-    fn in_profile(c: char) -> bool {
-        Unicode::in_profile(c)
+    fn is_chunk_char(c: char) -> bool {
+        Unicode::is_chunk_char(c)
     }
     #[inline(always)]
     fn is_chunk_continue(c: char) -> bool {
-        Unicode::in_profile(c)
+        Unicode::is_chunk_continue(c)
+    }
+    #[inline(always)]
+    fn is_chunk_start(c: char) -> bool {
+        Unicode::is_chunk_start(c)
+    }
+    #[inline(always)]
+    fn is_ident_start_char(c: char) -> bool {
+        Unicode::is_ident_start_char(c)
     }
 }
 
@@ -87,15 +87,19 @@ fn validate_ascii(cli: &Cli, ident: &str) -> Option<Error> {
     use typed_ident::presets::generic::*;
     match cli.format {
         Format::Camel => CamelIdent::<AsciiOpen>::new(ident).err(),
+        Format::CasedCamel => CasedCamelIdent::<AsciiOpen>::new(ident).err(),
         Format::UpperCamel => UpperCamelIdent::<AsciiOpen>::new(ident).err(),
         Format::LowerCamel => LowerCamelIdent::<AsciiOpen>::new(ident).err(),
         Format::Snake => SnakeIdent::<AsciiOpen>::new(ident).err(),
+        Format::CasedSnake => CasedSnakeIdent::<AsciiOpen>::new(ident).err(),
         Format::UpperSnake => UpperSnakeIdent::<AsciiOpen>::new(ident).err(),
         Format::LowerSnake => LowerSnakeIdent::<AsciiOpen>::new(ident).err(),
         Format::Kebab => KebabIdent::<AsciiOpen>::new(ident).err(),
+        Format::CasedKebab => CasedKebabIdent::<AsciiOpen>::new(ident).err(),
         Format::UpperKebab => UpperKebabIdent::<AsciiOpen>::new(ident).err(),
         Format::LowerKebab => LowerKebabIdent::<AsciiOpen>::new(ident).err(),
         Format::Hybrid => HybridIdent::<AsciiOpen>::new(ident).err(),
+        Format::CasedHybrid => CasedHybridIdent::<AsciiOpen>::new(ident).err(),
         Format::UpperHybrid => UpperHybridIdent::<AsciiOpen>::new(ident).err(),
         Format::LowerHybrid => LowerHybridIdent::<AsciiOpen>::new(ident).err(),
     }
@@ -106,15 +110,19 @@ fn validate_strict(cli: &Cli, ident: &str) -> Option<Error> {
     use typed_ident::presets::strict::*;
     match cli.format {
         Format::Camel => CamelIdent::new(ident).err(),
+        Format::CasedCamel => CasedCamelIdent::new(ident).err(),
         Format::UpperCamel => UpperCamelIdent::new(ident).err(),
         Format::LowerCamel => LowerCamelIdent::new(ident).err(),
         Format::Snake => SnakeIdent::new(ident).err(),
+        Format::CasedSnake => CasedSnakeIdent::new(ident).err(),
         Format::UpperSnake => UpperSnakeIdent::new(ident).err(),
         Format::LowerSnake => LowerSnakeIdent::new(ident).err(),
         Format::Kebab => KebabIdent::new(ident).err(),
+        Format::CasedKebab => CasedKebabIdent::new(ident).err(),
         Format::UpperKebab => UpperKebabIdent::new(ident).err(),
         Format::LowerKebab => LowerKebabIdent::new(ident).err(),
         Format::Hybrid => HybridIdent::new(ident).err(),
+        Format::CasedHybrid => CasedHybridIdent::new(ident).err(),
         Format::UpperHybrid => UpperHybridIdent::new(ident).err(),
         Format::LowerHybrid => LowerHybridIdent::new(ident).err(),
     }
@@ -125,15 +133,19 @@ fn validate_unicode(cli: &Cli, ident: &str) -> Option<Error> {
     use typed_ident::presets::generic::*;
     match cli.format {
         Format::Camel => CamelIdent::<UnicodeOpen>::new(ident).err(),
+        Format::CasedCamel => CasedCamelIdent::<UnicodeOpen>::new(ident).err(),
         Format::UpperCamel => UpperCamelIdent::<UnicodeOpen>::new(ident).err(),
         Format::LowerCamel => LowerCamelIdent::<UnicodeOpen>::new(ident).err(),
         Format::Snake => SnakeIdent::<UnicodeOpen>::new(ident).err(),
+        Format::CasedSnake => CasedSnakeIdent::<UnicodeOpen>::new(ident).err(),
         Format::UpperSnake => UpperSnakeIdent::<UnicodeOpen>::new(ident).err(),
         Format::LowerSnake => LowerSnakeIdent::<UnicodeOpen>::new(ident).err(),
         Format::Kebab => KebabIdent::<UnicodeOpen>::new(ident).err(),
+        Format::CasedKebab => CasedKebabIdent::<UnicodeOpen>::new(ident).err(),
         Format::UpperKebab => UpperKebabIdent::<UnicodeOpen>::new(ident).err(),
         Format::LowerKebab => LowerKebabIdent::<UnicodeOpen>::new(ident).err(),
         Format::Hybrid => HybridIdent::<UnicodeOpen>::new(ident).err(),
+        Format::CasedHybrid => CasedHybridIdent::<UnicodeOpen>::new(ident).err(),
         Format::UpperHybrid => UpperHybridIdent::<UnicodeOpen>::new(ident).err(),
         Format::LowerHybrid => LowerHybridIdent::<UnicodeOpen>::new(ident).err(),
     }

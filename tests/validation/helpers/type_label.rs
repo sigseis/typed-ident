@@ -7,7 +7,9 @@ use std::fmt::Formatter;
 use typed_ident::Ident;
 use typed_ident::syntax::boundary::{Options, Standard};
 use typed_ident::syntax::delimiter::{AsciiFlatLine, HyphenMinus, LowLine};
-use typed_ident::syntax::profile::case::{Lower, LowerCamel, Upper, UpperCamel};
+use typed_ident::syntax::profile::case::{
+    Camel, Lower, LowerCamel, Mixed, Uniform, Upper, UpperCamel,
+};
 use typed_ident::syntax::profile::chars::{Ascii, CharProfile, Strict, Unicode};
 
 // =============================================================================
@@ -129,6 +131,15 @@ impl TypeLabel for Unicode {
 }
 
 // -----------------------------------------------------------------------------
+impl<P: CharProfile + TypeLabel> TypeLabel for Camel<P> {
+    fn type_label_fmt(f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("Camel<")?;
+        P::type_label_fmt(f)?;
+        f.write_str(">")
+    }
+}
+
+// -----------------------------------------------------------------------------
 impl<P: CharProfile + TypeLabel> TypeLabel for Lower<P> {
     fn type_label_fmt(f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("Lower<")?;
@@ -141,6 +152,24 @@ impl<P: CharProfile + TypeLabel> TypeLabel for Lower<P> {
 impl<P: CharProfile + TypeLabel> TypeLabel for LowerCamel<P> {
     fn type_label_fmt(f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("LowerCamel<")?;
+        P::type_label_fmt(f)?;
+        f.write_str(">")
+    }
+}
+
+// -----------------------------------------------------------------------------
+impl<P: CharProfile + TypeLabel> TypeLabel for Mixed<P> {
+    fn type_label_fmt(f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("Mixed<")?;
+        P::type_label_fmt(f)?;
+        f.write_str(">")
+    }
+}
+
+// -----------------------------------------------------------------------------
+impl<P: CharProfile + TypeLabel> TypeLabel for Uniform<P> {
+    fn type_label_fmt(f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("Uniform<")?;
         P::type_label_fmt(f)?;
         f.write_str(">")
     }

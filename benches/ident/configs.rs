@@ -16,15 +16,31 @@ macro_rules! define_benchmarks_functions {
         presets=$presets:ident,
     ) => {
         // ---------------------------------------------------------------------
-        pub fn mixed_camel(c: &mut Criterion) {
+        pub fn camel(c: &mut Criterion) {
             crate::benches::bench::<typed_ident::presets::$presets::CamelIdent>(
                 c,
                 stringify!($charset),
                 stringify!($presets),
                 "CamelIdent",
                 &crate::generate::$charset::<typed_ident::presets::$presets::CamelIdent>(
+                    "CamelIdent",
+                    crate::generate::independent,
                     &['_'],
-                    crate::validate::mixed_camel,
+                ),
+            );
+        }
+
+        // ---------------------------------------------------------------------
+        pub fn cased_camel(c: &mut Criterion) {
+            crate::benches::bench::<typed_ident::presets::$presets::CasedCamelIdent>(
+                c,
+                stringify!($charset),
+                stringify!($presets),
+                "CasedCamelIdent",
+                &crate::generate::$charset::<typed_ident::presets::$presets::CasedCamelIdent>(
+                    "CasedCamelIdent",
+                    crate::generate::dependent_start,
+                    &['_'],
                 ),
             );
         }
@@ -37,8 +53,9 @@ macro_rules! define_benchmarks_functions {
                 stringify!($presets),
                 "LowerCamelIdent",
                 &crate::generate::$charset::<typed_ident::presets::$presets::LowerCamelIdent>(
+                    "LowerCamelIdent",
+                    crate::generate::independent,
                     &['_'],
-                    crate::validate::lower_camel,
                 ),
             );
         }
@@ -51,22 +68,39 @@ macro_rules! define_benchmarks_functions {
                 stringify!($presets),
                 "UpperCamelIdent",
                 &crate::generate::$charset::<typed_ident::presets::$presets::UpperCamelIdent>(
+                    "UpperCamelIdent",
+                    crate::generate::independent,
                     &['_'],
-                    crate::validate::upper_camel,
                 ),
             );
         }
 
         // ---------------------------------------------------------------------
-        pub fn mixed_hybrid(c: &mut Criterion) {
+        pub fn hybrid(c: &mut Criterion) {
             crate::benches::bench::<typed_ident::presets::$presets::HybridIdent>(
                 c,
                 stringify!($charset),
                 stringify!($presets),
                 "HybridIdent",
                 &crate::generate::$charset::<typed_ident::presets::$presets::HybridIdent>(
+                    "HybridIdent",
+                    crate::generate::independent,
                     &['_', '-'],
-                    crate::validate::mixed_hybrid,
+                ),
+            );
+        }
+
+        // ---------------------------------------------------------------------
+        pub fn cased_hybrid(c: &mut Criterion) {
+            crate::benches::bench::<typed_ident::presets::$presets::CasedHybridIdent>(
+                c,
+                stringify!($charset),
+                stringify!($presets),
+                "CasedHybridIdent",
+                &crate::generate::$charset::<typed_ident::presets::$presets::CasedHybridIdent>(
+                    "CasedHybridIdent",
+                    crate::generate::dependent_start,
+                    &['_', '-'],
                 ),
             );
         }
@@ -79,8 +113,9 @@ macro_rules! define_benchmarks_functions {
                 stringify!($presets),
                 "LowerHybridIdent",
                 &crate::generate::$charset::<typed_ident::presets::$presets::LowerHybridIdent>(
+                    "LowerHybridIdent",
+                    crate::generate::independent,
                     &['_', '-'],
-                    crate::validate::lower_hybrid,
                 ),
             );
         }
@@ -93,22 +128,39 @@ macro_rules! define_benchmarks_functions {
                 stringify!($presets),
                 "UpperHybridIdent",
                 &crate::generate::$charset::<typed_ident::presets::$presets::UpperHybridIdent>(
+                    "UpperHybridIdent",
+                    crate::generate::independent,
                     &['_', '-'],
-                    crate::validate::upper_hybrid,
                 ),
             );
         }
 
         // ---------------------------------------------------------------------
-        pub fn mixed_kebab(c: &mut Criterion) {
+        pub fn kebab(c: &mut Criterion) {
             crate::benches::bench::<typed_ident::presets::$presets::KebabIdent>(
                 c,
                 stringify!($charset),
                 stringify!($presets),
                 "KebabIdent",
                 &crate::generate::$charset::<typed_ident::presets::$presets::KebabIdent>(
+                    "KebabIdent",
+                    crate::generate::independent,
                     &['-'],
-                    crate::validate::mixed_kebab,
+                ),
+            );
+        }
+
+        // ---------------------------------------------------------------------
+        pub fn cased_kebab(c: &mut Criterion) {
+            crate::benches::bench::<typed_ident::presets::$presets::CasedKebabIdent>(
+                c,
+                stringify!($charset),
+                stringify!($presets),
+                "CasedKebabIdent",
+                &crate::generate::$charset::<typed_ident::presets::$presets::CasedKebabIdent>(
+                    "CasedKebabIdent",
+                    crate::generate::dependent,
+                    &['-'],
                 ),
             );
         }
@@ -121,8 +173,9 @@ macro_rules! define_benchmarks_functions {
                 stringify!($presets),
                 "LowerKebabIdent",
                 &crate::generate::$charset::<typed_ident::presets::$presets::LowerKebabIdent>(
+                    "LowerKebabIdent",
+                    crate::generate::independent,
                     &['-'],
-                    crate::validate::lower_kebab,
                 ),
             );
         }
@@ -135,22 +188,39 @@ macro_rules! define_benchmarks_functions {
                 stringify!($presets),
                 "UpperKebabIdent",
                 &crate::generate::$charset::<typed_ident::presets::$presets::UpperKebabIdent>(
+                    "UpperKebabIdent",
+                    crate::generate::independent,
                     &['-'],
-                    crate::validate::upper_kebab,
                 ),
             );
         }
 
         // ---------------------------------------------------------------------
-        pub fn mixed_snake(c: &mut Criterion) {
+        pub fn snake(c: &mut Criterion) {
             crate::benches::bench::<typed_ident::presets::$presets::SnakeIdent>(
                 c,
                 stringify!($charset),
                 stringify!($presets),
                 "SnakeIdent",
                 &crate::generate::$charset::<typed_ident::presets::$presets::SnakeIdent>(
+                    "SnakeIdent",
+                    crate::generate::independent,
                     &['_'],
-                    crate::validate::mixed_snake,
+                ),
+            );
+        }
+
+        // ---------------------------------------------------------------------
+        pub fn cased_snake(c: &mut Criterion) {
+            crate::benches::bench::<typed_ident::presets::$presets::CasedSnakeIdent>(
+                c,
+                stringify!($charset),
+                stringify!($presets),
+                "CasedSnakeIdent",
+                &crate::generate::$charset::<typed_ident::presets::$presets::CasedSnakeIdent>(
+                    "CasedSnakeIdent",
+                    crate::generate::dependent,
+                    &['_'],
                 ),
             );
         }
@@ -163,8 +233,9 @@ macro_rules! define_benchmarks_functions {
                 stringify!($presets),
                 "LowerSnakeIdent",
                 &crate::generate::$charset::<typed_ident::presets::$presets::LowerSnakeIdent>(
+                    "LowerSnakeIdent",
+                    crate::generate::independent,
                     &['_'],
-                    crate::validate::lower_snake,
                 ),
             );
         }
@@ -177,8 +248,9 @@ macro_rules! define_benchmarks_functions {
                 stringify!($presets),
                 "UpperSnakeIdent",
                 &crate::generate::$charset::<typed_ident::presets::$presets::UpperSnakeIdent>(
+                    "UpperSnakeIdent",
+                    crate::generate::independent,
                     &['_'],
-                    crate::validate::upper_snake,
                 ),
             );
         }

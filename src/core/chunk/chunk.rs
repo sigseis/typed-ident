@@ -17,7 +17,7 @@ use crate::core::chunk::{
     CharIndices, Chars, MatchIndices, Matches, RMatchIndices, RMatches, WordIndices, Words,
 };
 use crate::core::error::{Error, ErrorKind};
-use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::syntax::{Boundary, CasedProfile, Delimiter};
 
 // =============================================================================
 // TYPES
@@ -101,7 +101,13 @@ pub struct Chunk<B, D, P> {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> Chunk<B, D, P> {
+impl<'a, B: 'a, D: 'a, P: 'a> Chunk<B, D, P> {
+    /// A default-empty `Chunk` value (which is always valid).
+    pub const EMPTY: &'a Chunk<B, D, P> = Chunk::new_unchecked("");
+}
+
+// -----------------------------------------------------------------------------
+impl<B: Boundary, D: Delimiter, P: CasedProfile> Chunk<B, D, P> {
     /// Converts a string slice to a chunk.
     ///
     /// A chunk is a slice of a fragment, which itself is made of a string slice
@@ -130,15 +136,13 @@ impl<B: Boundary, D: Delimiter, P: Profile> Chunk<B, D, P> {
     /// ```
     #[inline]
     pub fn new(s: &str) -> Result<&Self, Error> {
-        // This is not a hot function - so no need to over-optimize it. Just
-        // call `Fragment::new`, even though it's technically looping over this
-        // twice. We don't expect user's to build chunks very often.
-        Self::from_fragment(Fragment::new(s)?)
+        P::is_chunk::<D>(s)?;
+        Ok(Self::new_unchecked(s))
     }
 }
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D, P: Profile> Chunk<B, D, P> {
+impl<B: Boundary, D: Delimiter, P: CasedProfile> Chunk<B, D, P> {
     /// Returns `true` if the current chunk is a "word", `false` otherwise.
     ///
     /// This is not a word in a linguistic sense, rather this is an *identifier
@@ -321,7 +325,7 @@ impl<B, D, P> Default for &Chunk<B, D, P> {
 }
 
 // -----------------------------------------------------------------------------
-impl<B1: Boundary, D1: Delimiter, P1: Profile, B2, D2, P2> AsRef<Chunk<B2, D2, P2>>
+impl<B1: Boundary, D1: Delimiter, P1: CasedProfile, B2, D2, P2> AsRef<Chunk<B2, D2, P2>>
     for Chunk<B1, D1, P1>
 where
     D1: crate::syntax::SubsetOf<D2>,
@@ -334,7 +338,7 @@ where
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: Boundary, D: Delimiter, P: Profile> core::convert::TryFrom<&'a Fragment<B, D, P>>
+impl<'a, B: Boundary, D: Delimiter, P: CasedProfile> core::convert::TryFrom<&'a Fragment<B, D, P>>
     for &'a Chunk<B, D, P>
 {
     type Error = Error;
@@ -346,7 +350,7 @@ impl<'a, B: Boundary, D: Delimiter, P: Profile> core::convert::TryFrom<&'a Fragm
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: Boundary, D: Delimiter, P: Profile> core::convert::TryFrom<&'a str>
+impl<'a, B: Boundary, D: Delimiter, P: CasedProfile> core::convert::TryFrom<&'a str>
     for &'a Chunk<B, D, P>
 {
     type Error = Error;

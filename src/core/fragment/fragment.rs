@@ -12,12 +12,12 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+use crate::core::Error;
 use crate::core::fragment::{
     CharIndices, Chars, ChunkedSegmentIndices, ChunkedSegments, MatchIndices, Matches,
     RMatchIndices, RMatches, SegmentIndices, Segments,
 };
-use crate::core::{Error, ErrorKind};
-use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::syntax::{Boundary, CasedProfile, Delimiter};
 use core::marker::PhantomData;
 
 // =============================================================================
@@ -47,7 +47,7 @@ use core::marker::PhantomData;
 ///
 /// 1. Starts with a valid starting sub-fragment, which is *either*:
 ///    1. A delimiter character that is [`D::is_delim`].
-///    2. A chunk character that is [`P::in_profile`], followed by 0 or more
+///    2. A chunk character that is [`P::is_chunk_char`], followed by 0 or more
 ///       chunk characters which are [`P::is_chunk_continue`], up until the
 ///       next [`D::is_delim`] character.
 /// 2. Followed by 0 or more continuing sub-fragments, which are *either*:
@@ -62,7 +62,7 @@ use core::marker::PhantomData;
 ///
 /// [`D::is_chunk_delim`]: crate::syntax::delimiter::Delimiter::is_chunk_delim
 /// [`D::is_delim`]: crate::syntax::delimiter::Delimiter::is_delim
-/// [`P::in_profile`]: crate::syntax::profile::Profile::in_profile
+/// [`P::is_chunk_char`]: crate::syntax::profile::Profile::is_chunk_char
 /// [`P::is_chunk_continue`]: crate::syntax::profile::Profile::is_chunk_continue
 /// [`P::is_chunk_start`]: crate::syntax::profile::Profile::is_chunk_start
 ///
@@ -124,7 +124,13 @@ pub struct Fragment<B, D, P> {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> Fragment<B, D, P> {
+impl<'a, B: 'a, D: 'a, P: 'a> Fragment<B, D, P> {
+    /// A default-empty `Fragment` value (which is always valid).
+    pub const EMPTY: &'a Fragment<B, D, P> = Fragment::new_unchecked("");
+}
+
+// -----------------------------------------------------------------------------
+impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// Converts a string slice to a fragment.
     ///
     /// A fragment is made of a string slice ([`&str`]), this function converts
@@ -156,108 +162,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> Fragment<B, D, P> {
     /// ```
     #[inline]
     pub fn new(s: &str) -> Result<&Self, Error> {
-        // A specific validation strategy is selected based on the configuration.
-        //
-        // Most reasonable identifiers are append-closed (for delim and profile),
-        // and that is actually a really helpful strategy for `Fragment`, because
-        // it means we can greatly simplify the validation logic.
-        //
-        // It's worth it - validated with `cargo asm`:
-        //
-        // 1. Mark this function as `#[inline(never)]`
-        // 2. `clear && cargo asm -p typed-ident --all-features --example util new`
-        // 3. Don't forget to restore this function back to `#[inline]`
-        //
-        // I've hidden a command that uses preset profiles with `APPEND_CLOSED`
-        // set to `Empty` (~open). For Strict, this is no different, as it is
-        // already ~open. But for ASCII and Unicode, comparing to the `*Open`
-        // profile variants can be enlightening.
-        //
-        // Looking at a basic configuration (unit delimiter, no casing rules):
-        // * ASCII -> 193 lines (closed), 339 lines (open)
-        // * Unicode -> 273 lines (closed), 465 lines (open)
-        //
-        // # Note
-        //
-        // The Rust compiler is pretty good at optimizing. This logic doesn't
-        // actually use boundary information, so it will dedupe functions that
-        // have identical `D` and `P` params, ignoring the `B` parameter.
-        match D::APPEND_CLOSED.at_least_fragment() && P::APPEND_CLOSED.at_least_fragment() {
-            true => Self::new_append_closed(s),
-            false => Self::new_append_open(s),
-        }
-    }
-
-    #[inline(always)]
-    fn new_append_open(s: &str) -> Result<&Self, Error> {
-        let mut chars = s.char_indices();
-        if let Some((_, c)) = chars.next() {
-            // First character must be any kind of delim or in-profile char.
-            let mut last_is_delim = match D::is_delim(c) {
-                true => true,
-                false if P::in_profile(c) => false,
-                false => return Err(Error::new(ErrorKind::InvalidFormat).with_byte_offset(0)),
-            };
-
-            // Next character must be either:
-            //
-            // 1. Any kind of chunk delimiter (non-start delim), *or...*
-            // 2. An in-profile char, depending on if the prior was a delim.
-            //    a. If prior was a delim, next char must be `is_chunk_start`.
-            //    a. Otherwise, next char must be `is_chunk_continue`.
-            for (idx, c) in chars {
-                last_is_delim = match D::is_chunk_delim(c) {
-                    true => true,
-                    false => {
-                        // Maybe it's append-open because the delimiter is
-                        // append-open. If that's the case we can at least
-                        // optimize how we approach parsing a chunk.
-                        //
-                        // This is super unlikely, but it's really easy to
-                        // account for anyways, so might as well do it.
-                        let valid = match P::APPEND_CLOSED.at_least_fragment() {
-                            true => P::is_chunk_continue(c),
-                            false => match last_is_delim {
-                                true => P::is_chunk_start(c),
-                                false => P::is_chunk_continue(c),
-                            },
-                        };
-                        if !valid {
-                            return Err(Error::new(ErrorKind::InvalidFormat).with_byte_offset(idx));
-                        }
-                        false
-                    }
-                };
-            }
-        }
-        Ok(Self::new_unchecked(s))
-    }
-
-    #[inline(always)]
-    fn new_append_closed(s: &str) -> Result<&Self, Error> {
-        // Greatly simplified if both `D` and `P` are fragment append-closed.
-        //
-        // Recall what `APPEND_CLOSED` means for `D` and `P`:
-        // * For delimiters, it means `is_chunk_delim` is a superset of
-        //   `is_ident_start`.
-        //   * This means that `is_delim` = `is_chunk_delim`, and so for a
-        //     fragment you only need to use `is_delim` everywhere.
-        // * For profiles, it means `is_chunk_continue` is a superset of
-        //   `is_ident_start` and `is_chunk_start`, *and* that `is_chunk_start`
-        //   is identical to `is_chunk_continue`.
-        //   * This means that `in_profile` = `is_chunk_continue`, since it must
-        //     be the superset, and so for a fragment you only need to use
-        //     `in_profile` everywhere.
-        //
-        // Basically this translates to:
-        //
-        //   As long as every character is either `D::is_delim` or
-        //   `P::in_profile`, then it's a valid fragment!
-        for (idx, c) in s.char_indices() {
-            if !D::is_delim(c) && !P::in_profile(c) {
-                return Err(Error::new(ErrorKind::InvalidFormat).with_byte_offset(idx));
-            }
-        }
+        P::is_fragment::<D>(s)?;
         Ok(Self::new_unchecked(s))
     }
 
@@ -867,7 +772,7 @@ impl<B, D, P> Fragment<B, D, P> {
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: Boundary, D: Delimiter, P: Profile> core::convert::TryFrom<&'a str>
+impl<'a, B: Boundary, D: Delimiter, P: CasedProfile> core::convert::TryFrom<&'a str>
     for &'a Fragment<B, D, P>
 {
     type Error = Error;

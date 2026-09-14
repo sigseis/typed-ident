@@ -4,7 +4,7 @@
 
 // -----------------------------------------------------------------------------
 use crate::core::error::{Error, ErrorKind};
-use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::syntax::{Boundary, CasedProfile, Delimiter};
 use crate::{Fragment, FragmentBuf, Ident, IdentBuf};
 use std_alloc::boxed::Box;
 use std_alloc::string::String;
@@ -14,7 +14,7 @@ use std_alloc::string::String;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> Ident<B, D, P> {
+impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// Returns a heap-allocated identifier, joined with the original identifier
     /// in a way that preserves chunk boundaries.
     ///
@@ -290,17 +290,17 @@ impl<B: Boundary, D: Delimiter, P: Profile> Ident<B, D, P> {
         let mut buffer = IdentBuf::with_capacity(self.len());
         let mut last_end = 0;
         for (start, part) in self.match_indices(from) {
-            buffer.push_fragment(&self[last_end..start]).map_err(|_| {
-                Error::new(ErrorKind::FailedReplaceRight).with_byte_offset(last_end)
-            })?;
+            buffer
+                .push_fragment(&self[last_end..start])
+                .map_err(|_| Error::new(ErrorKind::FailedReplace).with_byte_offset(last_end))?;
             buffer
                 .push_fragment(to)
-                .map_err(|_| Error::new(ErrorKind::FailedReplaceLeft).with_byte_offset(start))?;
+                .map_err(|_| Error::new(ErrorKind::FailedReplace).with_byte_offset(start))?;
             last_end = start + part.len();
         }
         buffer
             .push_fragment(&self[last_end..self.len()])
-            .map_err(|_| Error::new(ErrorKind::FailedReplaceRight).with_byte_offset(last_end))?;
+            .map_err(|_| Error::new(ErrorKind::FailedReplace).with_byte_offset(last_end))?;
         Ok(buffer)
     }
 

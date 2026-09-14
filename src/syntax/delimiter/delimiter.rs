@@ -58,7 +58,7 @@ use core::hash::Hash;
 /// # Must *NOT* Be Stateful!
 ///
 /// A delimiter character must not be different depending on whether it's been
-/// parsed from [`is_ident_start`] vs. [`is_chunk_delim`].
+/// parsed from [`is_ident_start_delim`] vs. [`is_chunk_delim`].
 ///
 /// If you were to use stateful delimiters, then you might be surprised by the
 /// values returned by segmentation (they may not be what you expect). It will
@@ -96,7 +96,7 @@ use core::hash::Hash;
 /// ```
 ///
 /// [`is_chunk_delim`]: Delimiter::is_chunk_delim
-/// [`is_ident_start`]: Delimiter::is_ident_start
+/// [`is_ident_start_delim`]: Delimiter::is_ident_start_delim
 pub trait Delimiter:
     Copy + Clone + Debug + Eq + Hash + Ord + PartialEq + PartialOrd + Sized
 {
@@ -120,7 +120,7 @@ pub trait Delimiter:
     /// # When Is a Delimiter `Fragment` Append-Closed?
     ///
     /// Simply put, if [`is_chunk_delim`] is a superset (or equal to) the set of
-    /// valid characters for [`is_ident_start`], then set this to `Fragment`.
+    /// valid characters for [`is_ident_start_delim`], then set this to `Fragment`.
     ///
     /// Imagine we represent delimiter characters in a fragment as:
     ///
@@ -145,7 +145,7 @@ pub trait Delimiter:
     /// Simply put, the delimiter needs to have the following properties:
     ///
     /// * It must be `Fragment` append-closed (see above), *and...*
-    /// * [`is_ident_start`] must be identical to [`is_chunk_delim`].
+    /// * [`is_ident_start_delim`] must be identical to [`is_chunk_delim`].
     ///
     /// # What Happens If This Is Set Incorrectly?
     ///
@@ -154,7 +154,7 @@ pub trait Delimiter:
     /// memory issues or anything like that, just logical issues.
     ///
     /// [`is_chunk_delim`]: Delimiter::is_chunk_delim
-    /// [`is_ident_start`]: Delimiter::is_ident_start
+    /// [`is_ident_start_delim`]: Delimiter::is_ident_start_delim
     const APPEND_CLOSED: AppendClosed = AppendClosed::Empty;
 
     /// Returns the original character representation of this delimiter value.
@@ -238,7 +238,7 @@ pub trait Delimiter:
     /// * `assert_eq!(D::from_ident_start(c).is_some(), D::is_ident_start(c))`
     #[must_use]
     #[inline]
-    fn is_ident_start(c: char) -> bool {
+    fn is_ident_start_delim(c: char) -> bool {
         Self::from_ident_start(c).is_some()
     }
 

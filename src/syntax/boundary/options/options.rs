@@ -25,7 +25,7 @@ pub trait Options {
     /// # type ExampleChunk = typed_ident::Chunk<
     /// #     boundary::Standard<SpecificOption>,
     /// #     delimiter::NotDelimited,
-    /// #     profile::Ascii
+    /// #     profile::Mixed<profile::Ascii>,
     /// # >;
     /// let chunk = ExampleChunk::new("camelBoundary")?;
     /// let mut words = chunk.words().type_erased();
@@ -55,7 +55,7 @@ pub trait Options {
     /// # type ExampleChunk = typed_ident::Chunk<
     /// #     boundary::Standard<SpecificOption>,
     /// #     delimiter::NotDelimited,
-    /// #     profile::Ascii
+    /// #     profile::Mixed<profile::Ascii>,
     /// # >;
     /// let chunk = ExampleChunk::new("HATBoundary")?;
     /// let mut words = chunk.words().type_erased();
@@ -81,7 +81,7 @@ pub trait Options {
     /// # type ExampleChunk = typed_ident::Chunk<
     /// #     boundary::Standard<SpecificOption>,
     /// #     delimiter::NotDelimited,
-    /// #     profile::Ascii
+    /// #     profile::Mixed<profile::Ascii>,
     /// # >;
     /// let chunk = ExampleChunk::new("FromDigit123toLower")?;
     /// let mut words = chunk.words().type_erased();
@@ -107,7 +107,7 @@ pub trait Options {
     /// # type ExampleChunk = typed_ident::Chunk<
     /// #     boundary::Standard<SpecificOption>,
     /// #     delimiter::NotDelimited,
-    /// #     profile::Ascii
+    /// #     profile::Mixed<profile::Ascii>,
     /// # >;
     /// let chunk = ExampleChunk::new("FromDigit123ToUpper")?;
     /// let mut words = chunk.words().type_erased();
@@ -133,7 +133,7 @@ pub trait Options {
     /// # type ExampleChunk = typed_ident::Chunk<
     /// #     boundary::Standard<SpecificOption>,
     /// #     delimiter::NotDelimited,
-    /// #     profile::Ascii
+    /// #     profile::Mixed<profile::Ascii>,
     /// # >;
     /// let chunk = ExampleChunk::new("FromLower123ToDigit")?;
     /// let mut words = chunk.words().type_erased();
@@ -159,7 +159,7 @@ pub trait Options {
     /// # type ExampleChunk = typed_ident::Chunk<
     /// #     boundary::Standard<SpecificOption>,
     /// #     delimiter::NotDelimited,
-    /// #     profile::Ascii
+    /// #     profile::Mixed<profile::Ascii>,
     /// # >;
     /// let chunk = ExampleChunk::new("FromUPPER123ToDigit")?;
     /// let mut words = chunk.words().type_erased();

@@ -34,12 +34,12 @@ pub enum Ascii {}
 // -----------------------------------------------------------------------------
 impl Ascii {
     #[inline(always)]
-    fn is_ident_start(c: char) -> bool {
-        c.is_ascii_alphabetic()
+    fn is_chunk_char(c: char) -> bool {
+        c.is_ascii_alphanumeric()
     }
     #[inline(always)]
-    fn in_profile(c: char) -> bool {
-        c.is_ascii_alphanumeric()
+    fn is_ident_start_char(c: char) -> bool {
+        c.is_ascii_alphabetic()
     }
 }
 
@@ -54,20 +54,20 @@ impl Profile for Ascii {
     type Segmentation = segmentation::Char;
 
     #[inline(always)]
-    fn is_ident_start(c: char) -> bool {
-        Self::is_ident_start(c)
-    }
-    #[inline(always)]
-    fn is_chunk_start(c: char) -> bool {
-        Self::in_profile(c)
-    }
-    #[inline(always)]
-    fn in_profile(c: char) -> bool {
-        Self::in_profile(c)
+    fn is_chunk_char(c: char) -> bool {
+        Self::is_chunk_char(c)
     }
     #[inline(always)]
     fn is_chunk_continue(c: char) -> bool {
-        Self::in_profile(c)
+        Self::is_chunk_char(c)
+    }
+    #[inline(always)]
+    fn is_chunk_start(c: char) -> bool {
+        Self::is_chunk_char(c)
+    }
+    #[inline(always)]
+    fn is_ident_start_char(c: char) -> bool {
+        Self::is_ident_start_char(c)
     }
 }
 

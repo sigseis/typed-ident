@@ -9,11 +9,10 @@
 mod macros;
 
 // -----------------------------------------------------------------------------
+mod buffer;
 pub mod convert;
 mod fragment;
-mod fragment_buf;
 mod ident;
-mod ident_buf;
 mod segment;
 
 // =============================================================================
@@ -30,6 +29,5 @@ pub type StringSegment = crate::core::Segment<char, std_alloc::string::String>;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+pub use buffer::*;
 pub use convert::ConvertibleIdentifier;
-pub use fragment_buf::*;
-pub use ident_buf::*;

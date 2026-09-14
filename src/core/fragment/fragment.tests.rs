@@ -29,7 +29,8 @@ const INVALID: &[&str] = &["日本語", "-test", "test-", "test-test"];
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-type FragmentUnderTest = Fragment<boundary::Standard, delimiter::LowLine, profile::Ascii>;
+type FragmentUnderTest =
+    Fragment<boundary::Standard, delimiter::LowLine, profile::Mixed<profile::Ascii>>;
 
 // =============================================================================
 // TESTS: IMPLS

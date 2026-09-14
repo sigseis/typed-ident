@@ -17,15 +17,19 @@ fn validate_ascii(cli: &Cli, ident: &str) -> Option<Error> {
     use typed_ident::presets::ascii::*;
     match cli.format {
         Format::Camel => CamelIdent::new(ident).err(),
+        Format::CasedCamel => CasedCamelIdent::new(ident).err(),
         Format::UpperCamel => UpperCamelIdent::new(ident).err(),
         Format::LowerCamel => LowerCamelIdent::new(ident).err(),
         Format::Snake => SnakeIdent::new(ident).err(),
+        Format::CasedSnake => CasedSnakeIdent::new(ident).err(),
         Format::UpperSnake => UpperSnakeIdent::new(ident).err(),
         Format::LowerSnake => LowerSnakeIdent::new(ident).err(),
         Format::Kebab => KebabIdent::new(ident).err(),
+        Format::CasedKebab => CasedKebabIdent::new(ident).err(),
         Format::UpperKebab => UpperKebabIdent::new(ident).err(),
         Format::LowerKebab => LowerKebabIdent::new(ident).err(),
         Format::Hybrid => HybridIdent::new(ident).err(),
+        Format::CasedHybrid => CasedHybridIdent::new(ident).err(),
         Format::UpperHybrid => UpperHybridIdent::new(ident).err(),
         Format::LowerHybrid => LowerHybridIdent::new(ident).err(),
     }
@@ -36,15 +40,19 @@ fn validate_strict(cli: &Cli, ident: &str) -> Option<Error> {
     use typed_ident::presets::strict::*;
     match cli.format {
         Format::Camel => CamelIdent::new(ident).err(),
+        Format::CasedCamel => CasedCamelIdent::new(ident).err(),
         Format::UpperCamel => UpperCamelIdent::new(ident).err(),
         Format::LowerCamel => LowerCamelIdent::new(ident).err(),
         Format::Snake => SnakeIdent::new(ident).err(),
+        Format::CasedSnake => CasedSnakeIdent::new(ident).err(),
         Format::UpperSnake => UpperSnakeIdent::new(ident).err(),
         Format::LowerSnake => LowerSnakeIdent::new(ident).err(),
         Format::Kebab => KebabIdent::new(ident).err(),
+        Format::CasedKebab => CasedKebabIdent::new(ident).err(),
         Format::UpperKebab => UpperKebabIdent::new(ident).err(),
         Format::LowerKebab => LowerKebabIdent::new(ident).err(),
         Format::Hybrid => HybridIdent::new(ident).err(),
+        Format::CasedHybrid => CasedHybridIdent::new(ident).err(),
         Format::UpperHybrid => UpperHybridIdent::new(ident).err(),
         Format::LowerHybrid => LowerHybridIdent::new(ident).err(),
     }
@@ -55,15 +63,19 @@ fn validate_unicode(cli: &Cli, ident: &str) -> Option<Error> {
     use typed_ident::presets::unicode::*;
     match cli.format {
         Format::Camel => CamelIdent::new(ident).err(),
+        Format::CasedCamel => CasedCamelIdent::new(ident).err(),
         Format::UpperCamel => UpperCamelIdent::new(ident).err(),
         Format::LowerCamel => LowerCamelIdent::new(ident).err(),
         Format::Snake => SnakeIdent::new(ident).err(),
+        Format::CasedSnake => CasedSnakeIdent::new(ident).err(),
         Format::UpperSnake => UpperSnakeIdent::new(ident).err(),
         Format::LowerSnake => LowerSnakeIdent::new(ident).err(),
         Format::Kebab => KebabIdent::new(ident).err(),
+        Format::CasedKebab => CasedKebabIdent::new(ident).err(),
         Format::UpperKebab => UpperKebabIdent::new(ident).err(),
         Format::LowerKebab => LowerKebabIdent::new(ident).err(),
         Format::Hybrid => HybridIdent::new(ident).err(),
+        Format::CasedHybrid => CasedHybridIdent::new(ident).err(),
         Format::UpperHybrid => UpperHybridIdent::new(ident).err(),
         Format::LowerHybrid => LowerHybridIdent::new(ident).err(),
     }

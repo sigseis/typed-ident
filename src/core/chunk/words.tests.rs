@@ -12,7 +12,7 @@ use crate::syntax::*;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-type ChunkUnderTest = Chunk<boundary::Standard, delimiter::LowLine, profile::Ascii>;
+type ChunkUnderTest = Chunk<boundary::Standard, delimiter::LowLine, profile::Mixed<profile::Ascii>>;
 
 // =============================================================================
 // TESTS: IMPLS

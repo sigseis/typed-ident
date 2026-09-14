@@ -14,7 +14,7 @@ mod tests;
 // -----------------------------------------------------------------------------
 use crate::core::error::{Error, ErrorKind};
 use crate::core::{Chunk, StrSegment};
-use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::syntax::{Boundary, CasedProfile, Delimiter};
 
 // =============================================================================
 // TYPES
@@ -704,7 +704,7 @@ impl<'a, B, D, P> core::convert::From<&'a Chunk<B, D, P>> for Segment<D, &'a Chu
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: Boundary, D: Delimiter, P: Profile> core::convert::TryFrom<&'a str>
+impl<'a, B: Boundary, D: Delimiter, P: CasedProfile> core::convert::TryFrom<&'a str>
     for Segment<D, &'a Chunk<B, D, P>>
 {
     type Error = Error;
@@ -713,7 +713,7 @@ impl<'a, B: Boundary, D: Delimiter, P: Profile> core::convert::TryFrom<&'a str>
     fn try_from(orig: &'a str) -> Result<Self, Error> {
         let mut chars = orig.chars();
         let Some(first) = chars.next() else {
-            return Ok(Segment::Chunk(Chunk::new("").unwrap()));
+            return Ok(Segment::Chunk(Chunk::EMPTY));
         };
         Ok(match D::from_char(first) {
             Some(delim) => match chars.as_str().is_empty() {

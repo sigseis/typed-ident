@@ -122,15 +122,19 @@ pub fn convert(cli: &Cli) -> ExitCode {
     for ident in cli.input.iter() {
         let error = match cli.format {
             Format::Camel => reformat_from::<CamelIdent>(cli, ident),
+            Format::CasedCamel => reformat_from::<CasedCamelIdent>(cli, ident),
             Format::UpperCamel => reformat_from::<UpperCamelIdent>(cli, ident),
             Format::LowerCamel => reformat_from::<LowerCamelIdent>(cli, ident),
             Format::Snake => reformat_from::<SnakeIdent>(cli, ident),
+            Format::CasedSnake => reformat_from::<CasedSnakeIdent>(cli, ident),
             Format::UpperSnake => reformat_from::<UpperSnakeIdent>(cli, ident),
             Format::LowerSnake => reformat_from::<LowerSnakeIdent>(cli, ident),
             Format::Kebab => reformat_from::<KebabIdent>(cli, ident),
+            Format::CasedKebab => reformat_from::<CasedKebabIdent>(cli, ident),
             Format::UpperKebab => reformat_from::<UpperKebabIdent>(cli, ident),
             Format::LowerKebab => reformat_from::<LowerKebabIdent>(cli, ident),
             Format::Hybrid => reformat_from::<HybridIdent>(cli, ident),
+            Format::CasedHybrid => reformat_from::<CasedHybridIdent>(cli, ident),
             Format::UpperHybrid => reformat_from::<UpperHybridIdent>(cli, ident),
             Format::LowerHybrid => reformat_from::<LowerHybridIdent>(cli, ident),
         };

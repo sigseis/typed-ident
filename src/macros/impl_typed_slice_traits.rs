@@ -8,7 +8,7 @@ macro_rules! impl_typed_slice_traits {
             for $name<B1, D1, P1>
         where
             D1: crate::syntax::Delimiter + crate::syntax::SubsetOf<D2>,
-            P1: crate::syntax::Profile + crate::syntax::SubsetOf<P2>,
+            P1: crate::syntax::CasedProfile + crate::syntax::SubsetOf<P2>,
         {
             #[inline(always)]
             fn as_ref(&self) -> &crate::core::Fragment<B2, D2, P2> {

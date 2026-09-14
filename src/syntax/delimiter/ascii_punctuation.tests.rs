@@ -71,13 +71,13 @@ mod traits {
     use super::*;
 
     #[test]
-    fn delimiter_as_char() {
+    fn as_char() {
         assert_eq!(AsciiPunctuation::ExclamationMark.as_char(), '!');
         assert_eq!(AsciiPunctuation::Tilde.as_char(), '~');
     }
 
     #[test]
-    fn delimiter_from_char() {
+    fn from_char() {
         assert_eq!(
             AsciiPunctuation::from_char('!'),
             Some(AsciiPunctuation::ExclamationMark)
@@ -86,7 +86,7 @@ mod traits {
     }
 
     #[test]
-    fn delimiter_from_ident_start() {
+    fn from_ident_start() {
         assert_eq!(
             AsciiPunctuation::from_ident_start('!'),
             Some(AsciiPunctuation::ExclamationMark)
@@ -95,7 +95,7 @@ mod traits {
     }
 
     #[test]
-    fn delimiter_from_chunk_delim() {
+    fn from_chunk_delim() {
         assert_eq!(
             AsciiPunctuation::from_chunk_delim('!'),
             Some(AsciiPunctuation::ExclamationMark)
@@ -104,19 +104,19 @@ mod traits {
     }
 
     #[test]
-    fn delimiter_is_delim() {
+    fn is_delim() {
         assert!(AsciiPunctuation::is_delim('!'));
         assert!(!AsciiPunctuation::is_delim('a'));
     }
 
     #[test]
-    fn delimiter_is_ident_start() {
-        assert!(AsciiPunctuation::is_ident_start('!'));
-        assert!(!AsciiPunctuation::is_ident_start('a'));
+    fn is_ident_start_delim() {
+        assert!(AsciiPunctuation::is_ident_start_delim('!'));
+        assert!(!AsciiPunctuation::is_ident_start_delim('a'));
     }
 
     #[test]
-    fn delimiter_is_chunk_delim() {
+    fn is_chunk_delim() {
         assert!(AsciiPunctuation::is_chunk_delim('!'));
         assert!(!AsciiPunctuation::is_chunk_delim('a'));
     }

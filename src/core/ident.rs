@@ -12,9 +12,9 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::error::{Error, ErrorKind};
+use crate::core::error::Error;
 use crate::core::{Chunk, Fragment, Identifier, Segment};
-use crate::syntax::{Boundary, Delimiter, Profile, UnitDelimiter};
+use crate::syntax::{Boundary, CasedProfile, Delimiter, UnitDelimiter};
 
 // =============================================================================
 // TYPES
@@ -37,10 +37,10 @@ use crate::syntax::{Boundary, Delimiter, Profile, UnitDelimiter};
 /// requirements:
 ///
 /// * Non-empty, *and...*
-/// * Starts with either [`D::is_ident_start`] or [`P::is_ident_start`].
+/// * Starts with either [`D::is_ident_start_delim`] or [`P::is_ident_start_char`].
 ///
-/// [`D::is_ident_start`]: crate::syntax::delimiter::Delimiter::is_ident_start
-/// [`P::is_ident_start`]: crate::syntax::profile::Profile::is_ident_start
+/// [`D::is_ident_start_delim`]: crate::syntax::delimiter::Delimiter::is_ident_start_delim
+/// [`P::is_ident_start_char`]: crate::syntax::profile::Profile::is_ident_start_char
 ///
 /// [`Ascii`]: crate::syntax::profile::Ascii
 /// [`Boundary`]: crate::syntax::boundary::Boundary
@@ -60,13 +60,13 @@ pub struct Ident<B, D, P> {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: 'static, D: UnitDelimiter + 'static, P: 'static> Ident<B, D, P> {
+impl<'a, B: 'a, D: UnitDelimiter + 'a, P: 'a> Ident<B, D, P> {
     /// An anonymous identifier filled with a single unit delimiter.
-    pub const ANONYMOUS: &'static Ident<B, D, P> = Ident::new_unchecked(D::STR);
+    pub const ANONYMOUS: &'a Ident<B, D, P> = Ident::new_unchecked(D::STR);
 }
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> Ident<B, D, P> {
+impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// Returns the first segment of an identifier.
     ///
     /// Since an identifier is always non-empty, there's always at least one
@@ -122,12 +122,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> Ident<B, D, P> {
     /// ```
     #[inline]
     pub fn from_fragment(fragment: &Fragment<B, D, P>) -> Result<&Self, Error> {
-        let Some(first) = fragment.chars().next() else {
-            return Err(Error::new(ErrorKind::EmptyIdent));
-        };
-        if !D::is_ident_start(first) && !P::is_ident_start(first) {
-            return Err(Error::new(ErrorKind::InvalidFormat).with_byte_offset(0));
-        }
+        P::is_ident_fragment::<D>(fragment.as_str())?;
         Ok(Self::new_unchecked(fragment.as_str()))
     }
 
@@ -186,7 +181,92 @@ impl<B: Boundary, D: Delimiter, P: Profile> Ident<B, D, P> {
     /// ```
     #[inline]
     pub fn new(s: &str) -> Result<&Self, Error> {
-        Self::from_fragment(Fragment::new(s)?)
+        P::is_ident::<D>(s)?;
+        Ok(Self::new_unchecked(s))
+    }
+
+    /// Divides one identifier at an index, leaving an optional identifier on
+    /// the left, and a fragment on the right.
+    ///
+    /// The argument, `mid`, should be a byte offset from the start of the
+    /// identifier. It must also be on the boundary of a UTF-8 code point.
+    ///
+    /// The two slices returned go from the start of the identifier to `mid`,
+    /// and from `mid` to the end of the identifier.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `mid` is not on a UTF-8 code point boundary, or if it is past
+    /// the end of the last code point of the identifier, or if the left-hand
+    /// side remainder would not be left as a valid ident. For a non-panicking
+    /// alternative see [`split_at_checked`].
+    ///
+    /// [`split_at_checked`]: Self::split_at_checked
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use typed_ident::presets::unicode::hybrid::*;
+    /// let slice = HybridIdent::new("こんにちは世界")?;
+    ///
+    /// let (first, last) = slice.split_at(15);
+    /// assert_eq!(first, Some(HybridIdent::new("こんにちは")?));
+    /// assert_eq!(last, HybridIdent::new("世界")?);
+    ///
+    /// let (first, last) = slice.split_at(0);
+    /// assert_eq!(first, None);
+    /// assert_eq!(last, HybridIdent::new("こんにちは世界")?);
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use]
+    #[inline]
+    pub fn split_at(&self, mid: usize) -> (Option<&Self>, &Fragment<B, D, P>) {
+        let (left, right) = self.as_fragment().split_at(mid);
+        assert!(
+            P::is_ident_split_boundary::<D>(self.as_str(), mid),
+            "provided index `mid` is not a valid split point for this identifier",
+        );
+        (Self::from_fragment_unchecked_opt(left), right)
+    }
+
+    /// Divides one identifier at an index, leaving an optional identifier on
+    /// the left, and a fragment on the right.
+    ///
+    /// The argument, `mid`, should be a byte offset from the start of the
+    /// identifier. It must also be on the boundary of a UTF-8 code point. The
+    /// method returns `None` if that's not the case.
+    ///
+    /// The two slices returned go from the start of the identifier to `mid`,
+    /// and from `mid` to the end of the identifier.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use typed_ident::presets::unicode::hybrid::*;
+    /// let slice = HybridIdent::new("こんにちは世界")?;
+    ///
+    /// let (first, last) = slice.split_at_checked(15).unwrap();
+    /// assert_eq!(first, Some(HybridIdent::new("こんにちは")?));
+    /// assert_eq!(last, HybridIdent::new("世界")?);
+    ///
+    /// let (first, last) = slice.split_at_checked(0).unwrap();
+    /// assert_eq!(first, None);
+    /// assert_eq!(last, HybridIdent::new("こんにちは世界")?);
+    ///
+    /// assert!(slice.split_at_checked(16).is_none()); // Inside "世"
+    /// assert!(slice.split_at_checked(42).is_none()); // Beyond the length
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use]
+    #[inline]
+    #[allow(clippy::type_complexity)] // I thought about this a lot - a helper type only hurts here.
+    pub fn split_at_checked(&self, mid: usize) -> Option<(Option<&Self>, &Fragment<B, D, P>)> {
+        match self.as_fragment().split_at_checked(mid) {
+            Some((l, r)) if P::is_ident_split_boundary::<D>(self.as_str(), mid) => {
+                Some((Self::from_fragment_unchecked_opt(l), r))
+            }
+            _ => None,
+        }
     }
 
     /// Trims any decorative delimiters from the identifier.
@@ -302,7 +382,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> Ident<B, D, P> {
         let mut trimmed = self.as_str();
         while let Some(c) = chars.next() {
             // If it's not a start delim, stop - we've trimmed them all.
-            if !D::is_ident_start(c) {
+            if !D::is_ident_start_delim(c) {
                 break;
             }
 
@@ -313,7 +393,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> Ident<B, D, P> {
             };
 
             // If the next character is not a valid start character, don't trim.
-            if !D::is_ident_start(next) && !P::is_ident_start(next) {
+            if !D::is_ident_start_delim(next) && !P::is_ident_start_char(next) {
                 break;
             }
 
@@ -574,86 +654,6 @@ impl<B, D, P> Ident<B, D, P> {
         unsafe { core::mem::transmute::<&str, &Ident<B, D, P>>(s) }
     }
 
-    /// Divides one identifier at an index, leaving an optional identifier on
-    /// the left, and a fragment on the right.
-    ///
-    /// The argument, `mid`, should be a byte offset from the start of the
-    /// identifier. It must also be on the boundary of a UTF-8 code point.
-    ///
-    /// The two slices returned go from the start of the identifier to `mid`,
-    /// and from `mid` to the end of the identifier.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `mid` is not on a UTF-8 code point boundary, or if it is past
-    /// the end of the last code point of the identifier. For a non-panicking
-    /// alternative see [`split_at_checked`].
-    ///
-    /// [`split_at_checked`]: Self::split_at_checked
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::presets::unicode::hybrid::*;
-    /// let slice = HybridIdent::new("こんにちは世界")?;
-    ///
-    /// let (first, last) = slice.split_at(15);
-    /// assert_eq!(first, Some(HybridIdent::new("こんにちは")?));
-    /// assert_eq!(last, HybridIdent::new("世界")?);
-    ///
-    /// let (first, last) = slice.split_at(0);
-    /// assert_eq!(first, None);
-    /// assert_eq!(last, HybridIdent::new("こんにちは世界")?);
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use]
-    #[inline]
-    pub const fn split_at(&self, mid: usize) -> (Option<&Self>, &Fragment<B, D, P>) {
-        let (left, right) = self.as_fragment().split_at(mid);
-        (Self::from_fragment_unchecked_opt(left), right)
-    }
-
-    /// Divides one identifier at an index, leaving an optional identifier on
-    /// the left, and a fragment on the right.
-    ///
-    /// The argument, `mid`, should be a byte offset from the start of the
-    /// identifier. It must also be on the boundary of a UTF-8 code point. The
-    /// method returns `None` if that's not the case.
-    ///
-    /// The two slices returned go from the start of the identifier to `mid`,
-    /// and from `mid` to the end of the identifier.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::presets::unicode::hybrid::*;
-    /// let slice = HybridIdent::new("こんにちは世界")?;
-    ///
-    /// let (first, last) = slice.split_at_checked(15).unwrap();
-    /// assert_eq!(first, Some(HybridIdent::new("こんにちは")?));
-    /// assert_eq!(last, HybridIdent::new("世界")?);
-    ///
-    /// let (first, last) = slice.split_at_checked(0).unwrap();
-    /// assert_eq!(first, None);
-    /// assert_eq!(last, HybridIdent::new("こんにちは世界")?);
-    ///
-    /// assert!(slice.split_at_checked(16).is_none()); // Inside "世"
-    /// assert!(slice.split_at_checked(42).is_none()); // Beyond the length
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use]
-    #[inline]
-    #[allow(clippy::type_complexity)] // I thought about this a lot - a helper type only hurts here.
-    pub const fn split_at_checked(
-        &self,
-        mid: usize,
-    ) -> Option<(Option<&Self>, &Fragment<B, D, P>)> {
-        match self.as_fragment().split_at_checked(mid) {
-            Some((l, r)) => Some((Self::from_fragment_unchecked_opt(l), r)),
-            None => None,
-        }
-    }
-
     #[must_use]
     #[inline(always)]
     const fn from_fragment_unchecked_opt(fragment: &Fragment<B, D, P>) -> Option<&Self> {
@@ -680,7 +680,7 @@ impl<B, D, P> Ident<B, D, P> {
     where
         B2: Boundary,
         D2: Delimiter,
-        P2: Profile,
+        P2: CasedProfile,
     {
         Ident::new(self.as_str())
     }
@@ -709,7 +709,7 @@ impl_typed_slice_cmp! {
 }
 
 // -----------------------------------------------------------------------------
-impl<B1: Boundary, D1: Delimiter, P1: Profile, B2, D2, P2> AsRef<Ident<B2, D2, P2>>
+impl<B1: Boundary, D1: Delimiter, P1: CasedProfile, B2, D2, P2> AsRef<Ident<B2, D2, P2>>
     for Ident<B1, D1, P1>
 where
     D1: crate::syntax::SubsetOf<D2>,
@@ -722,7 +722,7 @@ where
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: Boundary, D: Delimiter, P: Profile> core::convert::TryFrom<&'a str>
+impl<'a, B: Boundary, D: Delimiter, P: CasedProfile> core::convert::TryFrom<&'a str>
     for &'a Ident<B, D, P>
 {
     type Error = Error;
@@ -743,7 +743,7 @@ impl<B, D, P> core::ops::Deref for Ident<B, D, P> {
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: Boundary, D: Delimiter, P: Profile> core::convert::TryFrom<&'a Fragment<B, D, P>>
+impl<'a, B: Boundary, D: Delimiter, P: CasedProfile> core::convert::TryFrom<&'a Fragment<B, D, P>>
     for &'a Ident<B, D, P>
 {
     type Error = Error;
@@ -755,7 +755,7 @@ impl<'a, B: Boundary, D: Delimiter, P: Profile> core::convert::TryFrom<&'a Fragm
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: Boundary, D: Delimiter, P: Profile> core::convert::TryFrom<&'a Chunk<B, D, P>>
+impl<'a, B: Boundary, D: Delimiter, P: CasedProfile> core::convert::TryFrom<&'a Chunk<B, D, P>>
     for &'a Ident<B, D, P>
 {
     type Error = Error;
@@ -767,7 +767,7 @@ impl<'a, B: Boundary, D: Delimiter, P: Profile> core::convert::TryFrom<&'a Chunk
 }
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> Identifier for Ident<B, D, P> {
+impl<B: Boundary, D: Delimiter, P: CasedProfile> Identifier for Ident<B, D, P> {
     type Boundary = B;
     type Delimiter = D;
     type Profile = P;

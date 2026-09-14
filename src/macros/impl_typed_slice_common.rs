@@ -977,7 +977,7 @@ macro_rules! impl_typed_slice_common {
             where
                 B2: Boundary,
                 D2: Delimiter,
-                P2: Profile,
+                P2: CasedProfile,
             {
                 $name::new(self.as_str())
             }

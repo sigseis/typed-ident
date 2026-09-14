@@ -4,7 +4,7 @@
 
 // -----------------------------------------------------------------------------
 use crate::core::error::{Error, ErrorKind};
-use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::syntax::{Boundary, CasedProfile, Delimiter};
 use crate::{Fragment, FragmentBuf};
 use std_alloc::boxed::Box;
 use std_alloc::string::String;
@@ -14,7 +14,7 @@ use std_alloc::string::String;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> Fragment<B, D, P> {
+impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// Returns a heap-allocated fragment, joined with the original fragment in
     /// a way that preserves chunk boundaries.
     ///
@@ -216,7 +216,9 @@ impl<B: Boundary, D: Delimiter, P: Profile> Fragment<B, D, P> {
         delim: D,
     ) -> Result<FragmentBuf<B, D, P>, Error> {
         let mut buffer = FragmentBuf::with_overhead(self, fragment.len() + 1);
-        buffer.push_bounded_fragment_with(fragment, delim)?;
+        buffer
+            .push_bounded_fragment_with(fragment, delim)
+            .map_err(|e| e.with_error_kind(ErrorKind::FailedJoin))?;
         Ok(buffer)
     }
 
@@ -292,17 +294,17 @@ impl<B: Boundary, D: Delimiter, P: Profile> Fragment<B, D, P> {
         let mut buffer = FragmentBuf::with_capacity(self.len());
         let mut last_end = 0;
         for (start, part) in self.match_indices(from) {
-            buffer.push_fragment(&self[last_end..start]).map_err(|_| {
-                Error::new(ErrorKind::FailedReplaceRight).with_byte_offset(last_end)
-            })?;
+            buffer
+                .push_fragment(&self[last_end..start])
+                .map_err(|_| Error::new(ErrorKind::FailedReplace).with_byte_offset(last_end))?;
             buffer
                 .push_fragment(to)
-                .map_err(|_| Error::new(ErrorKind::FailedReplaceLeft).with_byte_offset(start))?;
+                .map_err(|_| Error::new(ErrorKind::FailedReplace).with_byte_offset(start))?;
             last_end = start + part.len();
         }
         buffer
             .push_fragment(&self[last_end..self.len()])
-            .map_err(|_| Error::new(ErrorKind::FailedReplaceRight).with_byte_offset(last_end))?;
+            .map_err(|_| Error::new(ErrorKind::FailedReplace).with_byte_offset(last_end))?;
         Ok(buffer)
     }
 
@@ -401,10 +403,12 @@ impl<B: Boundary, D: Delimiter, P: Profile> Fragment<B, D, P> {
         suffix: &Fragment<B, D, P>,
     ) -> Result<FragmentBuf<B, D, P>, Error> {
         let mut buffer = FragmentBuf::with_overhead(prefix, self.len() + suffix.len());
-        buffer.push_fragment(self)?;
+        buffer
+            .push_fragment(self)
+            .map_err(|e| e.with_error_kind(ErrorKind::FailedJoin))?;
         buffer
             .push_fragment(suffix)
-            .map_err(|_| Error::new(ErrorKind::FailedJoinRight))?;
+            .map_err(|e| e.with_error_kind(ErrorKind::FailedJoin))?;
         Ok(buffer)
     }
 
@@ -502,7 +506,9 @@ impl<B: Boundary, D: Delimiter, P: Profile> Fragment<B, D, P> {
     #[inline]
     pub fn with_prefix(&self, prefix: &Fragment<B, D, P>) -> Result<FragmentBuf<B, D, P>, Error> {
         let mut buffer = FragmentBuf::with_overhead(prefix, self.len());
-        buffer.push_fragment(self)?;
+        buffer
+            .push_fragment(self)
+            .map_err(|e| e.with_error_kind(ErrorKind::FailedJoin))?;
         Ok(buffer)
     }
 
@@ -585,7 +591,9 @@ impl<B: Boundary, D: Delimiter, P: Profile> Fragment<B, D, P> {
     #[inline]
     pub fn with_suffix(&self, suffix: &Fragment<B, D, P>) -> Result<FragmentBuf<B, D, P>, Error> {
         let mut buffer = FragmentBuf::with_overhead(self, suffix.len());
-        buffer.push_fragment(suffix)?;
+        buffer
+            .push_fragment(suffix)
+            .map_err(|e| e.with_error_kind(ErrorKind::FailedJoin))?;
         Ok(buffer)
     }
 

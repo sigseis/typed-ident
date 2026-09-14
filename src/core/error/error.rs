@@ -4,6 +4,7 @@
 
 // -----------------------------------------------------------------------------
 use crate::core::ErrorKind;
+use crate::syntax::SyntaxError;
 use core::fmt::{Display, Formatter};
 
 // =============================================================================
@@ -82,15 +83,13 @@ impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         let msg = match self.kind {
             ErrorKind::EmptyIdent => "empty identifier",
-            ErrorKind::FailedJoinLeft => "failed to join because of the data on the left",
-            ErrorKind::FailedJoinRight => "failed to join because of the data on the right",
+            ErrorKind::FailedInsert => {
+                "failed to insert a fragment into another fragment or identifier"
+            }
+            ErrorKind::FailedJoin => "failed to join with another fragment",
+            ErrorKind::FailedPush => "failed to push data onto a buffer",
             ErrorKind::FailedRemove => "failed to remove a range of data",
-            ErrorKind::FailedReplaceLeft => {
-                "failed to replace a range of data because of data on the left"
-            }
-            ErrorKind::FailedReplaceRight => {
-                "failed to replace a range of data because of data on the right"
-            }
+            ErrorKind::FailedReplace => "failed to replace a range of data",
             ErrorKind::InvalidFormat => "character doesn't satisfy the character profile",
             ErrorKind::InvalidPrefix => {
                 "character doesn't satisfy the character profile for the prefix fragment"
@@ -105,6 +104,16 @@ impl Display for Error {
         match self.byte_offset() {
             None => write!(f, "{msg}"),
             Some(idx) => write!(f, "{msg}: at byte offset {idx}"),
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+impl From<SyntaxError> for Error {
+    fn from(orig: SyntaxError) -> Self {
+        match orig {
+            SyntaxError::Empty => Error::new(ErrorKind::EmptyIdent),
+            SyntaxError::Format(idx) => Error::new(ErrorKind::InvalidFormat).with_byte_offset(idx),
         }
     }
 }

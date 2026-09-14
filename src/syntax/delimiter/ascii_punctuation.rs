@@ -290,7 +290,7 @@ impl Delimiter for AsciiPunctuation {
         Self::is_delim(c)
     }
     #[inline(always)]
-    fn is_ident_start(c: char) -> bool {
+    fn is_ident_start_delim(c: char) -> bool {
         Self::is_delim(c)
     }
     #[inline(always)]

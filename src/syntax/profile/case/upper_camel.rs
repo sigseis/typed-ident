@@ -12,9 +12,9 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::syntax::profile::case::CasedProfile;
-use crate::syntax::profile::{AppendClosed, CharProfile, Profile};
-use crate::syntax::{CharCase, SubsetOf};
+use crate::syntax::profile::casing::Independent;
+use crate::syntax::profile::{AppendClosed, Camel, CasedProfile, CharProfile, Mixed, Profile};
+use crate::syntax::{CharCase, Delimiter, SubsetOf, SyntaxError};
 use core::marker::PhantomData;
 
 // =============================================================================
@@ -78,26 +78,51 @@ impl<P: CharProfile> Profile for UpperCamel<P> {
     type BaseProfile = P;
     type Segmentation = P::Segmentation;
 
-    #[inline]
-    fn is_ident_start(c: char) -> bool {
-        CharCase::is_uppercase_start_compatible(c) && P::is_ident_start(c)
-    }
-    #[inline]
-    fn is_chunk_start(c: char) -> bool {
-        CharCase::is_uppercase_start_compatible(c) && P::is_chunk_start(c)
-    }
     #[inline(always)]
-    fn in_profile(c: char) -> bool {
-        P::in_profile(c)
+    fn is_chunk_char(c: char) -> bool {
+        P::is_chunk_char(c)
     }
     #[inline(always)]
     fn is_chunk_continue(c: char) -> bool {
         P::is_chunk_continue(c)
     }
+    #[inline]
+    fn is_chunk_start(c: char) -> bool {
+        CharCase::is_uppercase_start_compatible(c) && P::is_chunk_start(c)
+    }
+    #[inline]
+    fn is_ident_start_char(c: char) -> bool {
+        CharCase::is_uppercase_start_compatible(c) && P::is_ident_start_char(c)
+    }
 }
 
 // -----------------------------------------------------------------------------
-impl<P: CharProfile> CasedProfile for UpperCamel<P> {}
+impl<P: CharProfile> CasedProfile for UpperCamel<P> {
+    #[inline(always)]
+    fn is_chunk<D: Delimiter>(s: &str) -> Result<(), SyntaxError> {
+        Independent::<D, Self>::is_chunk(s)
+    }
+
+    #[inline(always)]
+    fn is_fragment<D: Delimiter>(s: &str) -> Result<(), SyntaxError> {
+        Independent::<D, Self>::is_fragment(s)
+    }
+
+    #[inline(always)]
+    fn is_ident<D: Delimiter>(s: &str) -> Result<(), SyntaxError> {
+        Independent::<D, Self>::is_ident(s)
+    }
+
+    #[inline(always)]
+    fn is_ident_fragment<D: Delimiter>(fragment: &str) -> Result<(), SyntaxError> {
+        Independent::<D, Self>::is_ident_fragment(fragment)
+    }
+
+    #[inline(always)]
+    fn is_ident_split_boundary<D: Delimiter>(_ident: &str, _mid: usize) -> bool {
+        true
+    }
+}
 
 /// Proof: If `Super` ⊆ `Subset`, then `Super` ⊆ `UpperCamel<Subset>`.
 ///
@@ -124,6 +149,31 @@ where
 {
 }
 
+/// Proof: If `Super` ⊆ `Subset`, then `Mixed<Super>` ⊆ `UpperCamel<Subset>`.
+///
+/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
+///
+/// If `Ascii: SubsetOf<Mixed<Unicode>>` (true), then this implies the following:
+///
+/// * `UpperCamel<Ascii>: SubsetOf<Mixed<Unicode>>`
+///
+/// # Proof
+///
+/// ```
+/// # use typed_ident::syntax::SubsetOf;
+/// # use typed_ident::syntax::profile::{Ascii, Mixed, UpperCamel, Unicode};
+/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
+/// left_is_subset_of_right::<UpperCamel<Ascii>, Mixed<Ascii>>();
+/// left_is_subset_of_right::<UpperCamel<Unicode>, Mixed<Unicode>>();
+/// left_is_subset_of_right::<UpperCamel<Ascii>, Mixed<Unicode>>();
+/// ```
+impl<Superset, Subset> SubsetOf<Mixed<Superset>> for UpperCamel<Subset>
+where
+    Superset: CharProfile,
+    Subset: CharProfile + SubsetOf<Superset>,
+{
+}
+
 /// Proof: If `Super` ⊆ `Subset`, then `UpperCamel<Super>` ⊆ `UpperCamel<Subset>`.
 ///
 /// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
@@ -143,6 +193,31 @@ where
 /// left_is_subset_of_right::<UpperCamel<Ascii>, UpperCamel<Unicode>>();
 /// ```
 impl<Superset, Subset> SubsetOf<UpperCamel<Superset>> for UpperCamel<Subset>
+where
+    Superset: CharProfile,
+    Subset: CharProfile + SubsetOf<Superset>,
+{
+}
+
+/// Proof: If `Super` ⊆ `Subset`, then `Camel<Super>` ⊆ `UpperCamel<Subset>`.
+///
+/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
+///
+/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
+///
+/// * `UpperCamel<Ascii>: SubsetOf<Camel<Unicode>>`
+///
+/// # Proof
+///
+/// ```
+/// # use typed_ident::syntax::SubsetOf;
+/// # use typed_ident::syntax::profile::{Ascii, UpperCamel, Camel, Unicode};
+/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
+/// left_is_subset_of_right::<UpperCamel<Ascii>, Camel<Ascii>>();
+/// left_is_subset_of_right::<UpperCamel<Unicode>, Camel<Unicode>>();
+/// left_is_subset_of_right::<UpperCamel<Ascii>, Camel<Unicode>>();
+/// ```
+impl<Superset, Subset> SubsetOf<Camel<Superset>> for UpperCamel<Subset>
 where
     Superset: CharProfile,
     Subset: CharProfile + SubsetOf<Superset>,

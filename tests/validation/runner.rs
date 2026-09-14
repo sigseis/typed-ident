@@ -259,68 +259,100 @@ fn test_profile_pass_opt<P: CharProfile + TypeLabel, O: OptionsExt>(
     // Camel Identifiers
     if test.is_camel() {
         test_assertion!(test_ident_pass::<CamelIdent<P, O>>(test, &boundaries));
+        if test.is_lower_camel() || test.is_upper_camel() {
+            test_assertion!(test_ident_pass::<CasedCamelIdent<P, O>>(test, &boundaries));
+        } else {
+            test_assertion!(test_ident_fail::<CasedCamelIdent<P, O>>(test));
+        }
+        if test.is_lower_camel() {
+            test_assertion!(test_ident_pass::<LowerCamelIdent<P, O>>(test, &boundaries));
+        } else {
+            test_assertion!(test_ident_fail::<LowerCamelIdent<P, O>>(test));
+        }
+        if test.is_upper_camel() {
+            test_assertion!(test_ident_pass::<UpperCamelIdent<P, O>>(test, &boundaries));
+        } else {
+            test_assertion!(test_ident_fail::<UpperCamelIdent<P, O>>(test));
+        }
     } else {
         test_assertion!(test_ident_fail::<CamelIdent<P, O>>(test));
-    }
-    if test.is_lower_camel() {
-        test_assertion!(test_ident_pass::<LowerCamelIdent<P, O>>(test, &boundaries));
-    } else {
+        test_assertion!(test_ident_fail::<CasedCamelIdent<P, O>>(test));
         test_assertion!(test_ident_fail::<LowerCamelIdent<P, O>>(test));
-    }
-    if test.is_upper_camel() {
-        test_assertion!(test_ident_pass::<UpperCamelIdent<P, O>>(test, &boundaries));
-    } else {
         test_assertion!(test_ident_fail::<UpperCamelIdent<P, O>>(test));
     }
 
     // Hybrid Identifiers
     if test.is_hybrid() {
         test_assertion!(test_ident_pass::<HybridIdent<P, O>>(test, &boundaries));
+        if test.is_lower_hybrid() || test.is_upper_hybrid() {
+            test_assertion!(test_ident_pass::<CasedHybridIdent<P, O>>(test, &boundaries));
+        } else {
+            test_assertion!(test_ident_fail::<CasedHybridIdent<P, O>>(test));
+        }
+        if test.is_lower_hybrid() {
+            test_assertion!(test_ident_pass::<LowerHybridIdent<P, O>>(test, &boundaries));
+        } else {
+            test_assertion!(test_ident_fail::<LowerHybridIdent<P, O>>(test));
+        }
+        if test.is_upper_hybrid() {
+            test_assertion!(test_ident_pass::<UpperHybridIdent<P, O>>(test, &boundaries));
+        } else {
+            test_assertion!(test_ident_fail::<UpperHybridIdent<P, O>>(test));
+        }
     } else {
         test_assertion!(test_ident_fail::<HybridIdent<P, O>>(test));
-    }
-    if test.is_lower_hybrid() {
-        test_assertion!(test_ident_pass::<LowerHybridIdent<P, O>>(test, &boundaries));
-    } else {
+        test_assertion!(test_ident_fail::<CasedHybridIdent<P, O>>(test));
         test_assertion!(test_ident_fail::<LowerHybridIdent<P, O>>(test));
-    }
-    if test.is_upper_hybrid() {
-        test_assertion!(test_ident_pass::<UpperHybridIdent<P, O>>(test, &boundaries));
-    } else {
         test_assertion!(test_ident_fail::<UpperHybridIdent<P, O>>(test));
     }
 
     // Kebab Identifiers
     if test.is_kebab() {
         test_assertion!(test_ident_pass::<KebabIdent<P, O>>(test, &boundaries));
+        if test.is_lower_kebab() || test.is_upper_kebab() {
+            test_assertion!(test_ident_pass::<CasedKebabIdent<P, O>>(test, &boundaries));
+        } else {
+            test_assertion!(test_ident_fail::<CasedKebabIdent<P, O>>(test));
+        }
+        if test.is_lower_kebab() {
+            test_assertion!(test_ident_pass::<LowerKebabIdent<P, O>>(test, &boundaries));
+        } else {
+            test_assertion!(test_ident_fail::<LowerKebabIdent<P, O>>(test));
+        }
+        if test.is_upper_kebab() {
+            test_assertion!(test_ident_pass::<UpperKebabIdent<P, O>>(test, &boundaries));
+        } else {
+            test_assertion!(test_ident_fail::<UpperKebabIdent<P, O>>(test));
+        }
     } else {
         test_assertion!(test_ident_fail::<KebabIdent<P, O>>(test));
-    }
-    if test.is_lower_kebab() {
-        test_assertion!(test_ident_pass::<LowerKebabIdent<P, O>>(test, &boundaries));
-    } else {
+        test_assertion!(test_ident_fail::<CasedKebabIdent<P, O>>(test));
         test_assertion!(test_ident_fail::<LowerKebabIdent<P, O>>(test));
-    }
-    if test.is_upper_kebab() {
-        test_assertion!(test_ident_pass::<UpperKebabIdent<P, O>>(test, &boundaries));
-    } else {
         test_assertion!(test_ident_fail::<UpperKebabIdent<P, O>>(test));
     }
 
     // Snake Identifiers
     if test.is_snake() {
         test_assertion!(test_ident_pass::<SnakeIdent<P, O>>(test, &boundaries));
+        if test.is_lower_snake() || test.is_upper_snake() {
+            test_assertion!(test_ident_pass::<CasedSnakeIdent<P, O>>(test, &boundaries));
+        } else {
+            test_assertion!(test_ident_fail::<CasedSnakeIdent<P, O>>(test));
+        }
+        if test.is_lower_snake() {
+            test_assertion!(test_ident_pass::<LowerSnakeIdent<P, O>>(test, &boundaries));
+        } else {
+            test_assertion!(test_ident_fail::<LowerSnakeIdent<P, O>>(test));
+        }
+        if test.is_upper_snake() {
+            test_assertion!(test_ident_pass::<UpperSnakeIdent<P, O>>(test, &boundaries));
+        } else {
+            test_assertion!(test_ident_fail::<UpperSnakeIdent<P, O>>(test));
+        }
     } else {
         test_assertion!(test_ident_fail::<SnakeIdent<P, O>>(test));
-    }
-    if test.is_lower_snake() {
-        test_assertion!(test_ident_pass::<LowerSnakeIdent<P, O>>(test, &boundaries));
-    } else {
+        test_assertion!(test_ident_fail::<CasedSnakeIdent<P, O>>(test));
         test_assertion!(test_ident_fail::<LowerSnakeIdent<P, O>>(test));
-    }
-    if test.is_upper_snake() {
-        test_assertion!(test_ident_pass::<UpperSnakeIdent<P, O>>(test, &boundaries));
-    } else {
         test_assertion!(test_ident_fail::<UpperSnakeIdent<P, O>>(test));
     }
 
@@ -330,15 +362,19 @@ fn test_profile_pass_opt<P: CharProfile + TypeLabel, O: OptionsExt>(
 // -----------------------------------------------------------------------------
 fn test_profile_fail_opt<P: CharProfile + TypeLabel, O: Options>(test: &TestIdent) -> TestResult {
     test_assertion!(test_ident_fail::<CamelIdent<P, O>>(test));
+    test_assertion!(test_ident_fail::<CasedCamelIdent<P, O>>(test));
     test_assertion!(test_ident_fail::<LowerCamelIdent<P, O>>(test));
     test_assertion!(test_ident_fail::<UpperCamelIdent<P, O>>(test));
     test_assertion!(test_ident_fail::<HybridIdent<P, O>>(test));
+    test_assertion!(test_ident_fail::<CasedHybridIdent<P, O>>(test));
     test_assertion!(test_ident_fail::<LowerHybridIdent<P, O>>(test));
     test_assertion!(test_ident_fail::<UpperHybridIdent<P, O>>(test));
     test_assertion!(test_ident_fail::<KebabIdent<P, O>>(test));
+    test_assertion!(test_ident_fail::<CasedKebabIdent<P, O>>(test));
     test_assertion!(test_ident_fail::<LowerKebabIdent<P, O>>(test));
     test_assertion!(test_ident_fail::<UpperKebabIdent<P, O>>(test));
     test_assertion!(test_ident_fail::<SnakeIdent<P, O>>(test));
+    test_assertion!(test_ident_fail::<CasedSnakeIdent<P, O>>(test));
     test_assertion!(test_ident_fail::<LowerSnakeIdent<P, O>>(test));
     test_assertion!(test_ident_fail::<UpperSnakeIdent<P, O>>(test));
     TestResult::Pass
