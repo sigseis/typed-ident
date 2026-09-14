@@ -29,7 +29,7 @@ const INVALID: &[&str] = &["", "01234", "日本語", "-test", "test-", "test-tes
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-type IdentUnderTest = Ident<boundary::Standard, delimiter::LowLine, profile::Ascii>;
+type IdentUnderTest = Ident<boundary::Standard, delimiter::LowLine, profile::Mixed<profile::Ascii>>;
 
 // =============================================================================
 // TESTS: IMPLS

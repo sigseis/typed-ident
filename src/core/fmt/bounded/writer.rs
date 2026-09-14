@@ -139,7 +139,7 @@ impl<'a, 'b, const UPPER: bool> Writer<'a, 'b, UPPER> {
         if first_word
             .chars()
             .next()
-            .is_none_or(|c| !P::is_ident_start(c))
+            .is_none_or(|c| !P::is_ident_start_char(c))
         {
             self.write_char(mapped_delim)?;
         }

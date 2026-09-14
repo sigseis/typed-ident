@@ -24,7 +24,7 @@ macro_rules! impl_char_indices_iterator {
             /// ```
             /// # use typed_ident::core::*;
             /// # use typed_ident::syntax::*;
-            #[doc = concat!("# type Unicode", stringify!($over), " = ", stringify!($over), "<boundary::Standard, delimiter::LowLine, profile::Unicode>;")]
+            #[doc = concat!("# type Unicode", stringify!($over), " = ", stringify!($over), "<boundary::Standard, delimiter::LowLine, profile::Mixed<profile::Unicode>>;")]
             #[doc = concat!("let slice = Unicode", stringify!($over), r#"::new("a楽")?;"#)]
             /// let mut chars = slice.char_indices();
             ///

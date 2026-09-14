@@ -11,6 +11,7 @@ mod grapheme_case;
 pub mod profile;
 pub mod segmentation;
 mod subset_of;
+mod syntax_error;
 
 // =============================================================================
 // RE-EXPORT
@@ -30,3 +31,4 @@ pub use profile::{CasedProfile, CharProfile, Profile};
 pub use segmentation::Segmentation;
 #[doc(inline)]
 pub use subset_of::SubsetOf;
+pub use syntax_error::*;

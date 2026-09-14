@@ -8,23 +8,25 @@ pub enum ErrorKind {
     /// An identifier was flagged as invalid because it was empty.
     EmptyIdent,
 
-    /// A fragment failed to be inserted or appended because of the data on the left.
-    FailedJoinLeft,
+    /// Failed to insert a value into a buffer because it would invalidate the
+    /// chunk, fragment, or identifier.
+    FailedInsert,
 
-    /// A fragment failed to be inserted or appended because of the data on the left.
-    FailedJoinRight,
+    /// Failed to join a value into a buffer because it would invalidate the
+    /// chunk, fragment, or identifier.
+    FailedJoin,
+
+    /// Failed to push a value into a buffer because it would invalidate the
+    /// chunk, fragment, or identifier.
+    FailedPush,
 
     /// Failed to remove a slice of data because it would invalidate the chunk,
     /// fragment, or identifier.
     FailedRemove,
 
     /// Failed to replace a slice of data because it would invalidate the chunk,
-    /// fragment, or identifier because of the data on the left.
-    FailedReplaceLeft,
-
-    /// Failed to replace a slice of data because it would invalidate the chunk,
-    /// fragment, or identifier because of the data on the right.
-    FailedReplaceRight,
+    /// fragment, or identifier.
+    FailedReplace,
 
     /// Attempted to interpret a string slice as a delimiter, but it was not one.
     InvalidDelimiter,

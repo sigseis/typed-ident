@@ -6,6 +6,7 @@
 // -----------------------------------------------------------------------------
 mod append_closed;
 pub mod case;
+pub(crate) mod casing;
 pub mod chars;
 mod profile;
 
@@ -19,5 +20,4 @@ pub use append_closed::*;
 pub use case::*;
 #[doc(inline)]
 pub use chars::*;
-#[doc(inline)]
 pub use profile::*;

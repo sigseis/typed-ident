@@ -97,6 +97,24 @@ impl CharCase {
         !c.is_lowercase()
     }
 
+    /// Whether or not a code point is compatible with something uniform-ish.
+    ///
+    /// # Justification
+    ///
+    /// * **Uncased** - Obviously justifiable. Identifiers should not fail to
+    ///   parse based on case formatting because an uncased character is used.
+    /// * **Lower** - This could be considered a valid uniform character.
+    /// * **Upper** - This could be considered a valid uniform character.
+    /// * **Title** - Titlecase consists of digraph characters containing one
+    ///   uppercase, and maybe one lowercase character in the same code point.
+    ///   Not all titlecase characters will be completely uniform-ish.
+    pub fn is_uniform_compatible(c: char) -> bool {
+        // This contains a bool saying whether or not it's greek, which is
+        // acceptable for the uniform-compatible check. If it's not titlecase,
+        // then it's obviously acceptable.
+        Self::is_titlecase(c).unwrap_or(true)
+    }
+
     /// Given a character code point, produce a case for that character.
     pub fn new(c: char) -> Self {
         // TODO: Could be made slightly more efficient when `CharCase` is
@@ -148,7 +166,7 @@ impl CharCase {
         }
     }
     #[inline]
-    fn is_titlecase_any(c: char) -> bool {
+    pub fn is_titlecase_any(c: char) -> bool {
         Self::is_titlecase(c).is_some()
     }
     #[inline]

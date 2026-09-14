@@ -71,8 +71,12 @@ impl Profile for Strict {
     type Segmentation = segmentation::Grapheme;
 
     #[inline(always)]
-    fn is_ident_start(c: char) -> bool {
-        Unicode::is_ident_start(c)
+    fn is_chunk_char(c: char) -> bool {
+        Unicode::is_chunk_char(c)
+    }
+    #[inline(always)]
+    fn is_chunk_continue(c: char) -> bool {
+        Unicode::is_chunk_continue(c)
     }
     #[inline]
     fn is_chunk_start(c: char) -> bool {
@@ -85,12 +89,8 @@ impl Profile for Strict {
             )
     }
     #[inline(always)]
-    fn in_profile(c: char) -> bool {
-        Unicode::in_profile(c)
-    }
-    #[inline(always)]
-    fn is_chunk_continue(c: char) -> bool {
-        Unicode::is_chunk_continue(c)
+    fn is_ident_start_char(c: char) -> bool {
+        Unicode::is_ident_start_char(c)
     }
 }
 

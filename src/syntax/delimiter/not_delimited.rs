@@ -53,7 +53,7 @@ impl Delimiter for NotDelimited {
         false
     }
     #[inline(always)]
-    fn is_ident_start(_: char) -> bool {
+    fn is_ident_start_delim(_: char) -> bool {
         false
     }
     #[inline(always)]

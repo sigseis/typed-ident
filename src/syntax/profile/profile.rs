@@ -44,7 +44,7 @@ pub trait Profile: Sized {
     /// # When Is a Profile `Chunk` Append-Closed?
     ///
     /// Simply put, if [`is_chunk_continue`] is a superset (or equal to) the set
-    /// of valid characters for [`is_ident_start`] *and* [`is_chunk_start`],
+    /// of valid characters for [`is_ident_start_char`] *and* [`is_chunk_start`],
     /// then you can set this to `Chunk`.
     ///
     /// Imagine we represent profile characters in a chunk as:
@@ -93,7 +93,7 @@ pub trait Profile: Sized {
     /// Simply put, the profile needs to have the following properties:
     ///
     /// * It must be `Fragment` append-closed (see above), *and...*
-    /// * [`is_ident_start`] must be identical to [`is_chunk_start`] *and*
+    /// * [`is_ident_start_char`] must be identical to [`is_chunk_start`] *and*
     ///   [`is_chunk_continue`].
     ///
     /// # What Happens If This Is Set Incorrectly?
@@ -104,7 +104,7 @@ pub trait Profile: Sized {
     ///
     /// [`is_chunk_continue`]: Profile::is_chunk_continue
     /// [`is_chunk_start`]: Profile::is_chunk_start
-    /// [`is_ident_start`]: Profile::is_ident_start
+    /// [`is_ident_start_char`]: Profile::is_ident_start_char
     const APPEND_CLOSED: AppendClosed = AppendClosed::Empty;
 
     /// The underlying profile that this profile is based on.
@@ -150,21 +150,23 @@ pub trait Profile: Sized {
     /// [`segments`]: crate::core::fragment::Fragment::segments
     type Segmentation: Segmentation;
 
-    /// Whether or not the provided character can appear at the absolute start
-    /// of an identifier.
+    /// Whether or not the provided character can appear at any point in a
+    /// chunk.
     ///
-    /// # Important
+    /// This should always be a superset (or equal-to) [`is_ident_start_char`],
+    /// [`is_chunk_start`], *AND* [`is_chunk_continue`].
     ///
-    /// This is at the start of an *identifier*, not at the start of a
-    /// *fragment* or *chunk*. Valid at fragment-start is defined by
-    /// [`in_profile`]. Valid at chunk-start is defined by [`is_chunk_start`].
-    ///
-    /// However, note that it doesn't *require* presence. So it would be bad to
-    /// depend on this for a required character (like PHP's dollar sign).
-    ///
-    /// [`in_profile`]: Profile::in_profile
     /// [`is_chunk_start`]: Profile::is_chunk_start
-    fn is_ident_start(c: char) -> bool;
+    /// [`is_ident_start_char`]: Profile::is_ident_start_char
+    /// [`is_chunk_continue`]: Profile::is_chunk_continue
+    #[inline]
+    fn is_chunk_char(c: char) -> bool {
+        Self::is_ident_start_char(c) || Self::is_chunk_start(c) || Self::is_chunk_continue(c)
+    }
+
+    /// Whether or not the provided character is valid at any position after the
+    /// first character of a chunk (a run of non-delimiter characters).
+    fn is_chunk_continue(c: char) -> bool;
 
     /// Whether or not the provided character can appear at the start of a new
     /// chunk (e.g. right after a delimiter).
@@ -172,31 +174,29 @@ pub trait Profile: Sized {
     /// # Important
     ///
     /// This is at the start of a *chunk*, not at the start of a *fragment* or
-    /// *identifier*. Valid at fragment-start is defined by [`in_profile`].
-    /// Valid at identifier-start is defined by [`is_ident_start`].
+    /// *identifier*. Valid at fragment-start is defined by [`is_chunk_char`].
+    /// Valid at identifier-start is defined by [`is_ident_start_char`].
     ///
     /// However, note that it doesn't *require* presence. So it would be bad to
     /// depend on this for a required character (like PHP's dollar sign).
     ///
-    /// [`in_profile`]: Profile::in_profile
-    /// [`is_ident_start`]: Profile::is_ident_start
+    /// [`is_chunk_char`]: Profile::is_chunk_char
+    /// [`is_ident_start_char`]: Profile::is_ident_start_char
     fn is_chunk_start(c: char) -> bool;
 
-    /// Whether or not the provided character can appear at any point in a
-    /// chunk.
+    /// Whether or not the provided character can appear at the absolute start
+    /// of an identifier.
     ///
-    /// This should always be a superset (or equal-to) [`is_ident_start`],
-    /// [`is_chunk_start`], *AND* [`is_chunk_continue`].
+    /// # Important
     ///
+    /// This is at the start of an *identifier*, not at the start of a
+    /// *fragment* or *chunk*. Valid at fragment-start is defined by
+    /// [`is_chunk_char`]. Valid at chunk-start is defined by [`is_chunk_start`].
+    ///
+    /// However, note that it doesn't *require* presence. So it would be bad to
+    /// depend on this for a required character (like PHP's dollar sign).
+    ///
+    /// [`is_chunk_char`]: Profile::is_chunk_char
     /// [`is_chunk_start`]: Profile::is_chunk_start
-    /// [`is_ident_start`]: Profile::is_ident_start
-    /// [`is_chunk_continue`]: Profile::is_chunk_continue
-    #[inline]
-    fn in_profile(c: char) -> bool {
-        Self::is_ident_start(c) || Self::is_chunk_start(c) || Self::is_chunk_continue(c)
-    }
-
-    /// Whether or not the provided character is valid at any position after the
-    /// first character of a chunk (a run of non-delimiter characters).
-    fn is_chunk_continue(c: char) -> bool;
+    fn is_ident_start_char(c: char) -> bool;
 }

@@ -12,9 +12,11 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::syntax::profile::case::CasedProfile;
-use crate::syntax::profile::{AppendClosed, CharProfile, Profile, UpperCamel};
-use crate::syntax::{CharCase, SubsetOf};
+use crate::syntax::profile::casing::Independent;
+use crate::syntax::profile::{
+    AppendClosed, Camel, CasedProfile, CharProfile, Mixed, Profile, Uniform, UpperCamel,
+};
+use crate::syntax::{CharCase, Delimiter, SubsetOf, SyntaxError};
 use core::marker::PhantomData;
 
 // =============================================================================
@@ -36,25 +38,50 @@ impl<P: CharProfile> Profile for Upper<P> {
     type Segmentation = P::Segmentation;
 
     #[inline]
-    fn is_ident_start(c: char) -> bool {
-        CharCase::is_uppercase_compatible(c) && P::is_ident_start(c)
+    fn is_chunk_char(c: char) -> bool {
+        CharCase::is_uppercase_compatible(c) && P::is_chunk_char(c)
+    }
+    #[inline]
+    fn is_chunk_continue(c: char) -> bool {
+        CharCase::is_uppercase_compatible(c) && P::is_chunk_continue(c)
     }
     #[inline]
     fn is_chunk_start(c: char) -> bool {
         CharCase::is_uppercase_compatible(c) && P::is_chunk_start(c)
     }
     #[inline]
-    fn in_profile(c: char) -> bool {
-        CharCase::is_uppercase_compatible(c) && P::in_profile(c)
-    }
-    #[inline]
-    fn is_chunk_continue(c: char) -> bool {
-        CharCase::is_uppercase_compatible(c) && P::is_chunk_continue(c)
+    fn is_ident_start_char(c: char) -> bool {
+        CharCase::is_uppercase_compatible(c) && P::is_ident_start_char(c)
     }
 }
 
 // -----------------------------------------------------------------------------
-impl<P: CharProfile> CasedProfile for Upper<P> {}
+impl<P: CharProfile> CasedProfile for Upper<P> {
+    #[inline(always)]
+    fn is_chunk<D: Delimiter>(s: &str) -> Result<(), SyntaxError> {
+        Independent::<D, Self>::is_chunk(s)
+    }
+
+    #[inline(always)]
+    fn is_fragment<D: Delimiter>(s: &str) -> Result<(), SyntaxError> {
+        Independent::<D, Self>::is_fragment(s)
+    }
+
+    #[inline(always)]
+    fn is_ident<D: Delimiter>(s: &str) -> Result<(), SyntaxError> {
+        Independent::<D, Self>::is_ident(s)
+    }
+
+    #[inline(always)]
+    fn is_ident_fragment<D: Delimiter>(fragment: &str) -> Result<(), SyntaxError> {
+        Independent::<D, Self>::is_ident_fragment(fragment)
+    }
+
+    #[inline(always)]
+    fn is_ident_split_boundary<D: Delimiter>(_ident: &str, _mid: usize) -> bool {
+        true
+    }
+}
 
 /// Proof: If `Super` ⊆ `Subset`, then `Super` ⊆ `Upper<Subset>`.
 ///
@@ -75,6 +102,31 @@ impl<P: CharProfile> CasedProfile for Upper<P> {}
 /// left_is_subset_of_right::<Upper<Ascii>, Unicode>();
 /// ```
 impl<Superset, Subset> SubsetOf<Superset> for Upper<Subset>
+where
+    Superset: CharProfile,
+    Subset: CharProfile + SubsetOf<Superset>,
+{
+}
+
+/// Proof: If `Super` ⊆ `Subset`, then `Super` ⊆ `Upper<Subset>`.
+///
+/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
+///
+/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
+///
+/// * `Upper<Ascii>: SubsetOf<Unicode>`
+///
+/// # Examples
+///
+/// ```
+/// # use typed_ident::syntax::SubsetOf;
+/// # use typed_ident::syntax::profile::{Ascii, Mixed, Upper, Unicode};
+/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
+/// left_is_subset_of_right::<Upper<Ascii>, Mixed<Ascii>>();
+/// left_is_subset_of_right::<Upper<Unicode>, Mixed<Unicode>>();
+/// left_is_subset_of_right::<Upper<Ascii>, Mixed<Unicode>>();
+/// ```
+impl<Superset, Subset> SubsetOf<Mixed<Superset>> for Upper<Subset>
 where
     Superset: CharProfile,
     Subset: CharProfile + SubsetOf<Superset>,
@@ -126,6 +178,58 @@ where
 /// left_is_subset_of_right::<Upper<Ascii>, UpperCamel<Unicode>>();
 /// ```
 impl<Superset, Subset> SubsetOf<UpperCamel<Superset>> for Upper<Subset>
+where
+    Superset: CharProfile,
+    Subset: CharProfile + SubsetOf<Superset>,
+{
+}
+
+/// Proof: If `Super` ⊆ `Subset`, then `Camel<Super>` ⊆ `Upper<Subset>`
+/// (because `Camel` ⊆ `Upper`).
+///
+/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
+///
+/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
+///
+/// * `Upper<Ascii>: SubsetOf<Camel<Unicode>>`
+///
+/// # Examples
+///
+/// ```
+/// # use typed_ident::syntax::SubsetOf;
+/// # use typed_ident::syntax::profile::{Ascii, Upper, Camel, Unicode};
+/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
+/// left_is_subset_of_right::<Upper<Ascii>, Camel<Ascii>>();
+/// left_is_subset_of_right::<Upper<Unicode>, Camel<Unicode>>();
+/// left_is_subset_of_right::<Upper<Ascii>, Camel<Unicode>>();
+/// ```
+impl<Superset, Subset> SubsetOf<Camel<Superset>> for Upper<Subset>
+where
+    Superset: CharProfile,
+    Subset: CharProfile + SubsetOf<Superset>,
+{
+}
+
+/// Proof: If `Super` ⊆ `Subset`, then `Uniform<Super>` ⊆ `Upper<Subset>`
+/// (because `Uniform` ⊆ `Upper`).
+///
+/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
+///
+/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
+///
+/// * `Upper<Ascii>: SubsetOf<Uniform<Unicode>>`
+///
+/// # Examples
+///
+/// ```
+/// # use typed_ident::syntax::SubsetOf;
+/// # use typed_ident::syntax::profile::{Ascii, Upper, Uniform, Unicode};
+/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
+/// left_is_subset_of_right::<Upper<Ascii>, Uniform<Ascii>>();
+/// left_is_subset_of_right::<Upper<Unicode>, Uniform<Unicode>>();
+/// left_is_subset_of_right::<Upper<Ascii>, Uniform<Unicode>>();
+/// ```
+impl<Superset, Subset> SubsetOf<Uniform<Superset>> for Upper<Subset>
 where
     Superset: CharProfile,
     Subset: CharProfile + SubsetOf<Superset>,

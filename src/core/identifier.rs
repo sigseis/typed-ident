@@ -8,7 +8,7 @@ use crate::core::fragment::{
     RMatchIndices, RMatches, SegmentIndices, Segments,
 };
 use crate::core::{Chunk, Error, Fragment, Ident, Segment};
-use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::syntax::{Boundary, CasedProfile, Delimiter};
 
 // =============================================================================
 // TRAITS
@@ -48,7 +48,7 @@ pub trait Identifier {
     type Delimiter: Delimiter;
 
     /// The character profile that is allowed by this identifier.
-    type Profile: Profile;
+    type Profile: CasedProfile;
 
     /// Converts to an actual typed identifier.
     ///

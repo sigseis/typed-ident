@@ -66,18 +66,18 @@ pub enum Unicode {}
 // -----------------------------------------------------------------------------
 impl Unicode {
     #[inline]
+    fn is_chunk_char(c: char) -> bool {
+        unicode_ident::is_xid_continue(c) && !Self::is_disallowed(c)
+    }
+    #[inline]
     fn is_disallowed(c: char) -> bool {
         const ZWNJ: char = '\u{200C}';
         const ZWJ: char = '\u{200D}';
         c == '_' || c == ZWNJ || c == ZWJ
     }
     #[inline]
-    fn is_ident_start(c: char) -> bool {
+    fn is_ident_start_char(c: char) -> bool {
         unicode_ident::is_xid_start(c) && !Self::is_disallowed(c)
-    }
-    #[inline]
-    fn in_profile(c: char) -> bool {
-        unicode_ident::is_xid_continue(c) && !Self::is_disallowed(c)
     }
 }
 
@@ -95,20 +95,20 @@ impl Profile for Unicode {
     type Segmentation = segmentation::Grapheme;
 
     #[inline(always)]
-    fn is_ident_start(c: char) -> bool {
-        Self::is_ident_start(c)
-    }
-    #[inline(always)]
-    fn is_chunk_start(c: char) -> bool {
-        Self::in_profile(c)
-    }
-    #[inline(always)]
-    fn in_profile(c: char) -> bool {
-        Self::in_profile(c)
+    fn is_chunk_char(c: char) -> bool {
+        Self::is_chunk_char(c)
     }
     #[inline(always)]
     fn is_chunk_continue(c: char) -> bool {
-        Self::in_profile(c)
+        Self::is_chunk_char(c)
+    }
+    #[inline(always)]
+    fn is_chunk_start(c: char) -> bool {
+        Self::is_chunk_char(c)
+    }
+    #[inline(always)]
+    fn is_ident_start_char(c: char) -> bool {
+        Self::is_ident_start_char(c)
     }
 }
 

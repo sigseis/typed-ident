@@ -169,18 +169,18 @@ macro_rules! impl_type_aliases {
         impl_type_aliases! {
             $($tt)*
             names={
-                chunk=UpperCamelChunk,
-                fragment=UpperCamelFragment,
-                fragment_buf=UpperCamelFragmentBuf,
-                ident=UpperCamelIdent,
-                ident_buf=UpperCamelIdentBuf,
-                module=upper_camel,
-                segment=UpperCamelSegment,
+                chunk=CasedCamelChunk,
+                fragment=CasedCamelFragment,
+                fragment_buf=CasedCamelFragmentBuf,
+                ident=CasedCamelIdent,
+                ident_buf=CasedCamelIdentBuf,
+                module=cased_camel,
+                segment=CasedCamelSegment,
             },
             options=Default,
-            case=UpperCamel,
+            case=Camel,
             delimiter=LowLine,
-            doc="An `UpperCamel`",
+            doc="A `lowerCamel`",
         }
         impl_type_aliases! {
             $($tt)*
@@ -201,98 +201,18 @@ macro_rules! impl_type_aliases {
         impl_type_aliases! {
             $($tt)*
             names={
-                chunk=SnakeChunk,
-                fragment=SnakeFragment,
-                fragment_buf=SnakeFragmentBuf,
-                ident=SnakeIdent,
-                ident_buf=SnakeIdentBuf,
-                module=snake,
-                segment=SnakeSegment,
+                chunk=UpperCamelChunk,
+                fragment=UpperCamelFragment,
+                fragment_buf=UpperCamelFragmentBuf,
+                ident=UpperCamelIdent,
+                ident_buf=UpperCamelIdentBuf,
+                module=upper_camel,
+                segment=UpperCamelSegment,
             },
             options=Default,
-            case=Mixed,
+            case=UpperCamel,
             delimiter=LowLine,
-            doc="A mixed-cased `Snake_Delim`",
-        }
-        impl_type_aliases! {
-            $($tt)*
-            names={
-                chunk=UpperSnakeChunk,
-                fragment=UpperSnakeFragment,
-                fragment_buf=UpperSnakeFragmentBuf,
-                ident=UpperSnakeIdent,
-                ident_buf=UpperSnakeIdentBuf,
-                module=upper_snake,
-                segment=UpperSnakeSegment,
-            },
-            options=NoBoundaries,
-            case=Upper,
-            delimiter=LowLine,
-            doc="An `UPPER_SNAKE`",
-        }
-        impl_type_aliases! {
-            $($tt)*
-            names={
-                chunk=LowerSnakeChunk,
-                fragment=LowerSnakeFragment,
-                fragment_buf=LowerSnakeFragmentBuf,
-                ident=LowerSnakeIdent,
-                ident_buf=LowerSnakeIdentBuf,
-                module=lower_snake,
-                segment=LowerSnakeSegment,
-            },
-            options=NoBoundaries,
-            case=Lower,
-            delimiter=LowLine,
-            doc="A `lower_snake`",
-        }
-        impl_type_aliases! {
-            $($tt)*
-            names={
-                chunk=KebabChunk,
-                fragment=KebabFragment,
-                fragment_buf=KebabFragmentBuf,
-                ident=KebabIdent,
-                ident_buf=KebabIdentBuf,
-                module=kebab,
-                segment=KebabSegment,
-            },
-            options=Default,
-            case=Mixed,
-            delimiter=HyphenMinus,
-            doc="A mixed-case `Kebab-Delim`",
-        }
-        impl_type_aliases! {
-            $($tt)*
-            names={
-                chunk=UpperKebabChunk,
-                fragment=UpperKebabFragment,
-                fragment_buf=UpperKebabFragmentBuf,
-                ident=UpperKebabIdent,
-                ident_buf=UpperKebabIdentBuf,
-                module=upper_kebab,
-                segment=UpperKebabSegment,
-            },
-            options=NoBoundaries,
-            case=Upper,
-            delimiter=HyphenMinus,
-            doc="An `UPPER-KEBAB`",
-        }
-        impl_type_aliases! {
-            $($tt)*
-            names={
-                chunk=LowerKebabChunk,
-                fragment=LowerKebabFragment,
-                fragment_buf=LowerKebabFragmentBuf,
-                ident=LowerKebabIdent,
-                ident_buf=LowerKebabIdentBuf,
-                module=lower_kebab,
-                segment=LowerKebabSegment,
-            },
-            options=NoBoundaries,
-            case=Lower,
-            delimiter=HyphenMinus,
-            doc="A `lower-kebab`",
+            doc="An `UpperCamel`",
         }
         impl_type_aliases! {
             $($tt)*
@@ -313,18 +233,18 @@ macro_rules! impl_type_aliases {
         impl_type_aliases! {
             $($tt)*
             names={
-                chunk=UpperHybridChunk,
-                fragment=UpperHybridFragment,
-                fragment_buf=UpperHybridFragmentBuf,
-                ident=UpperHybridIdent,
-                ident_buf=UpperHybridIdentBuf,
-                module=upper_hybrid,
-                segment=UpperHybridSegment,
+                chunk=CasedHybridChunk,
+                fragment=CasedHybridFragment,
+                fragment_buf=CasedHybridFragmentBuf,
+                ident=CasedHybridIdent,
+                ident_buf=CasedHybridIdentBuf,
+                module=cased_hybrid,
+                segment=CasedHybridSegment,
             },
             options=Default,
-            case=UpperCamel,
+            case=Camel,
             delimiter=AsciiFlatLine,
-            doc="An `Upper_Hybrid-Ident`",
+            doc="A `lower_hybrid-ident`",
         }
         impl_type_aliases! {
             $($tt)*
@@ -341,6 +261,150 @@ macro_rules! impl_type_aliases {
             case=LowerCamel,
             delimiter=AsciiFlatLine,
             doc="A `lower_hybrid-ident`",
+        }
+        impl_type_aliases! {
+            $($tt)*
+            names={
+                chunk=UpperHybridChunk,
+                fragment=UpperHybridFragment,
+                fragment_buf=UpperHybridFragmentBuf,
+                ident=UpperHybridIdent,
+                ident_buf=UpperHybridIdentBuf,
+                module=upper_hybrid,
+                segment=UpperHybridSegment,
+            },
+            options=Default,
+            case=UpperCamel,
+            delimiter=AsciiFlatLine,
+            doc="An `Upper_Hybrid-Ident`",
+        }
+        impl_type_aliases! {
+            $($tt)*
+            names={
+                chunk=KebabChunk,
+                fragment=KebabFragment,
+                fragment_buf=KebabFragmentBuf,
+                ident=KebabIdent,
+                ident_buf=KebabIdentBuf,
+                module=kebab,
+                segment=KebabSegment,
+            },
+            options=NoBoundaries,
+            case=Mixed,
+            delimiter=HyphenMinus,
+            doc="A mixed-case `Kebab-Delim`",
+        }
+        impl_type_aliases! {
+            $($tt)*
+            names={
+                chunk=CasedKebabChunk,
+                fragment=CasedKebabFragment,
+                fragment_buf=CasedKebabFragmentBuf,
+                ident=CasedKebabIdent,
+                ident_buf=CasedKebabIdentBuf,
+                module=cased_kebab,
+                segment=CasedKebabSegment,
+            },
+            options=NoBoundaries,
+            case=Uniform,
+            delimiter=HyphenMinus,
+            doc="A `lower-kebab`",
+        }
+        impl_type_aliases! {
+            $($tt)*
+            names={
+                chunk=LowerKebabChunk,
+                fragment=LowerKebabFragment,
+                fragment_buf=LowerKebabFragmentBuf,
+                ident=LowerKebabIdent,
+                ident_buf=LowerKebabIdentBuf,
+                module=lower_kebab,
+                segment=LowerKebabSegment,
+            },
+            options=NoBoundaries,
+            case=Lower,
+            delimiter=HyphenMinus,
+            doc="A `lower-kebab`",
+        }
+        impl_type_aliases! {
+            $($tt)*
+            names={
+                chunk=UpperKebabChunk,
+                fragment=UpperKebabFragment,
+                fragment_buf=UpperKebabFragmentBuf,
+                ident=UpperKebabIdent,
+                ident_buf=UpperKebabIdentBuf,
+                module=upper_kebab,
+                segment=UpperKebabSegment,
+            },
+            options=NoBoundaries,
+            case=Upper,
+            delimiter=HyphenMinus,
+            doc="An `UPPER-KEBAB`",
+        }
+        impl_type_aliases! {
+            $($tt)*
+            names={
+                chunk=SnakeChunk,
+                fragment=SnakeFragment,
+                fragment_buf=SnakeFragmentBuf,
+                ident=SnakeIdent,
+                ident_buf=SnakeIdentBuf,
+                module=snake,
+                segment=SnakeSegment,
+            },
+            options=NoBoundaries,
+            case=Mixed,
+            delimiter=LowLine,
+            doc="A mixed-cased `Snake_Delim`",
+        }
+        impl_type_aliases! {
+            $($tt)*
+            names={
+                chunk=CasedSnakeChunk,
+                fragment=CasedSnakeFragment,
+                fragment_buf=CasedSnakeFragmentBuf,
+                ident=CasedSnakeIdent,
+                ident_buf=CasedSnakeIdentBuf,
+                module=cased_snake,
+                segment=CasedSnakeSegment,
+            },
+            options=NoBoundaries,
+            case=Uniform,
+            delimiter=LowLine,
+            doc="A `lower_snake`",
+        }
+        impl_type_aliases! {
+            $($tt)*
+            names={
+                chunk=LowerSnakeChunk,
+                fragment=LowerSnakeFragment,
+                fragment_buf=LowerSnakeFragmentBuf,
+                ident=LowerSnakeIdent,
+                ident_buf=LowerSnakeIdentBuf,
+                module=lower_snake,
+                segment=LowerSnakeSegment,
+            },
+            options=NoBoundaries,
+            case=Lower,
+            delimiter=LowLine,
+            doc="A `lower_snake`",
+        }
+        impl_type_aliases! {
+            $($tt)*
+            names={
+                chunk=UpperSnakeChunk,
+                fragment=UpperSnakeFragment,
+                fragment_buf=UpperSnakeFragmentBuf,
+                ident=UpperSnakeIdent,
+                ident_buf=UpperSnakeIdentBuf,
+                module=upper_snake,
+                segment=UpperSnakeSegment,
+            },
+            options=NoBoundaries,
+            case=Upper,
+            delimiter=LowLine,
+            doc="An `UPPER_SNAKE`",
         }
     };
 }

@@ -52,13 +52,13 @@ mod traits {
     use super::*;
 
     #[test]
-    fn delimiter_as_char() {
+    fn as_char() {
         assert_eq!(AsciiFlatLine::HyphenMinus.as_char(), '-');
         assert_eq!(AsciiFlatLine::LowLine.as_char(), '_');
     }
 
     #[test]
-    fn delimiter_from_char() {
+    fn from_char() {
         assert_eq!(
             AsciiFlatLine::from_char('-'),
             Some(AsciiFlatLine::HyphenMinus)
@@ -68,7 +68,7 @@ mod traits {
     }
 
     #[test]
-    fn delimiter_from_ident_start() {
+    fn from_ident_start() {
         assert_eq!(
             AsciiFlatLine::from_ident_start('-'),
             Some(AsciiFlatLine::HyphenMinus)
@@ -81,7 +81,7 @@ mod traits {
     }
 
     #[test]
-    fn delimiter_from_chunk_delim() {
+    fn from_chunk_delim() {
         assert_eq!(
             AsciiFlatLine::from_chunk_delim('-'),
             Some(AsciiFlatLine::HyphenMinus)
@@ -94,21 +94,21 @@ mod traits {
     }
 
     #[test]
-    fn delimiter_is_delim() {
+    fn is_delim() {
         assert!(AsciiFlatLine::is_delim('-'));
         assert!(AsciiFlatLine::is_delim('_'));
         assert!(!AsciiFlatLine::is_delim('a'));
     }
 
     #[test]
-    fn delimiter_is_ident_start() {
-        assert!(AsciiFlatLine::is_ident_start('-'));
-        assert!(AsciiFlatLine::is_ident_start('_'));
-        assert!(!AsciiFlatLine::is_ident_start('a'));
+    fn is_ident_start_delim() {
+        assert!(AsciiFlatLine::is_ident_start_delim('-'));
+        assert!(AsciiFlatLine::is_ident_start_delim('_'));
+        assert!(!AsciiFlatLine::is_ident_start_delim('a'));
     }
 
     #[test]
-    fn delimiter_is_chunk_delim() {
+    fn is_chunk_delim() {
         assert!(AsciiFlatLine::is_chunk_delim('-'));
         assert!(AsciiFlatLine::is_chunk_delim('_'));
         assert!(!AsciiFlatLine::is_chunk_delim('a'));
