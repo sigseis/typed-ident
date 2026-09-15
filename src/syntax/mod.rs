@@ -7,6 +7,8 @@
 pub mod boundary;
 mod char_case;
 pub mod delimiter;
+#[rustfmt::skip]
+mod generated;
 mod grapheme_case;
 pub mod profile;
 pub mod segmentation;

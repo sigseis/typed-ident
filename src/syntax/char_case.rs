@@ -1,4 +1,11 @@
 // =============================================================================
+// USES
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+use crate::syntax::generated;
+
+// =============================================================================
 // TYPES
 // =============================================================================
 
@@ -63,7 +70,7 @@ impl CharCase {
     ///   lowercase-ish test.
     #[inline]
     pub fn is_lowercase_compatible(c: char) -> bool {
-        !c.is_uppercase() && !Self::is_titlecase_any(c)
+        !c.is_uppercase() && !Self::is_titlecase(c)
     }
 
     /// Whether or not a code point is compatible with something uppercase-ish.
@@ -108,14 +115,13 @@ impl CharCase {
     /// * **Title** - Titlecase consists of digraph characters containing one
     ///   uppercase, and maybe one lowercase character in the same code point.
     ///   Not all titlecase characters will be completely uniform-ish.
+    #[inline]
     pub fn is_uniform_compatible(c: char) -> bool {
-        // This contains a bool saying whether or not it's greek, which is
-        // acceptable for the uniform-compatible check. If it's not titlecase,
-        // then it's obviously acceptable.
-        Self::is_titlecase(c).unwrap_or(true)
+        !Self::is_non_greek_titlecase(c)
     }
 
     /// Given a character code point, produce a case for that character.
+    #[inline]
     pub fn new(c: char) -> Self {
         // TODO: Could be made slightly more efficient when `CharCase` is
         // implemented in the standard.
@@ -127,12 +133,14 @@ impl CharCase {
             Self::Upper
         } else if c.is_lowercase() {
             Self::Lower
-        } else {
-            match Self::is_titlecase(c) {
-                Some(true) => Self::Upper,
-                Some(false) => Self::TitleNonGreek,
-                None => Self::Uncased,
+        } else if Self::is_titlecase(c) {
+            if generated::is_titlecase_greek_variant(c) {
+                Self::Upper
+            } else {
+                Self::TitleNonGreek
             }
+        } else {
+            Self::Uncased
         }
     }
 
@@ -142,35 +150,16 @@ impl CharCase {
         Self::new(c) != Self::Uncased
     }
 
-    // TODO: Possibly helpful: https://github.com/rust-lang/rust/issues/153892
-    //
-    // I tried using a crate for this, but the crate was implemented incorrectly,
-    // and returned `true` for some obviously not titlecase characters. I don't
-    // really want to chase down fixing some other crate when we're going to have
-    // this function in std soon anyways.
-    //
-    // TODO: Maybe we should bake this instead? - just feels wrong to include
-    // huge dependencies just to tell if a titlecase character is Greek or not.
-    //
-    // For now, I will manually inline - post 0.0.1 effort to automate.
-    #[inline]
-    fn is_titlecase(c: char) -> Option<bool> {
-        match c {
-            '\u{01C5}' | '\u{01C8}' | '\u{01CB}' | '\u{01F2}' => Some(false),
-            '\u{1F88}' | '\u{1F89}' | '\u{1F8A}' | '\u{1F8B}' | '\u{1F8C}' | '\u{1F8D}'
-            | '\u{1F8E}' | '\u{1F8F}' | '\u{1F98}' | '\u{1F99}' | '\u{1F9A}' | '\u{1F9B}'
-            | '\u{1F9C}' | '\u{1F9D}' | '\u{1F9E}' | '\u{1F9F}' | '\u{1FA8}' | '\u{1FA9}'
-            | '\u{1FAA}' | '\u{1FAB}' | '\u{1FAC}' | '\u{1FAD}' | '\u{1FAE}' | '\u{1FAF}'
-            | '\u{1FBC}' | '\u{1FCC}' | '\u{1FFC}' => Some(true),
-            _ => None,
-        }
+    #[inline(always)]
+    pub fn is_titlecase(c: char) -> bool {
+        // TODO: After `char::case` is stable, we won't need to provide this function any more.
+        //
+        // see: https://github.com/rust-lang/rust/issues/153892
+        generated::is_titlecase(c)
     }
-    #[inline]
-    pub fn is_titlecase_any(c: char) -> bool {
-        Self::is_titlecase(c).is_some()
-    }
+
     #[inline]
     fn is_non_greek_titlecase(c: char) -> bool {
-        Self::is_titlecase(c).is_some_and(|g| !g)
+        generated::is_titlecase(c) && !generated::is_titlecase_greek_variant(c)
     }
 }

@@ -21,7 +21,6 @@ all-features = true
 
 # ------------------------------------------------------------------------------
 [dependencies]
-unicode-general-category = { version = "1", optional = true }
 unicode-ident = { version = "1", optional = true }
 unicode-segmentation = { version = "1", optional = true }
 
@@ -33,6 +32,7 @@ convert_case = "0.12"
 criterion = { version = "0.8", features = ["html_reports"]}
 heck = "0.5"
 rand = "0.10"
+unicode-general-category = "1"
 
 # ==============================================================================
 # FEATURES
@@ -70,14 +70,6 @@ unicode = [
     "dep:unicode-segmentation",
 ]
 
-# ------------------------------------------------------------------------------
-# For strict identifiers, we need to remove combining marks from chunk start.
-# ------------------------------------------------------------------------------
-unicode-strict = [
-    "dep:unicode-general-category",
-    "unicode",
-]
-
 # ==============================================================================
 # BENCHMARKS
 # ==============================================================================
@@ -94,7 +86,7 @@ harness = false
 # ------------------------------------------------------------------------------
 [[example]]
 name = "api"
-required-features = ["alloc", "presets", "unicode", "unicode-strict"]
+required-features = ["alloc", "presets", "unicode"]
 
 # ==============================================================================
 # COMPARISON EXAMPLES

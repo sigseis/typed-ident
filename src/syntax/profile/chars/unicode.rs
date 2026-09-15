@@ -13,7 +13,80 @@ mod tests;
 
 // -----------------------------------------------------------------------------
 use crate::syntax::profile::{AppendClosed, Ascii, CharProfile, Profile};
-use crate::syntax::{SubsetOf, segmentation};
+use crate::syntax::{SubsetOf, generated, segmentation};
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+/// The version of `unicode-ident` that was compiled in this crate.
+pub const UNICODE_IDENT_VERSION: (u32, u32, u32) = (
+    unicode_ident::UNICODE_VERSION.0 as u32,
+    unicode_ident::UNICODE_VERSION.1 as u32,
+    unicode_ident::UNICODE_VERSION.2 as u32,
+);
+
+/// The version of `unicode-segmentation` that was compiled in this crate.
+pub const UNICODE_SEGMENTATION_VERSION: (u32, u32, u32) = {
+    assert!(unicode_segmentation::UNICODE_VERSION.0 <= u32::MAX as u64);
+    assert!(unicode_segmentation::UNICODE_VERSION.1 <= u32::MAX as u64);
+    assert!(unicode_segmentation::UNICODE_VERSION.2 <= u32::MAX as u64);
+    (
+        unicode_segmentation::UNICODE_VERSION.0 as u32,
+        unicode_segmentation::UNICODE_VERSION.1 as u32,
+        unicode_segmentation::UNICODE_VERSION.2 as u32,
+    )
+};
+
+/// The minimal common dependency version (lesser of [`UNICODE_IDENT_VERSION`]
+/// and [`UNICODE_SEGMENTATION_VERSION`]).
+///
+/// [`UNICODE_IDENT_VERSION`]: crate::syntax::profile::UNICODE_IDENT_VERSION
+/// [`UNICODE_SEGMENTATION_VERSION`]: crate::syntax::profile::UNICODE_SEGMENTATION_VERSION
+pub const UNICODE_DEPENDENCIES_VERSION: (u32, u32, u32) = {
+    if UNICODE_IDENT_VERSION.0 < UNICODE_SEGMENTATION_VERSION.0 {
+        UNICODE_IDENT_VERSION
+    } else if UNICODE_SEGMENTATION_VERSION.0 < UNICODE_IDENT_VERSION.0 {
+        UNICODE_SEGMENTATION_VERSION
+    } else if UNICODE_IDENT_VERSION.1 < UNICODE_SEGMENTATION_VERSION.1 {
+        UNICODE_IDENT_VERSION
+    } else if UNICODE_SEGMENTATION_VERSION.1 < UNICODE_IDENT_VERSION.1 {
+        UNICODE_SEGMENTATION_VERSION
+    } else if UNICODE_IDENT_VERSION.2 < UNICODE_SEGMENTATION_VERSION.2 {
+        UNICODE_IDENT_VERSION
+    } else {
+        UNICODE_SEGMENTATION_VERSION
+    }
+};
+
+/// The version of Unicode used to generate functionality provided by this crate.
+///
+/// Specifically we provide the calls for:
+/// * `is_titlecase` (eventually the standard will provide this).
+/// * `is_titlecase_greek_variant`
+/// * `is_combining_mark`
+pub const UNICODE_GENERATED_VERSION: (u32, u32, u32) = generated::UNICODE_VERSION;
+
+/// The minimal common Unicode version (lesser of
+/// [`UNICODE_DEPENDENCIES_VERSION`] and [`UNICODE_GENERATED_VERSION`]).
+///
+/// [`UNICODE_DEPENDENCIES_VERSION`]: crate::syntax::profile::UNICODE_DEPENDENCIES_VERSION
+/// [`UNICODE_GENERATED_VERSION`]: crate::syntax::profile::UNICODE_GENERATED_VERSION
+pub const UNICODE_VERSION: (u32, u32, u32) = {
+    if UNICODE_DEPENDENCIES_VERSION.0 < UNICODE_GENERATED_VERSION.0 {
+        UNICODE_DEPENDENCIES_VERSION
+    } else if UNICODE_GENERATED_VERSION.0 < UNICODE_DEPENDENCIES_VERSION.0 {
+        UNICODE_GENERATED_VERSION
+    } else if UNICODE_DEPENDENCIES_VERSION.1 < UNICODE_GENERATED_VERSION.1 {
+        UNICODE_DEPENDENCIES_VERSION
+    } else if UNICODE_GENERATED_VERSION.1 < UNICODE_DEPENDENCIES_VERSION.1 {
+        UNICODE_GENERATED_VERSION
+    } else if UNICODE_DEPENDENCIES_VERSION.2 < UNICODE_GENERATED_VERSION.2 {
+        UNICODE_DEPENDENCIES_VERSION
+    } else {
+        UNICODE_GENERATED_VERSION
+    }
+};
 
 // =============================================================================
 // TYPES

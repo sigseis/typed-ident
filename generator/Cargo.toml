@@ -1,0 +1,21 @@
+# ==============================================================================
+# CONFIGURATION (https://doc.rust-lang.org/cargo/reference/manifest.html)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+[package]
+name = "typed-ident-generator"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# ------------------------------------------------------------------------------
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"]}
+clap_derive = "4"
+reqwest = { version = "0.13", features = ["blocking", "rustls"] }
+scraper = "0.27"
+url = "2"
+version = "3"
+zip = "2"

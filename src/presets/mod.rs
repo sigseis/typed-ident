@@ -433,7 +433,7 @@ pub mod ascii {
 }
 
 // -----------------------------------------------------------------------------
-#[cfg(feature = "unicode-strict")]
+#[cfg(feature = "unicode")]
 #[allow(missing_docs)]
 pub mod strict {
     impl_type_aliases! {

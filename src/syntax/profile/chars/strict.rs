@@ -12,9 +12,9 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+use crate::syntax::generated;
 use crate::syntax::profile::{AppendClosed, Ascii, CharProfile, Profile, Unicode};
 use crate::syntax::{SubsetOf, segmentation};
-use unicode_general_category::{GeneralCategory, get_general_category};
 
 // =============================================================================
 // TYPES
@@ -80,13 +80,7 @@ impl Profile for Strict {
     }
     #[inline]
     fn is_chunk_start(c: char) -> bool {
-        Unicode::is_chunk_start(c)
-            && !matches!(
-                get_general_category(c),
-                GeneralCategory::EnclosingMark
-                    | GeneralCategory::SpacingMark
-                    | GeneralCategory::NonspacingMark,
-            )
+        Unicode::is_chunk_start(c) && !generated::is_combining_mark(c)
     }
     #[inline(always)]
     fn is_ident_start_char(c: char) -> bool {

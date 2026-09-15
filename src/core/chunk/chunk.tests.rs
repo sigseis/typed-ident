@@ -144,14 +144,14 @@ mod traits {
     use super::*;
 
     #[test]
-    #[cfg(feature = "unicode-strict")]
+    #[cfg(feature = "unicode")]
     fn as_ref_chunk() -> Result<(), Error> {
         test_as_ref_comprehensive!(Chunk as Chunk);
         Ok(())
     }
 
     #[test]
-    #[cfg(feature = "unicode-strict")]
+    #[cfg(feature = "unicode")]
     fn as_ref_fragment() -> Result<(), Error> {
         test_as_ref_comprehensive!(Chunk as Fragment);
         Ok(())

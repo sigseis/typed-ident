@@ -68,7 +68,7 @@ mod traits {
     use super::*;
 
     #[test]
-    #[cfg(feature = "unicode-strict")]
+    #[cfg(feature = "unicode")]
     fn as_ref_fragment() -> Result<(), Error> {
         test_as_ref_comprehensive!(Fragment as Fragment);
         Ok(())
