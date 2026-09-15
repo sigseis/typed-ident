@@ -23,6 +23,150 @@ use std_alloc::string::String;
 /// [`convert`]: crate::alloc::convert
 pub trait ToUpperCamel {
     /// Returns a displayable type that converts the provided input to upper
+    /// camel in plain form.
+    ///
+    /// This method uses the default boundary options. If you have customized
+    /// your boundary definitions, you almost certainly want to use the method
+    /// [`to_upper_camel_opts`].
+    ///
+    /// See the [`fmt`] module documentation for details on different forms.
+    ///
+    /// [`to_upper_camel_opts`]: Self::to_upper_camel_opts
+    /// [`fmt`]: crate::core::fmt
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::presets::unicode::*;
+    /// assert_eq!(
+    ///     LowerCamelIdent::new("__lower__camel_case__")?
+    ///         .to_upper_camel(),
+    ///     "LowerCamelCase"
+    /// );
+    /// assert_eq!(
+    ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
+    ///         .to_upper_camel(),
+    ///     "LowerHybridCase"
+    /// );
+    /// assert_eq!(
+    ///     LowerKebabIdent::new("--lower--kebab-case--")?
+    ///         .to_upper_camel(),
+    ///     "LowerKebabCase"
+    /// );
+    /// assert_eq!(
+    ///     LowerSnakeIdent::new("__lower__snake_case__")?
+    ///         .to_upper_camel(),
+    ///     "LowerSnakeCase"
+    /// );
+    /// assert_eq!(
+    ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
+    ///         .to_upper_camel(),
+    ///     "UpperCamelCase"
+    /// );
+    /// assert_eq!(
+    ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
+    ///         .to_upper_camel(),
+    ///     "UpperHybridCase"
+    /// );
+    /// assert_eq!(
+    ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
+    ///         .to_upper_camel(),
+    ///     "UpperKebabCase"
+    /// );
+    /// assert_eq!(
+    ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
+    ///         .to_upper_camel(),
+    ///     "UpperSnakeCase"
+    /// );
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    ///
+    /// This form will *NOT* attempt to validate the first character to ensure
+    /// it could be considered a valid identifier (see
+    /// [`to_upper_camel_canonical`] for a version that would validate this).
+    ///
+    /// [`to_upper_camel_canonical`]: Self::to_upper_camel_canonical
+    ///
+    /// ```
+    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::presets::unicode::*;
+    /// assert_eq!(
+    ///     UpperCamelIdent::new("_____")?
+    ///         .to_upper_camel(),
+    ///     ""
+    /// );
+    /// assert_eq!(
+    ///     UpperCamelIdent::new("__2__Example__Camel__")?
+    ///         .to_upper_camel(),
+    ///     "2ExampleCamel"
+    /// );
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[inline]
+    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    fn to_upper_camel(&self) -> String {
+        self.to_upper_camel_opts::<Default>()
+    }
+
+    /// Returns a displayable type that converts the provided input to upper
+    /// camel in plain form, over some provided boundary options.
+    ///
+    /// Use this method if you want to transform the boundary policy of the
+    /// input string, or if you want to persist the same customized policy (in
+    /// place of simply using the default).
+    ///
+    /// See the [`fmt`] module documentation for details on different forms.
+    ///
+    /// [`fmt`]: crate::core::fmt
+    ///
+    /// # Examples
+    ///
+    /// Transforming to a more-bounded policy:
+    ///
+    /// ```
+    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::presets::unicode::*;
+    /// # use typed_ident::syntax::boundary::options::*;
+    /// assert_eq!(
+    ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
+    ///         .to_upper_camel_opts::<AllBoundaries>(),
+    ///     "Abc123HttpDevServer" // Digits recognized as proper boundaries.
+    /// );
+    /// // Compare this to...
+    /// assert_eq!(
+    ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
+    ///         .to_upper_camel_opts::<Default>(),
+    ///     "Abc_123HttpDevServer" // Digits aren't recognized as boundaries.
+    /// );
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    ///
+    /// Transforming to a less-bounded policy:
+    ///
+    /// ```
+    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::presets::unicode::*;
+    /// # use typed_ident::syntax::boundary::options::*;
+    /// assert_eq!(
+    ///     UpperCamelIdent::new("__HttpDEVServer__")?
+    ///         .to_upper_camel_opts::<NoBoundaries>(),
+    ///     "Http_Dev_Server" // Nothing recognized as a boundary.
+    /// );
+    /// // Compare this to...
+    /// assert_eq!(
+    ///     UpperCamelIdent::new("__HttpDEVServer__")?
+    ///         .to_upper_camel_opts::<Default>(),
+    ///     "HttpDevServer" // Normal boundaries are recognized.
+    /// );
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    fn to_upper_camel_opts<O: Options>(&self) -> String;
+
+    /// Returns a displayable type that converts the provided input to upper
     /// camel in canonical form.
     ///
     /// This method uses the default boundary options. If you have customized
@@ -84,7 +228,11 @@ pub trait ToUpperCamel {
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     ///
-    /// Notice that it will attempt to keep necessary prefix delimiters.
+    /// This form *WILL* attempt to validate the first character to ensure it
+    /// could be considered a valid identifier (see [`to_upper_camel`] for a
+    /// version that would *NOT* validate this).
+    ///
+    /// [`to_upper_camel`]: Self::to_upper_camel
     ///
     /// ```
     /// # use typed_ident::alloc::convert::*;
@@ -408,6 +556,13 @@ pub trait ToUpperCamel {
 
 // -----------------------------------------------------------------------------
 impl<B: Boundary, D: Delimiter, P: Profile> ToUpperCamel for Ident<B, D, P> {
+    #[inline]
+    fn to_upper_camel_opts<O: Options>(&self) -> String {
+        let mut string = String::with_capacity(self.len());
+        write!(string, "{}", self.as_upper_camel_opts::<O>())
+            .expect("failed to format an identifier into a string");
+        string
+    }
     #[inline]
     fn to_upper_camel_canonical_opts<O: Options>(&self) -> String {
         let mut string = String::with_capacity(self.len());

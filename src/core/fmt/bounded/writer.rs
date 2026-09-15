@@ -126,20 +126,25 @@ impl<'a, 'b, const UPPER: bool> Writer<'a, 'b, UPPER> {
         mut self,
         words: &mut dyn Iterator<Item = &str>,
         mapped_delim: char,
+        validate_start: bool,
     ) -> core::fmt::Result {
         // There must be at least one word to write as a canonical identifier.
         // Otherwise, there's nothing but delimiters - in which case, we should
         // write a single delimiter - as that is the canonical form.
         let Some(first_word) = words.next() else {
+            if !validate_start {
+                return Ok(());
+            }
             return self.write_char(mapped_delim);
         };
 
         // We have to see if the first word would invalidate the target profile.
         // If it would, then we will need to start with a delimiter first.
-        if first_word
-            .chars()
-            .next()
-            .is_none_or(|c| !P::is_ident_start_char(c))
+        if validate_start
+            && first_word
+                .chars()
+                .next()
+                .is_none_or(|c| !P::is_ident_start_char(c))
         {
             self.write_char(mapped_delim)?;
         }

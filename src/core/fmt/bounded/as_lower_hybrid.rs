@@ -16,11 +16,25 @@ use crate::syntax::{Boundary, Delimiter, Profile};
 
 // -----------------------------------------------------------------------------
 impl_displayable_type! {
+    name=LowerHybrid,
+    over=Canonical,
+    upper=false,
+    docs=concat!(
+        "A `Display` type for the [`AsLowerHybrid`] trait in plain form.",
+        "\n\n",
+        "This type is constructed by calling one of the [`as_lower_hybrid`] methods.",
+        "\n\n",
+        "[`as_lower_hybrid`]: AsLowerHybrid::as_lower_hybrid"
+    ),
+}
+
+// -----------------------------------------------------------------------------
+impl_displayable_type! {
     name=LowerHybridCanonical,
     over=Canonical,
     upper=false,
     docs=concat!(
-        "A `Display` type for the [`AsLowerHybrid`] trait in canonical format.",
+        "A `Display` type for the [`AsLowerHybrid`] trait in canonical form.",
         "\n\n",
         "This type is constructed by calling one of the [`as_lower_hybrid_canonical`] methods.",
         "\n\n",
@@ -34,7 +48,7 @@ impl_displayable_type! {
     over=Decorated,
     upper=false,
     docs=concat!(
-        "A `Display` type for the [`AsLowerHybrid`] trait in decorated format.",
+        "A `Display` type for the [`AsLowerHybrid`] trait in decorated form.",
         "\n\n",
         "This type is constructed by calling one of the [`as_lower_hybrid_decorated`] methods.",
         "\n\n",
@@ -48,7 +62,7 @@ impl_displayable_type! {
     over=Delimited,
     upper=false,
     docs=concat!(
-        "A `Display` type for the [`AsLowerHybrid`] trait in delimited format.",
+        "A `Display` type for the [`AsLowerHybrid`] trait in delimited form.",
         "\n\n",
         "This type is constructed by calling one of the [`as_lower_hybrid_delimited`] methods.",
         "\n\n",
@@ -66,6 +80,176 @@ impl_displayable_type! {
 ///
 /// [`fmt`]: crate::core::fmt
 pub trait AsLowerHybrid {
+    /// Returns a displayable type that converts the provided input to lower
+    /// hybrid in plain form.
+    ///
+    /// This method uses the default boundary options. If you have customized
+    /// your boundary definitions, you almost certainly want to use the method
+    /// [`as_lower_hybrid_opts`].
+    ///
+    /// This method additionally takes a `default_delim` parameter, which is
+    /// to clarify which of the two delimiters should be produces if the
+    /// formatting operation needs to produces a delimiter.
+    ///
+    /// See the [`fmt`] module documentation for details on different forms.
+    ///
+    /// [`as_lower_hybrid_opts`]: Self::as_lower_hybrid_opts
+    /// [`fmt`]: crate::core::fmt
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::presets::unicode::*;
+    /// # use typed_ident::syntax::delimiter::*;
+    /// assert_eq!(
+    ///     LowerCamelIdent::new("__lower__camel_case__")?
+    ///         .as_lower_hybrid(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     "lowerCamelCase"
+    /// );
+    /// assert_eq!(
+    ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
+    ///         .as_lower_hybrid(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     "lowerHybridCase"
+    /// );
+    /// assert_eq!(
+    ///     LowerKebabIdent::new("--lower--kebab-case--")?
+    ///         .as_lower_hybrid(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     "lowerKebabCase"
+    /// );
+    /// assert_eq!(
+    ///     LowerSnakeIdent::new("__lower__snake_case__")?
+    ///         .as_lower_hybrid(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     "lowerSnakeCase"
+    /// );
+    /// assert_eq!(
+    ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
+    ///         .as_lower_hybrid(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     "upperCamelCase"
+    /// );
+    /// assert_eq!(
+    ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
+    ///         .as_lower_hybrid(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     "upperHybridCase"
+    /// );
+    /// assert_eq!(
+    ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
+    ///         .as_lower_hybrid(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     "upperKebabCase"
+    /// );
+    /// assert_eq!(
+    ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
+    ///         .as_lower_hybrid(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     "upperSnakeCase"
+    /// );
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    ///
+    /// This form will *NOT* attempt to validate the first character to ensure
+    /// it could be considered a valid identifier (see
+    /// [`as_lower_hybrid_canonical`] for a version that would validate this).
+    ///
+    /// [`as_lower_hybrid_canonical`]: Self::as_lower_hybrid_canonical
+    ///
+    /// ```
+    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::presets::unicode::*;
+    /// # use typed_ident::syntax::delimiter::*;
+    /// assert_eq!(
+    ///     UpperCamelIdent::new("_____")?
+    ///         .as_lower_hybrid(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     ""
+    /// );
+    /// assert_eq!(
+    ///     UpperCamelIdent::new("__2__Example__Camel__")?
+    ///         .as_lower_hybrid(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     "2ExampleCamel"
+    /// );
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[inline]
+    #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
+    fn as_lower_hybrid(&self, default_delim: AsciiFlatLine) -> LowerHybrid<'_> {
+        self.as_lower_hybrid_opts::<Default>(default_delim)
+    }
+
+    /// Returns a displayable type that converts the provided input to lower
+    /// hybrid in plain form, over some provided boundary options.
+    ///
+    /// Use this method if you want to transform the boundary policy of the
+    /// input string, or if you want to persist the same customized policy (in
+    /// place of simply using the default).
+    ///
+    /// This method additionally takes a `default_delim` parameter, which is
+    /// to clarify which of the two delimiters should be produces if the
+    /// formatting operation needs to produces a delimiter.
+    ///
+    /// See the [`fmt`] module documentation for details on different forms.
+    ///
+    /// [`fmt`]: crate::core::fmt
+    ///
+    /// # Examples
+    ///
+    /// Transforming to a more-bounded policy:
+    ///
+    /// ```
+    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::presets::unicode::*;
+    /// # use typed_ident::syntax::boundary::options::*;
+    /// # use typed_ident::syntax::delimiter::*;
+    /// assert_eq!(
+    ///     LowerHybridIdent::new("__abc_123_httpDEVServer__")?
+    ///         .as_lower_hybrid_opts::<AllBoundaries>(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     "abc123HttpDevServer" // Digits recognized as proper boundaries.
+    /// );
+    /// // Compare this to...
+    /// assert_eq!(
+    ///     LowerHybridIdent::new("__abc_123_httpDEVServer__")?
+    ///         .as_lower_hybrid_opts::<Default>(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     "abc_123HttpDevServer" // Digits aren't recognized as boundaries.
+    /// );
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    ///
+    /// Transforming to a less-bounded policy:
+    ///
+    /// ```
+    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::presets::unicode::*;
+    /// # use typed_ident::syntax::boundary::options::*;
+    /// # use typed_ident::syntax::delimiter::*;
+    /// assert_eq!(
+    ///     LowerHybridIdent::new("__httpDEVServer__")?
+    ///         .as_lower_hybrid_opts::<NoBoundaries>(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     "http_dev_server" // Nothing recognized as a boundary.
+    /// );
+    /// // Compare this to...
+    /// assert_eq!(
+    ///     LowerHybridIdent::new("__httpDEVServer__")?
+    ///         .as_lower_hybrid_opts::<Default>(AsciiFlatLine::LowLine)
+    ///         .to_string(),
+    ///     "httpDevServer" // Normal boundaries are recognized.
+    /// );
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
+    fn as_lower_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> LowerHybrid<'_>;
+
     /// Returns a displayable type that converts the provided input to lower
     /// hybrid in canonical form.
     ///
@@ -141,7 +325,11 @@ pub trait AsLowerHybrid {
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     ///
-    /// Notice that it will attempt to keep necessary prefix delimiters.
+    /// This form *WILL* attempt to validate the first character to ensure it
+    /// could be considered a valid identifier (see [`as_lower_hybrid`] for a
+    /// version that would *NOT* validate this).
+    ///
+    /// [`as_lower_hybrid`]: Self::as_lower_hybrid
     ///
     /// ```
     /// # use typed_ident::core::fmt::*;
@@ -552,6 +740,14 @@ pub trait AsLowerHybrid {
 // -----------------------------------------------------------------------------
 impl<B: Boundary, D: Delimiter, P: Profile> AsLowerHybrid for Ident<B, D, P> {
     #[inline]
+    fn as_lower_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> LowerHybrid<'_> {
+        LowerHybrid(Canonical::new::<B, D, P::BaseProfile, Standard<O>>(
+            self.as_str(),
+            default_delim.as_char(),
+            false,
+        ))
+    }
+    #[inline]
     fn as_lower_hybrid_canonical_opts<O: Options>(
         &self,
         default_delim: AsciiFlatLine,
@@ -559,6 +755,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsLowerHybrid for Ident<B, D, P> {
         LowerHybridCanonical(Canonical::new::<B, D, P::BaseProfile, Standard<O>>(
             self.as_str(),
             default_delim.as_char(),
+            true,
         ))
     }
     #[inline]

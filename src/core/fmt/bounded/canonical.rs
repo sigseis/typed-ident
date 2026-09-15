@@ -17,6 +17,7 @@ pub(super) struct Canonical<'a, const UPPER: bool> {
     default_delim: char,
     format: fn(&Self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result,
     ident: &'a str,
+    validate_start: bool,
 }
 
 // =============================================================================
@@ -36,16 +37,19 @@ impl<'a, const UPPER: bool> Canonical<'a, UPPER> {
                 _ => None,
             }),
             self.default_delim,
+            self.validate_start,
         )
     }
     pub(crate) fn new<B: Boundary, D: Delimiter, P: Profile, T: TrivialBoundary>(
         ident: &'a str,
         default_delim: char,
+        validate_start: bool,
     ) -> Self {
         Self {
             default_delim,
             format: Self::format::<B, D, P, T>,
             ident,
+            validate_start,
         }
     }
 }

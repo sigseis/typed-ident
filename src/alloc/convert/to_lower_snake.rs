@@ -62,6 +62,87 @@ use std_alloc::string::String;
 /// ```
 pub trait ToLowerSnake {
     /// Returns a displayable type that converts the provided input to lower
+    /// snake in plain form.
+    ///
+    /// See the [`fmt`] module documentation for details on different forms.
+    ///
+    /// [`fmt`]: crate::core::fmt
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::presets::unicode::*;
+    /// assert_eq!(
+    ///     LowerCamelIdent::new("__lower__camel_case__")?
+    ///         .to_lower_snake(),
+    ///     "lower_camel_case"
+    /// );
+    /// assert_eq!(
+    ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
+    ///         .to_lower_snake(),
+    ///     "lower_hybrid_case"
+    /// );
+    /// assert_eq!(
+    ///     LowerKebabIdent::new("--lower--kebab-case--")?
+    ///         .to_lower_snake(),
+    ///     "lower_kebab_case"
+    /// );
+    /// assert_eq!(
+    ///     LowerSnakeIdent::new("__lower__snake_case__")?
+    ///         .to_lower_snake(),
+    ///     "lower_snake_case"
+    /// );
+    /// assert_eq!(
+    ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
+    ///         .to_lower_snake(),
+    ///     "upper_camel_case"
+    /// );
+    /// assert_eq!(
+    ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
+    ///         .to_lower_snake(),
+    ///     "upper_hybrid_case"
+    /// );
+    /// assert_eq!(
+    ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
+    ///         .to_lower_snake(),
+    ///     "upper_kebab_case"
+    /// );
+    /// assert_eq!(
+    ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
+    ///         .to_lower_snake(),
+    ///     "upper_snake_case"
+    /// );
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    ///
+    /// This form will *NOT* attempt to validate the first character to ensure
+    /// it could be considered a valid identifier (see
+    /// [`to_lower_snake_canonical`] for a version that would validate this).
+    ///
+    /// [`to_lower_snake_canonical`]: Self::to_lower_snake_canonical
+    ///
+    /// ```
+    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::presets::unicode::*;
+    /// assert_eq!(
+    ///     UpperCamelIdent::new("_____")?
+    ///         .to_lower_snake(),
+    ///     ""
+    /// );
+    /// assert_eq!(
+    ///     UpperCamelIdent::new("__2__Example__Camel__")?
+    ///         .to_lower_snake(),
+    ///     "2_example_camel"
+    /// );
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    fn to_lower_snake(&self) -> String;
+
+    /// Returns a displayable type that converts the provided input to lower
     /// snake in canonical form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
@@ -118,7 +199,11 @@ pub trait ToLowerSnake {
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     ///
-    /// Notice that it will attempt to keep necessary prefix delimiters.
+    /// This form *WILL* attempt to validate the first character to ensure it
+    /// could be considered a valid identifier (see [`to_lower_snake`] for a
+    /// version that would *NOT* validate this).
+    ///
+    /// [`to_lower_snake`]: Self::to_lower_snake
     ///
     /// ```
     /// # use typed_ident::alloc::convert::*;
@@ -204,6 +289,13 @@ pub trait ToLowerSnake {
 
 // -----------------------------------------------------------------------------
 impl<B: Boundary, D: Delimiter, P: Profile> ToLowerSnake for Ident<B, D, P> {
+    #[inline]
+    fn to_lower_snake(&self) -> String {
+        let mut string = String::with_capacity(self.len());
+        write!(string, "{}", self.as_lower_snake())
+            .expect("failed to format an identifier into a string");
+        string
+    }
     #[inline]
     fn to_lower_snake_canonical(&self) -> String {
         let mut string = String::with_capacity(self.len());
