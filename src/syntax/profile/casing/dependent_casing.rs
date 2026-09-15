@@ -32,7 +32,7 @@ impl DependentCasing {
         // set of values that could be presented to us.
         if c.is_lowercase() {
             Self::Lower
-        } else if c.is_uppercase() || CharCase::is_titlecase_any(c) {
+        } else if c.is_uppercase() || CharCase::is_titlecase(c) {
             Self::Upper
         } else {
             Self::Uncased

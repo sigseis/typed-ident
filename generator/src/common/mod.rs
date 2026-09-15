@@ -1,24 +1,17 @@
-#![doc = include_str!("README.md")]
 // =============================================================================
 // MODULES
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-mod ascii;
-mod char_profile;
-#[cfg(feature = "unicode")]
-mod strict;
-#[cfg(feature = "unicode")]
-mod unicode;
+mod command;
+mod srcdirs;
+mod unicode_version;
 
 // =============================================================================
-// RE-EXPORTS
+// USES
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-pub use ascii::*;
-pub use char_profile::*;
-#[cfg(feature = "unicode")]
-pub use strict::*;
-#[cfg(feature = "unicode")]
-pub use unicode::*;
+pub use command::*;
+pub use srcdirs::*;
+pub use unicode_version::*;

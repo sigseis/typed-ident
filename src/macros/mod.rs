@@ -21,5 +21,5 @@ mod impl_typed_slice_common;
 mod impl_typed_slice_traits;
 #[macro_use]
 #[cfg(test)]
-#[cfg(feature = "unicode-strict")]
+#[cfg(feature = "unicode")]
 mod test_as_ref_comprehensive;
