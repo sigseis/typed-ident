@@ -101,18 +101,6 @@ pub trait Identifier {
         crate::alloc::FragmentBuf::new()
     }
 
-    /// Constructs a new ident buffer for this type.
-    ///
-    /// See the [`IdentBuf`] documentation for details.
-    ///
-    /// [`IdentBuf`]: crate::alloc::IdentBuf
-    #[cfg(feature = "alloc")]
-    #[inline]
-    fn new_ident_buffer() -> crate::alloc::IdentBuf<Self::Boundary, Self::Delimiter, Self::Profile>
-    {
-        crate::alloc::IdentBuf::new()
-    }
-
     /// Casts the identifier to a fragment.
     ///
     /// See the [`Ident::as_fragment`] documentation for details.

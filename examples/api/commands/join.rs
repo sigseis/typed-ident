@@ -16,7 +16,7 @@ use typed_ident::{Error, Identifier};
 
 // -----------------------------------------------------------------------------
 fn join_fragments<I: Identifier + ?Sized>(cli: &Cli, delim: I::Delimiter) -> Option<Error> {
-    let mut ident = I::new_ident_buffer();
+    let mut ident = I::new_fragment_buffer();
     println!("starting join operations...");
     for fragment in cli.input.iter() {
         println!("  joining '{ident}' + '{fragment}' ->");
@@ -25,6 +25,12 @@ fn join_fragments<I: Identifier + ?Sized>(cli: &Cli, delim: I::Delimiter) -> Opt
         }
         println!("    success: {ident}");
     }
+
+    // Interpret the results as an identifier, this is the final check...
+    let ident = match ident.into_boxed_ident() {
+        Ok(ident) => ident,
+        Err(error) => return Some(error),
+    };
     println!("final identifier: {ident}");
     println!();
     None

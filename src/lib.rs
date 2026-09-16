@@ -49,7 +49,7 @@ pub use syntax::profile::UNICODE_VERSION;
 // -----------------------------------------------------------------------------
 #[doc(inline)]
 #[cfg(feature = "alloc")]
-pub use alloc::{ConvertibleIdentifier, FragmentBuf, IdentBuf, StringSegment};
+pub use alloc::{ConvertibleIdentifier, FragmentBuf, StringSegment};
 #[doc(inline)]
 pub use core::{
     Chunk, Error, FormattableIdentifier, Fragment, Ident, Identifier, Segment, StrSegment,

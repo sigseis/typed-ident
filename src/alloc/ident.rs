@@ -6,7 +6,7 @@
 use crate::alloc::IntoIntermediate;
 use crate::core::error::{Error, ErrorKind};
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
-use crate::{Fragment, FragmentBuf, Ident, IdentBuf};
+use crate::{Fragment, FragmentBuf, Ident};
 use std_alloc::boxed::Box;
 use std_alloc::format;
 use std_alloc::string::String;
@@ -58,7 +58,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// ```
     #[must_use = "this function returns an allocated identifier, it does not mutate the original"]
     #[inline]
-    pub fn join<F>(&self, fragment: F) -> Result<std_alloc::boxed::Box<Ident<B, D, P>>, Error>
+    pub fn join<F>(&self, fragment: F) -> Result<Box<Ident<B, D, P>>, Error>
     where
         D: Default,
         F: IntoIntermediate<B, D, P>,
@@ -111,11 +111,11 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     {
         let fragment = fragment.into_intermediate()?;
         let fragment: &Fragment<B, D, P> = fragment.as_ref();
-        let mut ident = IdentBuf::with_overhead(self, fragment.len() + 1);
+        let mut ident = FragmentBuf::with_overhead(self, fragment.len() + 1);
         ident
             .push_bounded_with(fragment, delim)
             .map_err(|_| Error::new(ErrorKind::FailedJoin))?;
-        Ok(ident.into_boxed_ident().unwrap())
+        ident.into_boxed_ident()
     }
 
     /// Converts a string into a boxed identifier if its valid.
@@ -168,18 +168,18 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     ///     "snake",
     ///     LowerSnakeFragment::new("serpent")?,
     /// )?;
-    /// assert_eq!(ident.as_ident_or_anonymous(), "example_serpent_identifier");
+    /// assert_eq!(ident.as_ident().unwrap(), "example_serpent_identifier");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "this function returns an allocated identifier, it does not mutate the original"]
     #[inline]
-    pub fn replace<M, F>(&self, from: M, to: F) -> Result<IdentBuf<B, D, P>, Error>
+    pub fn replace<M, F>(&self, from: M, to: F) -> Result<FragmentBuf<B, D, P>, Error>
     where
         M: crate::core::pattern::Pattern,
         F: IntoIntermediate<B, D, P>,
     {
         let to = to.into_intermediate()?;
-        IdentBuf::from_string(from.replace(self.as_str(), to.as_ref()))
+        FragmentBuf::from_string(from.replace(self.as_str(), to.as_ref()))
             .map_err(|_| Error::new(ErrorKind::FailedJoin))
     }
 
@@ -366,26 +366,6 @@ impl<B, D, P> Ident<B, D, P> {
         FragmentBuf::from_string_unchecked(self.into_string())
     }
 
-    /// Converts a boxed identifier into an identifier buffer.
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::*;
-    /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let ident: Box<LowerSnakeIdent> =
-    ///     Ident::new_boxed(String::from("snake_ident"))?;
-    /// let buffer: LowerSnakeIdentBuf = ident.into_ident_buf();
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use]
-    #[inline]
-    pub fn into_ident_buf(self: Box<Ident<B, D, P>>) -> IdentBuf<B, D, P> {
-        IdentBuf::from_string_unchecked(self.into_string())
-    }
-
     /// Converts a boxed identifier into a string.
     ///
     /// # Examples
@@ -434,24 +414,5 @@ impl<B, D, P> Ident<B, D, P> {
     #[inline]
     pub fn to_fragment_buf(&self) -> FragmentBuf<B, D, P> {
         FragmentBuf::from_fragment(self)
-    }
-
-    /// Converts an identifier into an identifier buffer.
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::*;
-    /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let ident: &LowerSnakeIdent = Ident::new("snake_ident")?;
-    /// let buffer: LowerSnakeIdentBuf = ident.to_ident_buf();
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use]
-    #[inline]
-    pub fn to_ident_buf(&self) -> IdentBuf<B, D, P> {
-        IdentBuf::from_ident(self)
     }
 }

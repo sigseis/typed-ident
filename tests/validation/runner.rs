@@ -173,31 +173,6 @@ fn test_ident_pass<I: Identifier + TypeLabel + ?Sized>(
         );
     }
 
-    // Test building an ident buffer from segments
-    {
-        let mut buffer = I::new_ident_buffer();
-        buffer.reserve(test.name.len());
-        for segment in test.segments(boundaries) {
-            if let Err(error) = buffer.push(&segment) {
-                eprintln!(
-                    "⛔ {test}: {type_label}: unable to re-construct ident buffer from segments"
-                );
-                eprintln!("  buffer: {buffer:?}");
-                eprintln!("  failed: {segment:?}");
-                eprintln!("   error: {error}");
-                return TestResult::Fail;
-            }
-        }
-        if buffer != test.name {
-            eprintln!(
-                "⛔ {test}: {type_label}: re-constructed ident buffer doesn't match original"
-            );
-            eprintln!("  expected: {test}");
-            eprintln!("    actual: {buffer:?}");
-            return TestResult::Fail;
-        }
-    }
-
     // Test building a fragment buffer from segments
     {
         let mut buffer = I::new_fragment_buffer();
@@ -219,6 +194,13 @@ fn test_ident_pass<I: Identifier + TypeLabel + ?Sized>(
             );
             eprintln!("  expected: {test:?}");
             eprintln!("    actual: {buffer:?}");
+            return TestResult::Fail;
+        }
+        if let Err(error) = buffer.as_ident() {
+            eprintln!(
+                "⛔ {test}: {type_label}: re-constructed fragment buffer unable to be represented as an ident"
+            );
+            eprintln!("   error: {error}");
             return TestResult::Fail;
         }
     }
