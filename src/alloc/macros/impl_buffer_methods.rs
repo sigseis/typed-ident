@@ -8,7 +8,7 @@ macro_rules! impl_buffer_methods {
             /// string slice (attempting first to convert the string slice to a valid
             /// ident).
             ///
-            /// This is equivalent to `IdentBuf::from_fragment(Fragment::new(s)?)`.
+            /// This is equivalent to `FragmentBuf::from_fragment(Fragment::new(s)?)`.
             ///
             /// # Examples
             ///
@@ -16,11 +16,11 @@ macro_rules! impl_buffer_methods {
             ///
             /// ```
             /// # use typed_ident::*;
-            /// # use presets::unicode::upper_camel::UpperCamelIdentBuf;
-            /// assert!(UpperCamelIdentBuf::from_str("").is_err());
-            /// assert!(UpperCamelIdentBuf::from_str("ValidUpperCamel").is_ok());
-            /// assert!(UpperCamelIdentBuf::from_str("continuingUpperCamel").is_err());
-            /// assert!(UpperCamelIdentBuf::from_str("not_validUpperCamel").is_err());
+            /// # use presets::unicode::upper_camel::UpperCamelFragmentBuf;
+            /// assert!(UpperCamelFragmentBuf::from_str("").is_ok());
+            /// assert!(UpperCamelFragmentBuf::from_str("ValidUpperCamel").is_ok());
+            /// assert!(UpperCamelFragmentBuf::from_str("continuingUpperCamel").is_ok());
+            /// assert!(UpperCamelFragmentBuf::from_str("not_validUpperCamel").is_err());
             /// # Ok::<(), Error>(())
             /// ```
             #[inline]
@@ -43,11 +43,11 @@ macro_rules! impl_buffer_methods {
             ///
             /// ```
             /// # use typed_ident::*;
-            /// # use presets::unicode::upper_camel::UpperCamelIdentBuf;
-            /// assert!(UpperCamelIdentBuf::from_string(String::from("")).is_err());
-            /// assert!(UpperCamelIdentBuf::from_string(String::from("ValidUpperCamel")).is_ok());
-            /// assert!(UpperCamelIdentBuf::from_string(String::from("continuingUpperCamel")).is_err());
-            /// assert!(UpperCamelIdentBuf::from_string(String::from("not_validUpperCamel")).is_err());
+            /// # use presets::unicode::upper_camel::UpperCamelFragmentBuf;
+            /// assert!(UpperCamelFragmentBuf::from_string(String::from("")).is_ok());
+            /// assert!(UpperCamelFragmentBuf::from_string(String::from("ValidUpperCamel")).is_ok());
+            /// assert!(UpperCamelFragmentBuf::from_string(String::from("continuingUpperCamel")).is_ok());
+            /// assert!(UpperCamelFragmentBuf::from_string(String::from("not_validUpperCamel")).is_err());
             /// # Ok::<(), Error>(())
             #[inline]
             pub fn from_string(s: String) -> Result<Self, Error> {

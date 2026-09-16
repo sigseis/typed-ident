@@ -63,7 +63,7 @@ After constructing a valid [`Ident`], there are *many* operations that you can p
 
 ## Design
 
-This crate works with base configurable identifier types; [`Ident`] and [`IdentBuf`].
+This crate works with base configurable identifier type, [`Ident`].
 
 The idea is that most common identifier formats can be defined by 3 things:
 

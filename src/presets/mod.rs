@@ -12,7 +12,6 @@ macro_rules! impl_type_aliases {
             fragment=$fragment:ident,
             fragment_buf=$fragment_buf:ident,
             ident=$ident:ident,
-            ident_buf=$ident_buf:ident,
             module=$module:ident,
             segment=$segment:ident,
         },
@@ -52,14 +51,6 @@ macro_rules! impl_type_aliases {
                 crate::syntax::profile::case::$case<P>,
             >;
 
-            #[cfg(feature = "alloc")]
-            #[doc = concat!($doc, " buffer.")]
-            pub type $ident_buf<P, O = crate::syntax::boundary::options::$options> = crate::alloc::IdentBuf<
-                crate::syntax::boundary::Standard<O>,
-                crate::syntax::delimiter::$delimiter,
-                crate::syntax::profile::case::$case<P>,
-            >;
-
             #[doc = concat!("The segment type for [`", stringify!($ident) ,"`].")]
             pub type $segment<'a, P, O = crate::syntax::boundary::options::$options> = crate::core::Segment<
                 crate::syntax::delimiter::$delimiter,
@@ -72,9 +63,6 @@ macro_rules! impl_type_aliases {
         }
         #[doc(inline)]
         pub use $module::$ident;
-        #[doc(inline)]
-        #[cfg(feature = "alloc")]
-        pub use $module::$ident_buf;
     };
     (
         profile=$profile:ident,
@@ -83,7 +71,6 @@ macro_rules! impl_type_aliases {
             fragment=$fragment:ident,
             fragment_buf=$fragment_buf:ident,
             ident=$ident:ident,
-            ident_buf=$ident_buf:ident,
             module=$module:ident,
             segment=$segment:ident,
         },
@@ -123,14 +110,6 @@ macro_rules! impl_type_aliases {
                 crate::syntax::profile::case::$case<crate::syntax::profile::$profile>,
             >;
 
-            #[cfg(feature = "alloc")]
-            #[doc = concat!($doc, " buffer.")]
-            pub type $ident_buf = crate::alloc::IdentBuf<
-                crate::syntax::boundary::Standard<crate::syntax::boundary::options::$options>,
-                crate::syntax::delimiter::$delimiter,
-                crate::syntax::profile::case::$case<crate::syntax::profile::$profile>
-            >;
-
             #[doc = concat!("The segment type for [`", stringify!($ident) ,"`].")]
             pub type $segment<'a> = crate::core::Segment<
                 crate::syntax::delimiter::$delimiter,
@@ -143,9 +122,6 @@ macro_rules! impl_type_aliases {
         }
         #[doc(inline)]
         pub use $module::$ident;
-        #[doc(inline)]
-        #[cfg(feature = "alloc")]
-        pub use $module::$ident_buf;
     };
     (
         $($tt:tt)*
@@ -157,7 +133,6 @@ macro_rules! impl_type_aliases {
                 fragment=CamelFragment,
                 fragment_buf=CamelFragmentBuf,
                 ident=CamelIdent,
-                ident_buf=CamelIdentBuf,
                 module=camel,
                 segment=CamelSegment,
             },
@@ -173,7 +148,6 @@ macro_rules! impl_type_aliases {
                 fragment=CasedCamelFragment,
                 fragment_buf=CasedCamelFragmentBuf,
                 ident=CasedCamelIdent,
-                ident_buf=CasedCamelIdentBuf,
                 module=cased_camel,
                 segment=CasedCamelSegment,
             },
@@ -189,7 +163,6 @@ macro_rules! impl_type_aliases {
                 fragment=LowerCamelFragment,
                 fragment_buf=LowerCamelFragmentBuf,
                 ident=LowerCamelIdent,
-                ident_buf=LowerCamelIdentBuf,
                 module=lower_camel,
                 segment=LowerCamelSegment,
             },
@@ -205,7 +178,6 @@ macro_rules! impl_type_aliases {
                 fragment=UpperCamelFragment,
                 fragment_buf=UpperCamelFragmentBuf,
                 ident=UpperCamelIdent,
-                ident_buf=UpperCamelIdentBuf,
                 module=upper_camel,
                 segment=UpperCamelSegment,
             },
@@ -221,7 +193,6 @@ macro_rules! impl_type_aliases {
                 fragment=HybridFragment,
                 fragment_buf=HybridFragmentBuf,
                 ident=HybridIdent,
-                ident_buf=HybridIdentBuf,
                 module=hybrid,
                 segment=HybridSegment,
             },
@@ -237,7 +208,6 @@ macro_rules! impl_type_aliases {
                 fragment=CasedHybridFragment,
                 fragment_buf=CasedHybridFragmentBuf,
                 ident=CasedHybridIdent,
-                ident_buf=CasedHybridIdentBuf,
                 module=cased_hybrid,
                 segment=CasedHybridSegment,
             },
@@ -253,7 +223,6 @@ macro_rules! impl_type_aliases {
                 fragment=LowerHybridFragment,
                 fragment_buf=LowerHybridFragmentBuf,
                 ident=LowerHybridIdent,
-                ident_buf=LowerHybridIdentBuf,
                 module=lower_hybrid,
                 segment=LowerHybridSegment,
             },
@@ -269,7 +238,6 @@ macro_rules! impl_type_aliases {
                 fragment=UpperHybridFragment,
                 fragment_buf=UpperHybridFragmentBuf,
                 ident=UpperHybridIdent,
-                ident_buf=UpperHybridIdentBuf,
                 module=upper_hybrid,
                 segment=UpperHybridSegment,
             },
@@ -285,7 +253,6 @@ macro_rules! impl_type_aliases {
                 fragment=KebabFragment,
                 fragment_buf=KebabFragmentBuf,
                 ident=KebabIdent,
-                ident_buf=KebabIdentBuf,
                 module=kebab,
                 segment=KebabSegment,
             },
@@ -301,7 +268,6 @@ macro_rules! impl_type_aliases {
                 fragment=CasedKebabFragment,
                 fragment_buf=CasedKebabFragmentBuf,
                 ident=CasedKebabIdent,
-                ident_buf=CasedKebabIdentBuf,
                 module=cased_kebab,
                 segment=CasedKebabSegment,
             },
@@ -317,7 +283,6 @@ macro_rules! impl_type_aliases {
                 fragment=LowerKebabFragment,
                 fragment_buf=LowerKebabFragmentBuf,
                 ident=LowerKebabIdent,
-                ident_buf=LowerKebabIdentBuf,
                 module=lower_kebab,
                 segment=LowerKebabSegment,
             },
@@ -333,7 +298,6 @@ macro_rules! impl_type_aliases {
                 fragment=UpperKebabFragment,
                 fragment_buf=UpperKebabFragmentBuf,
                 ident=UpperKebabIdent,
-                ident_buf=UpperKebabIdentBuf,
                 module=upper_kebab,
                 segment=UpperKebabSegment,
             },
@@ -349,7 +313,6 @@ macro_rules! impl_type_aliases {
                 fragment=SnakeFragment,
                 fragment_buf=SnakeFragmentBuf,
                 ident=SnakeIdent,
-                ident_buf=SnakeIdentBuf,
                 module=snake,
                 segment=SnakeSegment,
             },
@@ -365,7 +328,6 @@ macro_rules! impl_type_aliases {
                 fragment=CasedSnakeFragment,
                 fragment_buf=CasedSnakeFragmentBuf,
                 ident=CasedSnakeIdent,
-                ident_buf=CasedSnakeIdentBuf,
                 module=cased_snake,
                 segment=CasedSnakeSegment,
             },
@@ -381,7 +343,6 @@ macro_rules! impl_type_aliases {
                 fragment=LowerSnakeFragment,
                 fragment_buf=LowerSnakeFragmentBuf,
                 ident=LowerSnakeIdent,
-                ident_buf=LowerSnakeIdentBuf,
                 module=lower_snake,
                 segment=LowerSnakeSegment,
             },
@@ -397,7 +358,6 @@ macro_rules! impl_type_aliases {
                 fragment=UpperSnakeFragment,
                 fragment_buf=UpperSnakeFragmentBuf,
                 ident=UpperSnakeIdent,
-                ident_buf=UpperSnakeIdentBuf,
                 module=upper_snake,
                 segment=UpperSnakeSegment,
             },

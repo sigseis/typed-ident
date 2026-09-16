@@ -3,7 +3,7 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::alloc::{FragmentBuf, IdentBuf};
+use crate::alloc::FragmentBuf;
 use crate::core::error::{Error, ErrorKind};
 use crate::syntax::{Boundary, CasedProfile, Delimiter, SyntaxError};
 use core::marker::PhantomData;
@@ -20,34 +20,20 @@ enum Undo {
     Truncate(usize),
 }
 
-// -----------------------------------------------------------------------------
-pub(super) struct TypedBufOp<'a, const IDENT: bool, B, D, P> {
+/// Performs untyped modifications on the underlying buffer, and converts back
+/// to the typed `FragmentBuf` representation at the end of a valid operation.
+///
+/// This exists to keep the implementation of `FragmentBuf` clean, and easily
+/// statically analyzed to ensure correctness.
+pub(super) struct FragmentBufOp<'a, B, D, P> {
     buffer: &'a mut String,
     undo: Undo,
     phantom: PhantomData<(B, D, P)>,
 }
 
-// -----------------------------------------------------------------------------
-pub(super) type FragmentBufOp<'a, B, D, P> = TypedBufOp<'a, false, B, D, P>;
-
-// -----------------------------------------------------------------------------
-pub(super) type IdentBufOp<'a, B, D, P> = TypedBufOp<'a, true, B, D, P>;
-
 // =============================================================================
 // IMPLS
 // =============================================================================
-
-// -----------------------------------------------------------------------------
-impl<'a, B, D: Delimiter, P: CasedProfile> IdentBufOp<'a, B, D, P> {
-    #[inline]
-    pub fn new(buffer: &'a mut IdentBuf<B, D, P>) -> Self {
-        Self {
-            undo: Undo::Truncate(buffer.len()),
-            buffer: &mut buffer.inner.inner,
-            phantom: PhantomData,
-        }
-    }
-}
 
 // -----------------------------------------------------------------------------
 impl<'a, B, D: Delimiter, P: CasedProfile> FragmentBufOp<'a, B, D, P> {
@@ -62,15 +48,10 @@ impl<'a, B, D: Delimiter, P: CasedProfile> FragmentBufOp<'a, B, D, P> {
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, const IDENT: bool, B: Boundary, D: Delimiter, P: CasedProfile>
-    TypedBufOp<'a, IDENT, B, D, P>
-{
+impl<'a, B: Boundary, D: Delimiter, P: CasedProfile> FragmentBufOp<'a, B, D, P> {
     #[inline]
     pub fn check_str(s: &str) -> Result<(), SyntaxError> {
-        match IDENT {
-            false => P::is_fragment::<D>(s),
-            true => P::is_ident::<D>(s),
-        }
+        P::is_fragment::<D>(s)
     }
 
     #[inline]

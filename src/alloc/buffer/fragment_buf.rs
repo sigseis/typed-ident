@@ -9,6 +9,7 @@ use crate::core::{Chunk, Fragment, Ident};
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
 use core::marker::PhantomData;
 use core::ops::RangeBounds;
+use std_alloc::boxed::Box;
 use std_alloc::collections::TryReserveError;
 use std_alloc::string::String;
 
@@ -56,6 +57,35 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     #[inline]
     pub fn as_ident(&self) -> Result<&Ident<B, D, P>, Error> {
         Ident::from_fragment(self.as_fragment())
+    }
+
+    /// Attempts to convert the current fragment buffer into a boxed [`Ident`].
+    ///
+    /// This may fail - a fragment isn't obviously a valid identifier, plus the
+    /// fragment could be empty (which is never a valid identifier).
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::*;
+    /// # use presets::unicode::hybrid::HybridFragmentBuf;
+    /// let mut buffer = HybridFragmentBuf::new();
+    /// assert!(buffer.into_boxed_ident().is_err()); // Empty
+    ///
+    /// let mut buffer = HybridFragmentBuf::new();
+    /// buffer.push('2')?;
+    /// assert!(buffer.into_boxed_ident().is_err()); // Invalid start character
+    ///
+    /// let mut buffer = HybridFragmentBuf::new();
+    /// buffer.push('a')?;
+    /// assert!(buffer.into_boxed_ident().is_ok()); // Valid!
+    /// # Ok::<(), Error>(())
+    /// ```
+    pub fn into_boxed_ident(self) -> Result<Box<Ident<B, D, P>>, Error> {
+        P::is_ident_fragment::<D>(self.as_str())?;
+        Ok(Ident::new_boxed_unchecked(self.inner))
     }
 
     #[doc = include_str!("docs/methods/split_off.md")]
