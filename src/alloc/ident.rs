@@ -137,52 +137,6 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
         Ok(Self::new_boxed_unchecked(string))
     }
 
-    /// Returns a heap-allocated identifier, replacing the provided pattern with
-    /// a fragment of the user's choice.
-    ///
-    /// # Errors
-    ///
-    /// Returns `Err` if the fragment formed from the combination of `self` and
-    /// `to` is invalid at any replacement index. If invalid, an [`Error`] is
-    /// returned with the [`error_kind`] set to `FailedReplaceLeft` or
-    /// `FailedReplaceRight` (if the replacement succeeded, but the remainder
-    /// could not be appended).
-    ///
-    /// The value [`byte_offset`] *WILL* be set from this function, and it will
-    /// be set to the index that caused the failure from the original fragment
-    /// (`self`).
-    ///
-    /// [`Error`]: crate::Error
-    /// [`error_kind`]: crate::Error::error_kind
-    /// [`byte_offset`]: crate::Error::byte_offset
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::syntax::delimiter::LowLine;
-    /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let ident = LowerSnakeIdent::new("example_snake_identifier")?;
-    /// let ident = ident.replace(
-    ///     "snake",
-    ///     LowerSnakeFragment::new("serpent")?,
-    /// )?;
-    /// assert_eq!(ident.as_ident().unwrap(), "example_serpent_identifier");
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "this function returns an allocated identifier, it does not mutate the original"]
-    #[inline]
-    pub fn replace<M, F>(&self, from: M, to: F) -> Result<FragmentBuf<B, D, P>, Error>
-    where
-        M: crate::core::pattern::Pattern,
-        F: IntoIntermediate<B, D, P>,
-    {
-        let to = to.into_intermediate()?;
-        FragmentBuf::from_string(from.replace(self.as_str(), to.as_ref()))
-            .map_err(|_| Error::new(ErrorKind::FailedJoin))
-    }
-
     /// Returns a heap-allocated identifier with the provided prefix and suffix
     /// attached to the original identifier.
     ///

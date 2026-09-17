@@ -92,15 +92,4 @@ pub trait CasedProfile: Profile {
         // Though it might be less optimal depending on the cased profile.
         Self::is_ident::<D>(fragment)
     }
-
-    /// Given a UTF-8 string that is known to pass [`is_ident`], check whether
-    /// or not the provided `mid` would be a split point that would leave the
-    /// left-hand side either empty, or would still pass an [`is_ident`] check.
-    ///
-    /// Some implementations may check additional properties, like for unicode
-    /// values that they properly use things like `ZWJ` and `ZWNJ` characters.
-    /// So we cannot assume that just any index is valid to split on.
-    ///
-    /// [`is_ident`]: Self::is_ident
-    fn is_ident_split_boundary<D: Delimiter>(ident: &str, mid: usize) -> bool;
 }

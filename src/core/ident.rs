@@ -184,91 +184,6 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
         P::is_ident::<D>(s)?;
         Ok(Self::new_unchecked(s))
     }
-
-    /// Divides one identifier at an index, leaving an optional identifier on
-    /// the left, and a fragment on the right.
-    ///
-    /// The argument, `mid`, should be a byte offset from the start of the
-    /// identifier. It must also be on the boundary of a UTF-8 code point.
-    ///
-    /// The two slices returned go from the start of the identifier to `mid`,
-    /// and from `mid` to the end of the identifier.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `mid` is not on a UTF-8 code point boundary, or if it is past
-    /// the end of the last code point of the identifier, or if the left-hand
-    /// side remainder would not be left as a valid ident. For a non-panicking
-    /// alternative see [`split_at_checked`].
-    ///
-    /// [`split_at_checked`]: Self::split_at_checked
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::presets::unicode::hybrid::*;
-    /// let slice = HybridIdent::new("こんにちは世界")?;
-    ///
-    /// let (first, last) = slice.split_at(15);
-    /// assert_eq!(first, Some(HybridIdent::new("こんにちは")?));
-    /// assert_eq!(last, HybridIdent::new("世界")?);
-    ///
-    /// let (first, last) = slice.split_at(0);
-    /// assert_eq!(first, None);
-    /// assert_eq!(last, HybridIdent::new("こんにちは世界")?);
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use]
-    #[inline]
-    pub fn split_at(&self, mid: usize) -> (Option<&Self>, &Fragment<B, D, P>) {
-        let (left, right) = self.as_fragment().split_at(mid);
-        assert!(
-            P::is_ident_split_boundary::<D>(self.as_str(), mid),
-            "provided index `mid` is not a valid split point for this identifier",
-        );
-        (Self::from_fragment_unchecked_opt(left), right)
-    }
-
-    /// Divides one identifier at an index, leaving an optional identifier on
-    /// the left, and a fragment on the right.
-    ///
-    /// The argument, `mid`, should be a byte offset from the start of the
-    /// identifier. It must also be on the boundary of a UTF-8 code point. The
-    /// method returns `None` if that's not the case.
-    ///
-    /// The two slices returned go from the start of the identifier to `mid`,
-    /// and from `mid` to the end of the identifier.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::presets::unicode::hybrid::*;
-    /// let slice = HybridIdent::new("こんにちは世界")?;
-    ///
-    /// let (first, last) = slice.split_at_checked(15).unwrap();
-    /// assert_eq!(first, Some(HybridIdent::new("こんにちは")?));
-    /// assert_eq!(last, HybridIdent::new("世界")?);
-    ///
-    /// let (first, last) = slice.split_at_checked(0).unwrap();
-    /// assert_eq!(first, None);
-    /// assert_eq!(last, HybridIdent::new("こんにちは世界")?);
-    ///
-    /// assert!(slice.split_at_checked(16).is_none()); // Inside "世"
-    /// assert!(slice.split_at_checked(42).is_none()); // Beyond the length
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use]
-    #[inline]
-    #[allow(clippy::type_complexity)] // I thought about this a lot - a helper type only hurts here.
-    pub fn split_at_checked(&self, mid: usize) -> Option<(Option<&Self>, &Fragment<B, D, P>)> {
-        match self.as_fragment().split_at_checked(mid) {
-            Some((l, r)) if P::is_ident_split_boundary::<D>(self.as_str(), mid) => {
-                Some((Self::from_fragment_unchecked_opt(l), r))
-            }
-            _ => None,
-        }
-    }
-
     /// Trims any decorative delimiters from the identifier.
     ///
     /// This function cannot leave you with an invalid identifier, it
@@ -652,15 +567,6 @@ impl<B, D, P> Ident<B, D, P> {
         // str. Because of this, the layout, alignment, metadata, and validity
         // are identical.
         unsafe { core::mem::transmute::<&str, &Ident<B, D, P>>(s) }
-    }
-
-    #[must_use]
-    #[inline(always)]
-    const fn from_fragment_unchecked_opt(fragment: &Fragment<B, D, P>) -> Option<&Self> {
-        match fragment.is_empty() {
-            true => None,
-            false => Some(Self::new_unchecked(fragment.as_str())),
-        }
     }
 
     /// Attempts a fallible cast into the type-configured target.
