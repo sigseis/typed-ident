@@ -55,7 +55,7 @@ After constructing a valid [`Ident`], there are *many* operations that you can p
 [`Ident`]: crate::core::Ident
 [`cast`]: crate::core::Ident::cast
 [`join`]: crate::core::Ident::join
-[`replace`]: crate::core::Ident::replace
+[`replace`]: crate::core::Fragment::replace
 [`segments`]: crate::core::Fragment::segments
 [`split_at`]: crate::core::Ident::split_at
 [`trim_decorative_delims`]: crate::core::Ident::trim_decorative_delims

@@ -149,10 +149,10 @@ pub trait Identifier {
         &self,
         mid: usize,
     ) -> (
-        Option<&Ident<Self::Boundary, Self::Delimiter, Self::Profile>>,
+        &Fragment<Self::Boundary, Self::Delimiter, Self::Profile>,
         &Fragment<Self::Boundary, Self::Delimiter, Self::Profile>,
     ) {
-        self.as_ident().split_at(mid)
+        self.as_fragment().split_at(mid)
     }
 
     /// Splits an identifier into fragments at the given index (checked variant).
@@ -164,10 +164,10 @@ pub trait Identifier {
         &self,
         mid: usize,
     ) -> Option<(
-        Option<&Ident<Self::Boundary, Self::Delimiter, Self::Profile>>,
+        &Fragment<Self::Boundary, Self::Delimiter, Self::Profile>,
         &Fragment<Self::Boundary, Self::Delimiter, Self::Profile>,
     )> {
-        self.as_ident().split_at_checked(mid)
+        self.as_fragment().split_at_checked(mid)
     }
 
     /// Trims the decorative (non-required) delimiters from the ends of an

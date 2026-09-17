@@ -65,11 +65,6 @@ impl<P: CharProfile> CasedProfile for Mixed<P> {
     fn is_ident_fragment<D: Delimiter>(fragment: &str) -> Result<(), SyntaxError> {
         Independent::<D, Self>::is_ident_fragment(fragment)
     }
-
-    #[inline(always)]
-    fn is_ident_split_boundary<D: Delimiter>(_ident: &str, _mid: usize) -> bool {
-        true
-    }
 }
 
 /// Proof: If `Super` ⊆ `Subset`, then `Super` ⊆ `Mixed<Subset>`.
