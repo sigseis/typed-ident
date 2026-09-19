@@ -11,7 +11,7 @@ use crate::syntax::Delimiter;
 // TYPES
 // =============================================================================
 
-/// An iterator over the contiguous segment string slices of a fragment and
+/// An iterator over the type-erased chunk and delimiters of a fragment and
 /// their positions.
 ///
 /// This struct is created by calling [`type_erased`] on the

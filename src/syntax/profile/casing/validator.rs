@@ -64,7 +64,7 @@ impl<C: Casing, D: Delimiter, P: CasedProfile> Validator<C, D, P> {
         }
     }
 
-    #[inline(always)]
+    #[inline]
     fn is_valid_append_opened<const ALLOW_DELIMS: bool>(
         s: &str,
         ident_start_chunk: impl FnOnce(char, &mut C) -> bool,
@@ -115,7 +115,7 @@ impl<C: Casing, D: Delimiter, P: CasedProfile> Validator<C, D, P> {
         Ok(())
     }
 
-    #[inline(always)]
+    #[inline]
     fn is_valid_append_closed<const ALLOW_DELIMS: bool>(
         s: &str,
         ident_start_chunk: impl FnOnce(char, &mut C) -> bool,
@@ -165,7 +165,7 @@ impl<C: Casing, D: Delimiter, P: CasedProfile> Validator<C, D, P> {
 
 // -----------------------------------------------------------------------------
 impl<C: Casing, D: Delimiter, P: CasedProfile> Validator<C, D, P> {
-    #[inline(always)]
+    #[inline]
     pub fn is_chunk(s: &str) -> Result<(), SyntaxError> {
         Self::is_valid::<false>(
             s,
@@ -173,7 +173,7 @@ impl<C: Casing, D: Delimiter, P: CasedProfile> Validator<C, D, P> {
             D::is_delim,
         )
     }
-    #[inline(always)]
+    #[inline]
     pub fn is_fragment(s: &str) -> Result<(), SyntaxError> {
         Self::is_valid::<true>(
             s,
@@ -181,7 +181,7 @@ impl<C: Casing, D: Delimiter, P: CasedProfile> Validator<C, D, P> {
             D::is_delim,
         )
     }
-    #[inline(always)]
+    #[inline]
     pub fn is_ident(s: &str) -> Result<(), SyntaxError> {
         if s.is_empty() {
             return Err(SyntaxError::Empty);
@@ -192,7 +192,7 @@ impl<C: Casing, D: Delimiter, P: CasedProfile> Validator<C, D, P> {
             D::is_ident_start_delim,
         )
     }
-    #[inline(always)]
+    #[inline]
     pub fn is_ident_fragment(fragment: &str) -> Result<(), SyntaxError> {
         // If the casing checks are uniform, the order of the casing does not
         // matter, in which case we can simply check the first character to see

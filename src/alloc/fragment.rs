@@ -20,28 +20,11 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// Returns a heap-allocated fragment, joined with the original fragment in
     /// a way that preserves chunk boundaries.
     ///
-    /// At the end of the operation, the total number of chunked segments
-    /// present in the fragment will be equal to the sum of each fragment,
-    /// potentially plus one additional fragment in the case where we needed to
-    /// join using a delimiter to preserve chunk boundaries.
-    ///
-    /// This call is identical to [`join_with`] with the default delimiter.
+    /// This is a convenience function for cases when the delimiter value can be
+    /// deduced by the `Default` trait. For more information on this operation,
+    /// see the [`join_with`] method.
     ///
     /// [`join_with`]: Self::join_with
-    ///
-    /// # Errors
-    ///
-    /// Returns `Err` if the fragment formed from the combination of `self` and
-    /// `fragment` is invalid. If invalid, an [`Error`] is returned with the
-    /// [`error_kind`] set to `FailedJoinLeft`.
-    ///
-    /// The value [`byte_offset`] will *NOT* be set from this function. None of
-    /// the individual characters are invalid, it's just that the combination of
-    /// joining the fragments themselves is invalid.
-    ///
-    /// [`Error`]: crate::Error
-    /// [`error_kind`]: crate::Error::error_kind
-    /// [`byte_offset`]: crate::Error::byte_offset
     ///
     /// # Examples
     ///
@@ -50,9 +33,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// ```
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// let fragment = LowerSnakeFragment::new("snake")?;
-    /// let fragment = fragment.join(
-    ///     LowerSnakeFragment::new("fragment")?,
-    /// )?;
+    /// let fragment = fragment.join("fragment")?;
     /// assert_eq!(fragment, "snake_fragment");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -69,23 +50,49 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// Returns a heap-allocated fragment, joined with the original fragment in
     /// a way that preserves chunk boundaries.
     ///
+    /// This function takes anything that can be represented as an intermediate
+    /// fragment. That means it can take a `&str`, `char`, `Fragment`, `Chunk`,
+    /// `Identifier`, or `Segment`.
+    ///
+    /// If you're working with an fragment format which has only a single valid
+    /// delimiter value, you should instead be able to use the [`join`] method,
+    /// and should prefer that.
+    ///
+    /// [`join`]: Self::join
+    ///
+    /// # Preserving Chunk Boundaries
+    ///
     /// At the end of the operation, the total number of chunked segments
     /// present in the fragment will be equal to the sum of each fragment,
     /// potentially plus one additional fragment in the case where we needed to
     /// join using a delimiter to preserve chunk boundaries.
     ///
+    /// Whether or not a delimiter is needed is found using the [`Boundary`]
+    /// trait. The general strategy for joining looks like this:
+    ///
+    /// 1. The string is joined on the end of the current fragment.
+    /// 2. [`Boundary::has_boundary_at`] is called with the old fragment length
+    ///    to ensure there's still a boundary between the end of the original
+    ///    fragment and the joined fragment.
+    /// 3. If there's no boundary, the `delim` character is inserted at that
+    ///    location to force a boundary.
+    ///
+    /// The goal of any joining operation is *not to merge chunks*.
+    ///
     /// # Errors
     ///
-    /// Returns `Err` if the fragment formed from the combination of `self` and
-    /// `fragment` is invalid. If invalid, an [`Error`] is returned with the
-    /// [`error_kind`] set to `FailedJoinLeft`.
+    /// Returns [`Error`] if the intermediate fragment provided is invalid, or
+    /// if the combination of `self` and `fragment` cannot produce a valid
+    /// result.
     ///
-    /// The value [`byte_offset`] will *NOT* be set from this function. None of
-    /// the individual characters are invalid, it's just that the combination of
-    /// joining the fragments themselves is invalid.
+    /// If the intermediate fragment is invalid, then the `InvalidFormat` error
+    /// kind will be returned, with the [`byte_offset`] set to the first invalid
+    /// character of the intermediate fragment.
+    ///
+    /// If the join operation itself failed, then the `FailedJoin` error kind
+    /// is returned, without setting the `byte_offset`.
     ///
     /// [`Error`]: crate::Error
-    /// [`error_kind`]: crate::Error::error_kind
     /// [`byte_offset`]: crate::Error::byte_offset
     ///
     /// # Examples
@@ -96,10 +103,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// # use typed_ident::syntax::delimiter::LowLine;
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// let fragment = LowerSnakeFragment::new("snake")?;
-    /// let fragment = fragment.join_with(
-    ///     LowerSnakeFragment::new("fragment")?,
-    ///     LowLine,
-    /// )?;
+    /// let fragment = fragment.join_with("fragment", LowLine)?;
     /// assert_eq!(fragment, "snake_fragment");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -118,7 +122,17 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
         Ok(buffer)
     }
 
-    /// Converts a string into a boxed identifier if its valid.
+    /// Converts a string into a boxed fragment if its valid.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error`] if the fragment does not satisfy the character
+    /// requirements. If an invalid character is found then a `InvalidFormat`
+    /// error kind is returned, with [`byte_offset`] set to the byte index for
+    /// the first invalid character.
+    ///
+    /// [`Error`]: crate::Error
+    /// [`byte_offset`]: crate::Error::byte_offset
     ///
     /// # Examples
     ///
@@ -133,28 +147,31 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// ```
     #[inline]
     pub fn new_boxed(string: String) -> Result<Box<Fragment<B, D, P>>, Error> {
-        let _ = Fragment::<B, D, P>::new(&string)?;
+        P::is_fragment::<D>(&string)?;
         Ok(Self::new_boxed_unchecked(string))
     }
 
     /// Returns a heap-allocated fragment, replacing the provided pattern with
     /// a fragment of the user's choice.
     ///
+    /// For `from`, the pattern can be a `&str`, [`char`], a slice of [`char`]s,
+    /// or a function or closure that determines if a character matches.
+    ///
+    /// For `to`, this function takes anything that can be represented as an
+    /// intermediate fragment. That means it can take a `&str`, `char`,
+    /// `Fragment`, `Chunk`, `Identifier`, or `Segment`.
+    ///
     /// # Errors
     ///
-    /// Returns `Err` if the fragment formed from the combination of `self` and
-    /// `to` is invalid at any replacement index. If invalid, an [`Error`] is
-    /// returned with the [`error_kind`] set to either `FailedReplaceLeft` (if
-    /// `to` was invalid at a specific replacement) or `FailedReplaceRight` (if
-    /// `to` was valid, but the remainder was not valid after `to`).
+    /// Returns [`Error`] if the intermediate fragment provided is invalid, or
+    /// if the replacement of `from` to `to` does not produce a valid fragment.
     ///
-    /// The value [`byte_offset`] *WILL* be set from this function, and it will
-    /// be set to the index that caused the failure from the original fragment
-    /// (`self`).
+    /// If the intermediate fragment is invalid, then the `InvalidFormat` error
+    /// kind will be returned, with the [`byte_offset`] set to the first invalid
+    /// character of the intermediate fragment.
     ///
-    /// So for `FailedReplaceLeft`, this is the byte index of the replacement.
-    /// For `FailedReplaceRight`, this is the byte index of the residual that
-    /// failed to join with the replacement.
+    /// If the replace operation itself failed, then the `FailedReplace` error
+    /// kind is returned, without setting the `byte_offset`.
     ///
     /// [`Error`]: crate::Error
     /// [`error_kind`]: crate::Error::error_kind
@@ -168,10 +185,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// # use typed_ident::syntax::delimiter::LowLine;
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// let fragment = LowerSnakeFragment::new("example_snake_identifier")?;
-    /// let fragment = fragment.replace(
-    ///     "snake",
-    ///     LowerSnakeFragment::new("serpent")?,
-    /// )?;
+    /// let fragment = fragment.replace("snake", "serpent")?;
     /// assert_eq!(fragment, "example_serpent_identifier");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -190,16 +204,23 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// Returns a heap-allocated fragment with the provided prefix and suffix
     /// attached to the original fragment.
     ///
+    /// The affixes provided to this function takes anything that can be
+    /// represented as an intermediate fragment. That means it can take a
+    /// `&str`, `char`, `Fragment`, `Chunk`, `Identifier`, or `Segment`.
+    ///
     /// # Errors
     ///
-    /// Returns `Err` if the fragment formed from the combination of `prefix`,
-    /// `self`, and `suffix` is invalid. If invalid, an [`Error`] is returned
-    /// with the [`error_kind`] set either to `FailedJoinLeft` or
-    /// `FailedJoinRight` (depending on which side caused the failure).
+    /// Returns [`Error`] if the intermediate fragments provided are invalid, or
+    /// if the combination of `prefix`, `self`, and `fragment` cannot produce a
+    /// valid result.
     ///
-    /// The value [`byte_offset`] will *NOT* be set from this function. None of
-    /// the individual characters are invalid, it's just that the combination of
-    /// joining the fragments themselves is invalid.
+    /// If an intermediate fragment is invalid, then either `InvalidPrefix` or
+    /// `InvalidSuffix` error kind will be returned (depending on which had the
+    /// format error), with the [`byte_offset`] set to the first invalid
+    /// character of the intermediate fragment.
+    ///
+    /// If the affixing operation itself failed, then the `FailedCircumfixing`
+    /// error kind is returned, without setting the `byte_offset`.
     ///
     /// [`Error`]: crate::Error
     /// [`error_kind`]: crate::Error::error_kind
@@ -212,10 +233,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// ```
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// let fragment = LowerSnakeFragment::new("snake")?;
-    /// let fragment = fragment.with_circumfix(
-    ///     LowerSnakeFragment::new("lower_")?,
-    ///     LowerSnakeFragment::new("_fragment")?,
-    /// )?;
+    /// let fragment = fragment.with_circumfix("lower_", "_fragment")?;
     /// assert_eq!(fragment, "lower_snake_fragment");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -237,21 +255,27 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
             .into_intermediate()
             .map_err(|e| e.with_error_kind(ErrorKind::InvalidSuffix))?;
         FragmentBuf::from_string(format!("{prefix}{self}{suffix}"))
-            .map_err(|_| Error::new(ErrorKind::FailedJoin))
+            .map_err(|_| Error::new(ErrorKind::FailedCircumfixing))
     }
 
     /// Returns a heap-allocated fragment with the provided prefix attached to
     /// the original fragment.
     ///
+    /// The prefix provided to this function takes anything that can be
+    /// represented as an intermediate fragment. That means it can take a
+    /// `&str`, `char`, `Fragment`, `Chunk`, `Identifier`, or `Segment`.
+    ///
     /// # Errors
     ///
-    /// Returns `Err` if the fragment formed from the combination of `prefix`
-    /// and `self` is invalid. If invalid, an [`Error`] is returned with the
-    /// [`error_kind`] set to `InvalidPrefix`.
+    /// Returns [`Error`] if the intermediate fragment provided is invalid, or
+    /// if the combination of `prefix` and `self` cannot produce a valid result.
     ///
-    /// The value [`byte_offset`] will *NOT* be set from this function. None of
-    /// the individual characters are invalid, it's just that the combination of
-    /// joining the fragments themselves is invalid.
+    /// If the intermediate fragment is invalid, then the error kind will be
+    /// `InvalidPrefix`, with the [`byte_offset`] set to the first invalid
+    /// character of the intermediate fragment.
+    ///
+    /// If the affixing operation itself failed, then the `FailedPrefixing`
+    /// error kind is returned, without setting the `byte_offset`.
     ///
     /// [`Error`]: crate::Error
     /// [`error_kind`]: crate::Error::error_kind
@@ -264,9 +288,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// ```
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// let fragment = LowerSnakeFragment::new("snake")?;
-    /// let fragment = fragment.with_prefix(
-    ///     LowerSnakeFragment::new("lower_")?,
-    /// )?;
+    /// let fragment = fragment.with_prefix("lower_")?;
     /// assert_eq!(fragment, "lower_snake");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -280,21 +302,27 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
             .into_intermediate()
             .map_err(|e| e.with_error_kind(ErrorKind::InvalidPrefix))?;
         FragmentBuf::from_string(format!("{prefix}{self}"))
-            .map_err(|_| Error::new(ErrorKind::FailedJoin))
+            .map_err(|_| Error::new(ErrorKind::FailedPrefixing))
     }
 
     /// Returns a heap-allocated fragment with the provided suffix attached to
     /// the original fragment.
     ///
+    /// The suffix provided to this function takes anything that can be
+    /// represented as an intermediate fragment. That means it can take a
+    /// `&str`, `char`, `Fragment`, `Chunk`, `Identifier`, or `Segment`.
+    ///
     /// # Errors
     ///
-    /// Returns `Err` if the fragment formed from the combination of `self` and
-    /// `suffix` is invalid. If invalid, an [`Error`] is returned with the
-    /// [`error_kind`] set to `InvalidPrefix`.
+    /// Returns [`Error`] if the intermediate fragment provided is invalid, or
+    /// if the combination of `self` and `suffix` cannot produce a valid result.
     ///
-    /// The value [`byte_offset`] will *NOT* be set from this function. None of
-    /// the individual characters are invalid, it's just that the combination of
-    /// joining the fragments themselves is invalid.
+    /// If the intermediate fragment is invalid, then the error kind will be
+    /// `InvalidSuffix`, with the [`byte_offset`] set to the first invalid
+    /// character of the intermediate fragment.
+    ///
+    /// If the affixing operation itself failed, then the `FailedSuffixing`
+    /// error kind is returned, without setting the `byte_offset`.
     ///
     /// [`Error`]: crate::Error
     /// [`error_kind`]: crate::Error::error_kind
@@ -307,9 +335,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// ```
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// let fragment = LowerSnakeFragment::new("snake")?;
-    /// let fragment = fragment.with_suffix(
-    ///     LowerSnakeFragment::new("_fragment")?,
-    /// )?;
+    /// let fragment = fragment.with_suffix("_fragment")?;
     /// assert_eq!(fragment, "snake_fragment");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -323,7 +349,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
             .into_intermediate()
             .map_err(|e| e.with_error_kind(ErrorKind::InvalidSuffix))?;
         FragmentBuf::from_string(format!("{self}{suffix}"))
-            .map_err(|_| Error::new(ErrorKind::FailedJoin))
+            .map_err(|_| Error::new(ErrorKind::FailedSuffixing))
     }
 }
 
@@ -403,7 +429,26 @@ impl<B, D, P> Fragment<B, D, P> {
         unsafe { Box::from_raw(Box::into_raw(boxed_str) as *mut Fragment<B, D, P>) }
     }
 
-    /// Converts an identifier into a fragment buffer.
+    /// Converts a fragment into an owned boxed fragment.
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::*;
+    /// # use typed_ident::presets::unicode::lower_snake::*;
+    /// let ident: &LowerSnakeFragment = Fragment::new("snake_ident")?;
+    /// let ident: Box<LowerSnakeFragment> = ident.to_boxed_fragment();
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use]
+    #[inline]
+    pub fn to_boxed_fragment(&self) -> Box<Fragment<B, D, P>> {
+        Fragment::new_boxed_unchecked(String::from(self.as_str()))
+    }
+
+    /// Converts a fragment into a fragment buffer.
     ///
     /// # Examples
     ///

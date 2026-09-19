@@ -93,16 +93,15 @@ pub const UNICODE_VERSION: (u32, u32, u32) = {
 // =============================================================================
 
 /// A [Unicode Standard Annex #31](http://www.unicode.org/reports/tr31/) profile
-/// (with LOW LINE, ZWJ, and ZWNJ removed).
+/// (with LOW LINE removed).
 ///
 /// # Character Set
 ///
 /// This profile uses the [`unicode-ident`] crate.
 ///
-/// * **Start** => any character that passes `is_xid_start(c)`
-///   (except LOW LINE, ZWJ, and ZWNJ).
-/// * **Continue** => any character that passes `is_xid_continue(c)`
-///   (except LOW LINE, ZWJ, and ZWNJ).
+/// * **Start** => any character that passes `is_xid_start(c)`.
+/// * **Continue** => any character that passes `is_xid_continue(c)` (except
+///   LOW LINE).
 ///
 /// # About Low Line Omission
 ///
@@ -113,21 +112,6 @@ pub const UNICODE_VERSION: (u32, u32, u32) = {
 /// delimiter in a custom identifier).
 ///
 /// We still "include" the character, we just want it to be treated specially.
-///
-/// # About ZWJ+ZWNJ Omissions
-///
-/// The zero-width joiner characters (U+200D and U+200C) have special usage
-/// within this profile, as detailed in the above specification. However, it
-/// requires extra processing to use them properly - we simply omit them.
-///
-/// If you wish to support these extended use-cases, you can create a custom
-/// profile which allows these characters (simply by not disallowing them, just
-/// call into `unicode-ident` functions). But you'll have to implement
-/// additional validation on top of the identifiers you form (perhaps as a
-/// newtype).
-///
-/// In my reading of this standard, the zero-width characters are just not worth
-/// the headache. I really strongly recommend *against* their inclusion.
 ///
 /// [`unicode-ident`]: unicode_ident
 pub enum Unicode {}
@@ -140,17 +124,11 @@ pub enum Unicode {}
 impl Unicode {
     #[inline]
     fn is_chunk_char(c: char) -> bool {
-        unicode_ident::is_xid_continue(c) && !Self::is_disallowed(c)
-    }
-    #[inline]
-    fn is_disallowed(c: char) -> bool {
-        const ZWNJ: char = '\u{200C}';
-        const ZWJ: char = '\u{200D}';
-        c == '_' || c == ZWNJ || c == ZWJ
+        unicode_ident::is_xid_continue(c) && c != '_'
     }
     #[inline]
     fn is_ident_start_char(c: char) -> bool {
-        unicode_ident::is_xid_start(c) && !Self::is_disallowed(c)
+        unicode_ident::is_xid_start(c)
     }
 }
 
@@ -164,7 +142,7 @@ impl Profile for Unicode {
     // this type doesn't make chunk-start different from chunk-continue, it is
     // append-closed from the perspective of a whole fragment.
     const APPEND_CLOSED: AppendClosed = AppendClosed::Fragment;
-    type BaseProfile = Self;
+    type CharProfile = Self;
     type Segmentation = segmentation::Grapheme;
 
     #[inline(always)]

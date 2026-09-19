@@ -11,7 +11,7 @@ use core::fmt::{Display, Formatter};
 // TYPES
 // =============================================================================
 
-/// An error when performing some operation on an identifier (or fragment).
+/// An error when performing some operation on a core type.
 ///
 /// You can inspect [`error_kind`] to see specifically what went wrong. And
 /// depending on the failure, [`byte_offset`] might have been set. Please refer
@@ -83,23 +83,18 @@ impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         let msg = match self.kind {
             ErrorKind::EmptyIdent => "empty identifier",
-            ErrorKind::FailedInsert => {
-                "failed to insert a fragment into another fragment or identifier"
-            }
+            ErrorKind::FailedCircumfixing => "failed to append a set of circumfixes",
+            ErrorKind::FailedPrefixing => "failed to prepend a prefix",
+            ErrorKind::FailedSuffixing => "failed to append a suffix",
+            ErrorKind::FailedInsert => "failed to insert a fragment",
             ErrorKind::FailedJoin => "failed to join with another fragment",
-            ErrorKind::FailedPush => "failed to push data onto a buffer",
-            ErrorKind::FailedRemove => "failed to remove a range of data",
-            ErrorKind::FailedReplace => "failed to replace a range of data",
-            ErrorKind::InvalidFormat => "character doesn't satisfy the character profile",
-            ErrorKind::InvalidPrefix => {
-                "character doesn't satisfy the character profile for the prefix fragment"
-            }
-            ErrorKind::InvalidDelimiter => {
-                "delimiter string contained more data than a single delimiter"
-            }
-            ErrorKind::InvalidSuffix => {
-                "character doesn't satisfy the character profile for the suffix fragment"
-            }
+            ErrorKind::FailedPush => "failed to push a fragment onto a buffer",
+            ErrorKind::FailedRemove => "failed to remove a range of fragment data",
+            ErrorKind::FailedReplace => "failed to replace a range of fragment data",
+            ErrorKind::InvalidFormat => "invalid format",
+            ErrorKind::InvalidPrefix => "invalid format for the prefix fragment",
+            ErrorKind::InvalidDelimiter => "invalid delimiter string",
+            ErrorKind::InvalidSuffix => "invalid format for the suffix fragment",
         };
         match self.byte_offset() {
             None => write!(f, "{msg}"),

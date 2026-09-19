@@ -71,12 +71,12 @@ impl<'a, B: Boundary, D: Delimiter, P: CasedProfile> FragmentBufOp<'a, B, D, P> 
         match Self::check_str(self.buffer.as_str()) {
             Ok(()) => Ok(()),
             Err(SyntaxError::Empty) => Ok(()),
-            Err(SyntaxError::Format(idx)) => {
+            Err(SyntaxError::Format(_idx)) => {
                 match self.undo {
                     Undo::Overwrite(other) => *self.buffer = other,
                     Undo::Truncate(idx) => self.buffer.truncate(idx),
                 }
-                Err(Error::new(kind).with_byte_offset(idx))
+                Err(Error::new(kind))
             }
         }
     }

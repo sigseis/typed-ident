@@ -39,15 +39,6 @@ pub struct Words<'a, B, D, P: Profile> {
 
 // -----------------------------------------------------------------------------
 impl<'a, B, D, P: Profile> Words<'a, B, D, P> {
-    #[must_use]
-    #[inline]
-    pub(crate) fn new(chunk: &'a Chunk<B, D, P>) -> Self {
-        Self {
-            syntax: PhantomData,
-            iter: WordStrs::new(chunk.as_str()),
-        }
-    }
-
     /// Views the underlying data as a subslice of the original data.
     ///
     /// This has the same lifetime as the original slice, and so the
@@ -76,6 +67,15 @@ impl<'a, B, D, P: Profile> Words<'a, B, D, P> {
     #[inline]
     pub fn as_str(&self) -> &'a str {
         self.iter.as_str()
+    }
+
+    #[must_use]
+    #[inline]
+    pub(crate) fn new(chunk: &'a Chunk<B, D, P>) -> Self {
+        Self {
+            syntax: PhantomData,
+            iter: WordStrs::new(chunk.as_str()),
+        }
     }
 
     /// Drops the syntax type information associated with this iterator.

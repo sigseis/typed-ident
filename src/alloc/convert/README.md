@@ -1,4 +1,4 @@
-Infallible string conversion to another cased format.
+String conversion to another cased format.
 
 The main conversions traits defined by this module are:
 
@@ -11,7 +11,7 @@ The main conversions traits defined by this module are:
 * [`ToUpperKebab`] - for identifiers of the format `UPPER-KEBAB-CASE`.
 * [`ToUpperSnake`] - for identifiers of the format `UPPER_SNAKE_CASE`.
 
-If you include the trait, then you should be able to use any of the defined functions, as all valid identifiers support these conversion operations.
+If you include the trait, then you should be able to use any of the defined methods, as all valid identifiers support these conversion operations.
 
 # How Does Conversion Work?
 
@@ -22,6 +22,12 @@ You should see the [`fmt`] modules for more information (especially regarding th
 [`fmt`]: crate::core::fmt
 
 # Why Aren't Results Typed?
+
+<div class="warning">
+
+**NOTE:** This is currently being reconsidered. See issue [#17](https://github.com/sigseis/typed-ident/issues/17).
+
+</div>
 
 For two main reasons:
 
@@ -42,13 +48,13 @@ So, you can get some really tricky failures, like this:
 let ident = LowerSnakeIdent::new("ident_ᴨ")?;
 let upper_camel_ish = ident.to_upper_camel_canonical();
 
-// Chunk boundary preserved, but ᴨ is lowercase!
+// Chunk boundary preserved, but `ᴨ` has no uppercase mapping.
 assert_eq!(upper_camel_ish, "Ident_ᴨ");
 
-// And because of this, a strongly-typed format check fails...
+// The result therefore does not satisfy the strict UpperCamel profile.
 assert!(UpperCamelIdent::new(&upper_camel_ish).is_err());
 
-// But, if you drop the upper-cased chunk-start requirement, we're good...
+// A profile that does not require uppercase chunk starts accepts it.
 assert!(CamelIdent::new(&upper_camel_ish).is_ok());
 # Ok::<(), typed_ident::Error>(())
 ```

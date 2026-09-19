@@ -22,34 +22,102 @@ use crate::syntax::{Boundary, CasedProfile, Delimiter, UnitDelimiter};
 
 /// An immutable, UTF-8 encoded, valid identifier string slice.
 ///
+/// # Construction
+///
+/// It's not expected that you interact with this type directly. Instead, you
+/// should interact with it through a type alias which fully defines the
+/// identifier.
+///
+/// The common way to get a reasonable alias is through the [`presets`] module.
+///
+/// [`presets`]: crate::presets
+///
+/// ```
+/// use typed_ident::presets::unicode::LowerSnakeIdent;
+///
+/// // By-Reference (`&LowerSnakeIdent`)
+/// let ident = LowerSnakeIdent::new("lower_snake")?;
+///
+/// // Owned (`Box<LowerSnakeIdent>`) (requires `alloc` feature)
+/// let owned = ident.to_boxed_ident(); // From pre-validated reference
+/// let owned = LowerSnakeIdent::new_boxed(String::from("lower_snake"))?;
+/// # Ok::<(), typed_ident::Error>(())
+/// ```
+///
+/// These presets are all just type aliases to `Ident` with the generic type
+/// parameters filled-in. If you would like to define your own custom
+/// identifier, it's recommended that you do so by defining your own type alias.
+///
+/// ```
+/// use typed_ident::Ident;
+/// use typed_ident::syntax::{boundary, delimiter, profile};
+///
+/// // An ASCII identifier using the uppercase ASCII profile.
+/// // Any ASCII punctuation is permitted as delimiters.
+/// type CustomIdent = Ident<
+///     boundary::Standard,
+///     delimiter::AsciiPunctuation,
+///     profile::Upper<profile::Ascii>,
+/// >;
+///
+/// let ident = CustomIdent::new("UPPER#@IDENT")?;
+/// # Ok::<(), typed_ident::Error>(())
+/// ```
+///
+/// See the [`core`] module definition to understand how this type relates to
+/// other types (such as [`Fragment`] and [`Chunk`]), as well as additional
+/// information for how to use these types effectively.
+///
+/// [`core`]: crate::core
+///
+/// # Type Conversion
+///
+/// There's several ways to convert between types depending on what you want to
+/// accomplish. These type conversions ***DO NOT*** reformat or change the input
+/// string. They just produce a new type of the target identifier syntax.
+///
+/// | **I Have a...**   | **I Want a...**   | **Method**                | **Validation Cost**  | **Allocation Cost** |
+/// |-------------------|-------------------|---------------------------|----------------------|---------------------|
+/// | `&Ident<A..>`     | `&Ident<B..>`     | [`cast`]  / [`as_ref`]    | None                 | None                |
+/// | `&Ident<A..>`     | `&Ident<B..>`     | [`try_cast`]              | Same as [`new`]      | None                |
+/// | `&Ident`          | `Box<Ident>`      | [`to_boxed_ident`]        | None                 | `O(strlen)`         |
+/// | `&Box<Ident>`     | `&Ident`          | [`as_ident`] / [`as_ref`] | None                 | None                |
+/// | `Box<Ident<A..>>` | `Box<Ident<B..>>` | [`convert`]               | None                 | None                |
+/// | `Box<Ident<A..>>` | `Box<Ident<B..>>` | [`try_convert`]           | Same as [`new`]      | None                |
+///
+/// [`as_ident`]: Ident::as_ident
+/// [`as_ref`]: Ident::as_ref
+/// [`cast`]: Ident::cast
+/// [`convert`]: Ident::convert
+/// [`new`]: Ident::new
+/// [`to_boxed_ident`]: Ident::to_boxed_ident
+/// [`try_cast`]: Ident::try_cast
+/// [`try_convert`]: Ident::try_convert
+///
 /// # Type Parameters
 ///
 /// The type parameters used on this type are:
 ///
 /// * `B`: [`Boundary`] (a boundary definition; usually [`Standard`])
 /// * `D`: [`Delimiter`] (a delimiter type; [`HyphenMinus`], [`LowLine`], etc.)
-/// * `P`: [`Profile`] (a character profile; [`Ascii`], [`Unicode`], etc.)
+/// * `P`: [`CasedProfile`] (a cased profile; which is...)
+///   * A wrapping case profile (e.g. [`Mixed`], [`Lower`], etc.)
+///   * A specific character profile (e.g. [`Ascii`], [`Unicode`], etc.)
 ///
-/// # Character Requirements
-///
-/// This is effectively a special-case of a [`Fragment`]. So in addition to the
-/// character requirements of that type, this type adds the following additional
-/// requirements:
-///
-/// * Non-empty, *and...*
-/// * Starts with either [`D::is_ident_start_delim`] or [`P::is_ident_start_char`].
-///
-/// [`D::is_ident_start_delim`]: crate::syntax::delimiter::Delimiter::is_ident_start_delim
-/// [`P::is_ident_start_char`]: crate::syntax::profile::Profile::is_ident_start_char
+/// See the [`syntax`] module definition if you plan on defining your own type
+/// aliases to understand better what these types mean and how they work.
 ///
 /// [`Ascii`]: crate::syntax::profile::Ascii
 /// [`Boundary`]: crate::syntax::boundary::Boundary
-/// [`Standard`]: crate::syntax::boundary::Standard
 /// [`Delimiter`]: crate::syntax::delimiter::Delimiter
 /// [`HyphenMinus`]: crate::syntax::delimiter::HyphenMinus
 /// [`LowLine`]: crate::syntax::delimiter::LowLine
+/// [`Lower`]: crate::syntax::profile::Lower
+/// [`Mixed`]: crate::syntax::profile::Mixed
 /// [`Profile`]: crate::syntax::profile::Profile
+/// [`Standard`]: crate::syntax::boundary::Standard
 /// [`Unicode`]: crate::syntax::profile::Unicode
+/// [`syntax`]: crate::syntax
 #[repr(transparent)]
 pub struct Ident<B, D, P> {
     inner: Fragment<B, D, P>,
@@ -75,7 +143,6 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// # Examples
     ///
     /// ```
-    /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::upper_camel::*;
     /// let ident = UpperCamelIdent::new("UpperCamelIdent")?;
     /// assert_eq!(
@@ -88,6 +155,9 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     #[inline]
     pub fn first_segment(&self) -> Segment<D, &Chunk<B, D, P>> {
         // An ident is always non-empty, so there must be at least one segment.
+        // We could `unwrap_unchecked` here, but this is not a hot path, and it
+        // is probably better to catch if someone constructed this invalidly
+        // using unsafe instead of saving a few cycles in a cold path.
         self.segments().next().unwrap()
     }
 
@@ -95,18 +165,17 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     ///
     /// An identifier is made of a fragment, this function converts between the
     /// two. Not all fragments are valid identifiers, however. An identifier has
-    /// additional [requirements].
+    /// additional requirements.
     ///
     /// `new` checks to ensure these are satisfied before the conversion.
     ///
-    /// [requirements]: Self#character-requirements
-    ///
     /// # Errors
     ///
-    /// Returns `Err` if the fragment does not satisfy the character
-    /// requirements. If an invalid character is found then an [`Error`] is
-    /// returned, with [`byte_offset`] set to the byte index for the first
-    /// invalid character (for this function, this is always `0`).
+    /// Returns [`Error`] if the fragment does not satisfy the character
+    /// requirements. If the fragment is empty, this will return an `Empty`
+    /// error kind. If an invalid character is found then a `InvalidFormat`
+    /// error kind is returned, with [`byte_offset`] set to the byte index for
+    /// the first invalid character.
     ///
     /// [`Error`]: crate::Error
     /// [`byte_offset`]: crate::Error::byte_offset
@@ -134,7 +203,6 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// # Examples
     ///
     /// ```
-    /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::upper_camel::*;
     /// let ident = UpperCamelIdent::new("UpperCamelIdent")?;
     /// assert_eq!(
@@ -147,26 +215,28 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     #[inline]
     pub fn last_segment(&self) -> Segment<D, &Chunk<B, D, P>> {
         // An ident is always non-empty, so there must be at least one segment.
+        // We could `unwrap_unchecked` here, but this is not a hot path, and it
+        // is probably better to catch if someone constructed this invalidly
+        // using unsafe instead of saving a few cycles in a cold path.
         self.segments().next_back().unwrap()
     }
 
     /// Converts a string slice to an identifier.
     ///
-    /// An identifier is made of a string slice ([`&str`]), this function
-    /// converts between the two. Not all string slices are valid fragments,
-    /// however. A fragment requires that the characters it is comprised of
-    /// satisfy certain [requirements].
+    /// An identifier is made of a [`Fragment`], which itself is made of a
+    /// string slice ([`&str`]), this function converts between the two. Not all
+    /// string slices are valid identifiers, however. An identifier requires
+    /// that the characters it is comprised of satisfy certain requirements.
     ///
     /// `new` checks to ensure these are satisfied before the conversion.
     ///
-    /// [requirements]: Self#character-requirements
-    ///
     /// # Errors
     ///
-    /// Returns `Err` if the string slice does not satisfy the character
-    /// requirements. If an invalid character is found then an [`Error`] is
-    /// returned, with [`byte_offset`] set to the byte index for the first
-    /// invalid character.
+    /// Returns [`Error`] if the identifier does not satisfy the character
+    /// requirements. If the identifier is empty, this will return an `Empty`
+    /// error kind. If an invalid character is found then a `InvalidFormat`
+    /// error kind is returned, with [`byte_offset`] set to the byte index for
+    /// the first invalid character.
     ///
     /// [`Error`]: crate::Error
     /// [`byte_offset`]: crate::Error::byte_offset
@@ -184,9 +254,10 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
         P::is_ident::<D>(s)?;
         Ok(Self::new_unchecked(s))
     }
+
     /// Trims any decorative delimiters from the identifier.
     ///
-    /// This function cannot leave you with an invalid identifier, it
+    /// This function ***cannot*** leave you with an invalid identifier, it
     /// explicitly only trims delimiters that it considers to be non-essential,
     /// or decorative.
     ///
@@ -195,6 +266,11 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// [`trim_leading_decorative_delims`] followed by
     /// [`trim_trailing_decorative_delims`].
     ///
+    /// If you want all delimiters to be trimmed regardless of whether or not it
+    /// will leave you with a valid identifier, you can instead call the
+    /// [`trim_delims`] method, which returns a [`Fragment`].
+    ///
+    /// [`trim_delims`]: Fragment::trim_delims
     /// [`trim_leading_decorative_delims`]: Self::trim_leading_decorative_delims
     /// [`trim_trailing_decorative_delims`]: Self::trim_trailing_decorative_delims
     ///
@@ -245,12 +321,18 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
 
     /// Trims any leading decorative delimiters from the identifier.
     ///
-    /// This function can not leave you with an invalid identifier, it
+    /// This function ***cannot*** leave you with an invalid identifier, it
     /// explicitly only trims delimiters that it considers to be non-essential,
     /// or decorative.
     ///
     /// If there's multiple kinds of delimiters, the right-most delimiter will
     /// be preserved (e.g. the trimming happens from left-to-right).
+    ///
+    /// If you want all leading delimiters to be trimmed regardless of whether
+    /// or not it will leave you with a valid identifier, you can instead call
+    /// the [`trim_leading_delims`] method, which returns a [`Fragment`].
+    ///
+    /// [`trim_leading_delims`]: Fragment::trim_leading_delims
     ///
     /// # Examples
     ///
@@ -319,12 +401,18 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
 
     /// Trims any trailing decorative delimiters from the identifier.
     ///
-    /// This function can not leave you with an invalid identifier, it
+    /// This function ***cannot*** leave you with an invalid identifier, it
     /// explicitly only trims delimiters that it considers to be non-essential,
     /// or decorative.
     ///
     /// If there's multiple kinds of delimiters, the left-most delimiter will
     /// be preserved (e.g. the trimming happens from right-to-left).
+    ///
+    /// If you want all trailing delimiters to be trimmed regardless of whether
+    /// or not it will leave you with a valid identifier, you can instead call
+    /// the [`trim_trailing_delims`] method, which returns a [`Fragment`].
+    ///
+    /// [`trim_trailing_delims`]: Fragment::trim_trailing_delims
     ///
     /// # Examples
     ///
@@ -382,6 +470,9 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
 impl<B, D, P> Ident<B, D, P> {
     /// Returns a fragment representation of the identifier.
     ///
+    /// Note that `Ident` implements `Deref<Target = Fragment>`, so usually you
+    /// don't need to call this function explicitly.
+    ///
     /// # Examples
     ///
     /// ```
@@ -396,7 +487,25 @@ impl<B, D, P> Ident<B, D, P> {
         &self.inner
     }
 
-    /// Returns a string slice representation of the fragment.
+    /// Returns the identifier as a reference.
+    ///
+    /// This method exists for convenience use when dealing with `Box<Ident>`
+    /// types. That way there's a simple way to get the underlying reference.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use typed_ident::presets::unicode::upper_camel::*;
+    /// let ident = UpperCamelIdent::new_boxed(String::from("ExampleIdent"))?;
+    /// assert_eq!(ident.as_ident(), UpperCamelIdent::new("ExampleIdent")?);
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[inline(always)]
+    pub const fn as_ident(&self) -> &Self {
+        self
+    }
+
+    /// Returns a string slice representation of the identifier.
     ///
     /// # Examples
     ///
@@ -412,7 +521,7 @@ impl<B, D, P> Ident<B, D, P> {
         self.inner.as_str()
     }
 
-    /// Zero-cost cast into the type-configured identifier.
+    /// Zero-cost cast into a different type-configured identifier.
     ///
     /// This function does not perform any checks that the format matches the
     /// expectations of the target type. The way it's able to be provided
@@ -439,11 +548,13 @@ impl<B, D, P> Ident<B, D, P> {
     ///
     /// ```
     /// # use typed_ident::presets::unicode::*;
+    /// // A `HybridIdent` accepts any of the other preset formats!
     /// fn expect_hybrid_ident<I: AsRef<HybridIdent> + ?Sized>(ident: &I) {
     ///     // ...
     /// }
-    /// expect_hybrid_ident(LowerSnakeIdent::new("apple")?);
-    /// expect_hybrid_ident(UpperCamelIdent::new("Apple")?);
+    /// expect_hybrid_ident(LowerSnakeIdent::new("lower_snake")?);
+    /// expect_hybrid_ident(UpperCamelIdent::new("UpperCamel")?);
+    /// expect_hybrid_ident(KebabIdent::new("kebab-ident")?);
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     ///
@@ -546,11 +657,15 @@ impl<B, D, P> Ident<B, D, P> {
     /// Converts a string slice to an identifier without checking that the
     /// contents are a valid chunk.
     ///
-    /// See the safe version, [`new`], for more information.
+    /// See the checked version, [`new`], for more information.
     ///
     /// [`new`]: Self::new
     ///
     /// # Safety
+    ///
+    /// This function is always memory-safe, even when provided with an invalid
+    /// string. However, it should only be used in situations where you are
+    /// certain of the format of your string.
     ///
     /// Needless to say, this is very difficult to deduce on your own.
     ///
@@ -581,6 +696,18 @@ impl<B, D, P> Ident<B, D, P> {
     ///
     /// [`cast`]: Self::cast
     /// [`new`]: Self::new
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::presets::unicode::lower_snake::*;
+    /// # use typed_ident::presets::unicode::lower_camel::*;
+    /// let original = LowerCamelIdent::new("apple")?;
+    /// let casted: &LowerSnakeIdent = original.try_cast()?;
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
     #[inline]
     pub fn try_cast<B2, D2, P2>(&self) -> Result<&Ident<B2, D2, P2>, Error>
     where

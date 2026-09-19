@@ -12,11 +12,14 @@ use core::marker::PhantomData;
 // TYPES
 // =============================================================================
 
-/// An iterator over the word-separated segments of a fragment.
+/// An iterator over the words and delimiters of a fragment.
 ///
 /// This struct is created by calling [`segments`] on the [`Fragment`] type.
 ///
+/// See the [`core`] module documentation for an explanation of a "word".
+///
 /// [`Fragment`]: Fragment
+/// [`core`]: crate::core
 /// [`segments`]: Fragment::segments
 #[repr(transparent)]
 pub struct Segments<'a, B, D, P: Profile> {
@@ -30,15 +33,6 @@ pub struct Segments<'a, B, D, P: Profile> {
 
 // -----------------------------------------------------------------------------
 impl<'a, B, D, P: Profile> Segments<'a, B, D, P> {
-    #[must_use]
-    #[inline]
-    pub(crate) fn new(fragment: &'a Fragment<B, D, P>) -> Self {
-        Self {
-            syntax: PhantomData,
-            iter: StrSegments::new(fragment.as_str()),
-        }
-    }
-
     /// Views the underlying data as a subslice of the original data.
     ///
     /// This has the same lifetime as the original slice, and so the
@@ -57,6 +51,15 @@ impl<'a, B, D, P: Profile> Segments<'a, B, D, P> {
     #[inline]
     pub fn as_str(&self) -> &'a str {
         self.iter.as_str()
+    }
+
+    #[must_use]
+    #[inline]
+    pub(crate) fn new(fragment: &'a Fragment<B, D, P>) -> Self {
+        Self {
+            syntax: PhantomData,
+            iter: StrSegments::new(fragment.as_str()),
+        }
     }
 
     /// Drops the syntax type information associated with this iterator.

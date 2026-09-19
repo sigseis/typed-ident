@@ -152,11 +152,16 @@ fn generate_function(name: &str, table: &[(u32, u32)]) -> Result<String> {
     let mut f = String::new();
     writeln!(f, r#"pub fn {name}(c: char) -> bool {{"#)?;
     writeln!(f, r#"    const TABLE: &[(char, char)] = &["#)?;
-    for (low, high) in table {
-        writeln!(f, r#"        ('\u{{{low:X}}}', '\u{{{high:X}}}'),"#)?;
+    let mut table = table.iter().copied().peekable();
+    while table.peek().is_some() {
+        write!(f, "       ")?;
+        for (low, high) in (&mut table).take(3) {
+            write!(f, r#" ('\u{{{low:05X}}}', '\u{{{high:05X}}}'),"#)?;
+        }
+        writeln!(f)?;
     }
     writeln!(f, r#"    ];"#)?;
-    writeln!(f, r#"    if c < '\u{{{min:X}}}' {{"#)?;
+    writeln!(f, r#"    if c < '\u{{{min:05X}}}' {{"#)?;
     writeln!(f, r#"        return false;"#)?;
     writeln!(f, r#"    }}"#)?;
     writeln!(f, r#"    in_range(c, TABLE)"#)?;
@@ -190,7 +195,7 @@ fn generate_is_titlecase_greek_variant() -> Result<String> {
 
     Ok(format!(
         r#"pub fn is_titlecase_greek_variant(tc: char) -> bool {{
-    tc >= '\u{{{min_greek:X}}}'
+    tc >= '\u{{{min_greek:05X}}}'
 }}"#
     ))
 }
@@ -285,7 +290,8 @@ pub const UNICODE_VERSION: (u32, u32, u32) = ({major}, {minor}, {patch});
 /// Titlecase characters are digraph characters in which the same code point
 /// starts uppercase, but ends lowercase semantically.
 ///
-/// For instance: ǅ, ǈ, ǋ, ǲ
+/// Greek Examples: ᾈ, ᾨ, ῌ, ᾚ
+/// Non-Greek Examples: ǅ, ǈ, ǋ, ǲ
 {is_titlecase}
 
 /// Returns `true` if the titlecase character provided is `Greek`.
@@ -297,7 +303,7 @@ pub const UNICODE_VERSION: (u32, u32, u32) = ({major}, {minor}, {patch});
 /// characters, whereby the code point still semantically starts uppercase and
 /// ends lowercase, but the code point visually appears entirely uppercase.
 ///
-/// For instance: ᾈ, ᾨ, ῌ, ᾚ
+/// Greek Examples: ᾈ, ᾨ, ῌ, ᾚ
 {is_titlecase_greek_variant}
 
 /// Returns true if the character is any one of the following:

@@ -15,14 +15,25 @@ use std_alloc::string::String;
 // TRAITS
 // =============================================================================
 
-/// Converts an identifier into a preset upper-snake identifier string.
+/// Provides methods for converting an identifier to upper-snake format, using
+/// plain, canonical, or decorated forms.
+///
+/// For explicit-delimited identifiers like this one, there's no difference
+/// between the decorated and delimited forms. So a delimited method is not
+/// provided.
 ///
 /// See the [`convert`] module for more details.
 ///
+/// <div class="warning">
+///
+/// **NOTE:** These traits are currently being reconsidered. See issue [#17](https://github.com/sigseis/typed-ident/issues/17).
+///
+/// </div>
+///
 /// [`convert`]: crate::alloc::convert
 pub trait ToUpperSnake {
-    /// Returns a displayable type that converts the provided input to upper
-    /// snake in plain form.
+    /// Returns a string of the provided input converted to upper snake plain
+    /// form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -102,8 +113,8 @@ pub trait ToUpperSnake {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_upper_snake(&self) -> String;
 
-    /// Returns a displayable type that converts the provided input to upper
-    /// snake in canonical form.
+    /// Returns a string of the provided input converted to upper snake
+    /// canonical form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -183,8 +194,8 @@ pub trait ToUpperSnake {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_upper_snake_canonical(&self) -> String;
 
-    /// Returns a displayable type that converts the provided input to upper
-    /// snake in decorated form.
+    /// Returns a string of the provided input converted to upper snake
+    /// decorated form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///

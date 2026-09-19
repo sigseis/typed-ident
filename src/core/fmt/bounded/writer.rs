@@ -71,7 +71,7 @@ impl<'a, 'b, const UPPER: bool> Writer<'a, 'b, UPPER> {
         };
 
         // See if we ought to introduce a boundary first via a delimiter.
-        let curr_case = GraphemeCase::new_uppercase(first_grapheme);
+        let curr_case = GraphemeCase::new_uppercased(first_grapheme);
         if let Some(prior_case) = self.prior_case {
             let next = graphemes.clone().next().map(GraphemeCase::new_lowercased);
             if !B::is_boundary(prior_case, curr_case, next) {

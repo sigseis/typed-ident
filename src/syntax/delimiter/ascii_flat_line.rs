@@ -80,12 +80,18 @@ impl Delimiter for AsciiFlatLine {
 
     #[inline]
     fn find_delimiter(fragment: &str) -> Option<usize> {
-        fragment.find(['_', '-'])
+        fragment
+            .as_bytes()
+            .iter()
+            .position(|c| *c == b'_' || *c == b'-')
     }
 
     #[inline]
     fn rfind_delimiter(fragment: &str) -> Option<usize> {
-        fragment.rfind(['_', '-'])
+        fragment
+            .as_bytes()
+            .iter()
+            .rposition(|c| *c == b'_' || *c == b'-')
     }
 
     #[inline(always)]
@@ -217,7 +223,6 @@ impl core::convert::From<HyphenMinus> for AsciiFlatLine {
 impl core::fmt::Display for AsciiFlatLine {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        use core::fmt::Write;
-        f.write_char((*self).to_char())
+        f.write_str((*self).to_str())
     }
 }

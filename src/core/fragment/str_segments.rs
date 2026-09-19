@@ -13,12 +13,15 @@ use core::marker::PhantomData;
 // TYPES
 // =============================================================================
 
-/// An iterator over the word-separated segment string slices of a fragment.
+/// An iterator over the type-erased words and delimiters of a fragment.
 ///
 /// This struct is created by calling [`type_erased`] on the [`Segments`]
 /// iterator.
 ///
+/// See the [`core`] module documentation for an explanation of a "word".
+///
 /// [`Segments`]: crate::core::fragment::Segments
+/// [`core`]: crate::core
 /// [`type_erased`]: crate::core::fragment::Segments::type_erased
 #[repr(transparent)]
 pub struct StrSegments<'a, B, D, S> {

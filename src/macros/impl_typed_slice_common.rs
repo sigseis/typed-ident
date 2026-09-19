@@ -40,7 +40,6 @@ macro_rules! impl_typed_slice_common {
             /// # Ok::<(), typed_ident::Error>(())
             /// ```
             ///
-            ///
             /// # Examples
             ///
             /// Example traversing case profile boundary:
@@ -472,9 +471,9 @@ macro_rules! impl_typed_slice_common {
             }
 
             #[doc = concat!("Converts a string slice to a ", stringify!($name_lowercase))]
-            /// without checking that the contents are a valid chunk.
+            /// without checking that the contents are valid.
             ///
-            /// # Memory Safety
+            /// # Safety
             ///
             /// This function is *not* memory-unsafe - it simply bypasses checks
             /// to see if the string layout matches the syntax. Getting this

@@ -2,13 +2,16 @@
 // TRAIT
 // =============================================================================
 
-/// Configures how the default chunk splitting algorithm identifies boundaries.
+/// Configures how the standard chunk splitting algorithm identifies boundaries.
 ///
-/// For more information, see the [`boundary`](crate::syntax::boundary#options)
-/// module.
+/// You are not usually expected to implement this trait, but if you do it
+/// should be on a distinct, separate marker type.
+///
+/// For more information (including an example of implementing this trait), see
+/// the [`boundary`](crate::syntax::boundary#configuring-the-standard-implementation) module documentation.
 pub trait Options {
-    /// Introduce a boundary based on camel-casing rules
-    /// ([Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)).
+    /// Introduce a boundary based on camel rules (based on
+    /// [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)).
     ///
     /// Specifically: *An identifier word boundary exists after a lowercase or
     /// non-Greek titlecase letter followed by an uppercase or titlecase letter*
@@ -36,8 +39,8 @@ pub trait Options {
     /// ```
     const CAMEL: bool = false;
 
-    /// Introduces a boundary based on hat rules
-    /// ([Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)).
+    /// Introduces a boundary based on hat rules (based on
+    /// [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)).
     ///
     /// Specifically: *An identifier word boundary exists before an uppercase or
     /// titlecase letter followed by a lowercase letter, or before a non-Greek
@@ -93,7 +96,7 @@ pub trait Options {
     const DIGIT_TO_LOWER: bool = false;
 
     /// Introduces a boundary on transition from an ASCII digit to an uppercase
-    /// letter.
+    /// or titlecase letter.
     ///
     /// # Example
     ///
@@ -118,8 +121,11 @@ pub trait Options {
     /// ```
     const DIGIT_TO_UPPER: bool = false;
 
-    /// Introduces a boundary on transition from a lowercase letter to an ASCII
-    /// digit.
+    /// Introduces a boundary on transition from a lowercase or non-Greek
+    /// titlecase letter to an ASCII digit.
+    ///
+    /// **NOTE:** The non-Greek distinction comes from [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)
+    /// which defines that non-Greek characters all end visually lowercase.
     ///
     /// # Example
     ///
@@ -144,8 +150,11 @@ pub trait Options {
     /// ```
     const LOWER_TO_DIGIT: bool = false;
 
-    /// Introduces a boundary on transition from an uppercase letter to an ASCII
-    /// digit.
+    /// Introduces a boundary on transition from an uppercase or Greek titlecase
+    /// letter to an ASCII digit.
+    ///
+    /// **NOTE:** The Greek distinction comes from [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)
+    /// which defines that Greek characters all are entirely visually uppercase.
     ///
     /// # Example
     ///

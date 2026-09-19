@@ -13,13 +13,24 @@ use crate::core::fmt::FormattableIdentifier;
 // TRAITS
 // =============================================================================
 
-/// A marker trait that constrains to only identifiers which support preset
-/// conversion (the `To*` traits; e.g. [`ToUpperCamel`], [`ToLowerKebab`], etc).
+/// A convenience trait for identifiers which support all preset conversion
+/// operations (which are all valid identifiers).
 ///
 /// This makes it easier to write generics that you intend on converting.
 ///
-/// [`ToUpperCamel`]: crate::alloc::convert::ToUpperCamel
-/// [`ToLowerKebab`]: crate::alloc::convert::ToLowerKebab
+/// # Examples
+///
+/// Basic Usage:
+///
+/// ```
+/// # use typed_ident::alloc::*;
+/// fn convert_to_snake<I>(ident: &I) -> String
+/// where
+///     I: ConvertibleIdentifier + ?Sized,
+/// {
+///     ident.to_lower_snake()
+/// }
+/// ```
 pub trait ConvertibleIdentifier:
     FormattableIdentifier
     + ToLowerCamel

@@ -57,9 +57,23 @@ impl_displayable_type! {
 // TRAIT
 // =============================================================================
 
-/// Formats an identifier as a preset lower-camel identifier.
+/// Provides methods for formatting an identifier in lower-kebab format, using
+/// plain, canonical, or decorated forms.
+///
+/// For explicit-delimited identifiers like this one, there's no difference
+/// between the decorated and delimited forms. So a delimited method is not
+/// provided.
 ///
 /// See the [`fmt`] module for more details.
+///
+/// # Return Values
+///
+/// All of the methods on this trait return types that borrow the source
+/// identifier, and implement the `Display` trait so that they are usable from
+/// a formatting call (or convertible to a `String`, via `ToString`).
+///
+/// Calling these methods is cheap, since the work isn't done until we actually
+/// use it for a formatting operation.
 ///
 /// [`fmt`]: crate::core::fmt
 pub trait AsLowerKebab {
@@ -319,7 +333,7 @@ pub trait AsLowerKebab {
 impl<B: Boundary, D: Delimiter, P: Profile> AsLowerKebab for Ident<B, D, P> {
     #[inline]
     fn as_lower_kebab(&self) -> LowerKebab<'_> {
-        LowerKebab(Canonical::new::<B, D, P::BaseProfile>(
+        LowerKebab(Canonical::new::<B, D, P::CharProfile>(
             self.as_str(),
             '-',
             false,
@@ -327,7 +341,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsLowerKebab for Ident<B, D, P> {
     }
     #[inline]
     fn as_lower_kebab_canonical(&self) -> LowerKebabCanonical<'_> {
-        LowerKebabCanonical(Canonical::new::<B, D, P::BaseProfile>(
+        LowerKebabCanonical(Canonical::new::<B, D, P::CharProfile>(
             self.as_str(),
             '-',
             true,
@@ -335,6 +349,6 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsLowerKebab for Ident<B, D, P> {
     }
     #[inline]
     fn as_lower_kebab_decorated(&self) -> LowerKebabDecorated<'_> {
-        LowerKebabDecorated(Decorated::new::<B, D, P::BaseProfile>(self.as_str(), '-'))
+        LowerKebabDecorated(Decorated::new::<B, D, P::CharProfile>(self.as_str(), '-'))
     }
 }

@@ -33,6 +33,8 @@ impl Delimiter for NotDelimited {
 
     #[inline]
     fn as_char(&self) -> char {
+        // You cannot safely construct one of these, but if you somehow end up
+        // with one (bad unsafe code), we should just panic on `as_char`.
         panic!("as_char() is not defined for the `NotDelimited` delimiter")
     }
 

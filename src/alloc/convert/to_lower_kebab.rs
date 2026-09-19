@@ -15,14 +15,25 @@ use std_alloc::string::String;
 // TRAITS
 // =============================================================================
 
-/// Converts an identifier into a preset lower-kebab identifier string.
+/// Provides methods for converting an identifier to lower-kebab format, using
+/// plain, canonical, or decorated forms.
+///
+/// For explicit-delimited identifiers like this one, there's no difference
+/// between the decorated and delimited forms. So a delimited method is not
+/// provided.
+///
+/// <div class="warning">
+///
+/// **NOTE:** These traits are currently being reconsidered. See issue [#17](https://github.com/sigseis/typed-ident/issues/17).
+///
+/// </div>
 ///
 /// See the [`convert`] module for more details.
 ///
 /// [`convert`]: crate::alloc::convert
 pub trait ToLowerKebab {
-    /// Returns a displayable type that converts the provided input to lower
-    /// kebab in plain form.
+    /// Returns a string of the provided input converted to lower kebab plain
+    /// form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -102,8 +113,8 @@ pub trait ToLowerKebab {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_lower_kebab(&self) -> String;
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// kebab in canonical form.
+    /// Returns a string of the provided input converted to lower kebab
+    /// canonical form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -183,8 +194,8 @@ pub trait ToLowerKebab {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_lower_kebab_canonical(&self) -> String;
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// kebab in decorated form.
+    /// Returns a string of the provided input converted to lower kebab
+    /// decorated form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///

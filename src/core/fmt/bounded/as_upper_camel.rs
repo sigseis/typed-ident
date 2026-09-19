@@ -73,9 +73,19 @@ impl_displayable_type! {
 // TRAIT
 // =============================================================================
 
-/// Formats an identifier as a preset upper-camel identifier.
+/// Provides methods for formatting an identifier in upper-camel format, using
+/// plain, canonical, decorated, or delimited forms.
 ///
 /// See the [`fmt`] module for more details.
+///
+/// # Return Values
+///
+/// All of the methods on this trait return types that borrow the source
+/// identifier, and implement the `Display` trait so that they are usable from
+/// a formatting call (or convertible to a `String`, via `ToString`).
+///
+/// Calling these methods is cheap, since the work isn't done until we actually
+/// use it for a formatting operation.
 ///
 /// [`fmt`]: crate::core::fmt
 pub trait AsUpperCamel {
@@ -667,7 +677,7 @@ pub trait AsUpperCamel {
 impl<B: Boundary, D: Delimiter, P: Profile> AsUpperCamel for Ident<B, D, P> {
     #[inline]
     fn as_upper_camel_opts<O: Options>(&self) -> UpperCamel<'_> {
-        UpperCamel(Canonical::new::<B, D, P::BaseProfile, Standard<O>>(
+        UpperCamel(Canonical::new::<B, D, P::CharProfile, Standard<O>>(
             self.as_str(),
             '_',
             false,
@@ -675,7 +685,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsUpperCamel for Ident<B, D, P> {
     }
     #[inline]
     fn as_upper_camel_canonical_opts<O: Options>(&self) -> UpperCamelCanonical<'_> {
-        UpperCamelCanonical(Canonical::new::<B, D, P::BaseProfile, Standard<O>>(
+        UpperCamelCanonical(Canonical::new::<B, D, P::CharProfile, Standard<O>>(
             self.as_str(),
             '_',
             true,
@@ -683,7 +693,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsUpperCamel for Ident<B, D, P> {
     }
     #[inline]
     fn as_upper_camel_decorated_opts<O: Options>(&self) -> UpperCamelDecorated<'_> {
-        UpperCamelDecorated(Decorated::new::<B, D, P::BaseProfile, Standard<O>>(
+        UpperCamelDecorated(Decorated::new::<B, D, P::CharProfile, Standard<O>>(
             self.as_str(),
             '_',
             None,
@@ -691,7 +701,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsUpperCamel for Ident<B, D, P> {
     }
     #[inline]
     fn as_upper_camel_delimited_opts<O: Options>(&self) -> UpperCamelDelimited<'_> {
-        UpperCamelDelimited(Delimited::new::<B, D, P::BaseProfile, Standard<O>>(
+        UpperCamelDelimited(Delimited::new::<B, D, P::CharProfile, Standard<O>>(
             self.as_str(),
             '_',
             None,

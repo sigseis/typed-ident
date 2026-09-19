@@ -12,13 +12,15 @@ use core::marker::PhantomData;
 // TYPES
 // =============================================================================
 
-/// An iterator over the word-separated segments of a fragment and their
-/// positions.
+/// An iterator over the words and delimiters of a fragment and their positions.
 ///
 /// This struct is created by calling [`segment_indices`] on the [`Fragment`]
 /// type.
 ///
+/// See the [`core`] module documentation for an explanation of a "word".
+///
 /// [`Fragment`]: Fragment
+/// [`core`]: crate::core
 /// [`segment_indices`]: Fragment::segment_indices
 #[repr(transparent)]
 pub struct SegmentIndices<'a, B, D, P: Profile> {
@@ -32,15 +34,6 @@ pub struct SegmentIndices<'a, B, D, P: Profile> {
 
 // -----------------------------------------------------------------------------
 impl<'a, B, D, P: Profile> SegmentIndices<'a, B, D, P> {
-    #[must_use]
-    #[inline]
-    pub(crate) fn new(fragment: &'a Fragment<B, D, P>) -> Self {
-        Self {
-            syntax: PhantomData,
-            iter: StrSegmentIndices::new(fragment.as_str()),
-        }
-    }
-
     /// Views the underlying data as a subslice of the original data.
     ///
     /// This has the same lifetime as the original slice, and so the
@@ -59,6 +52,15 @@ impl<'a, B, D, P: Profile> SegmentIndices<'a, B, D, P> {
     #[inline]
     pub fn as_str(&self) -> &'a str {
         self.iter.as_str()
+    }
+
+    #[must_use]
+    #[inline]
+    pub(crate) fn new(fragment: &'a Fragment<B, D, P>) -> Self {
+        Self {
+            syntax: PhantomData,
+            iter: StrSegmentIndices::new(fragment.as_str()),
+        }
     }
 
     /// Returns the byte position of the next element, or the total number of

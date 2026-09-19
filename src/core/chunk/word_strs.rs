@@ -28,15 +28,6 @@ pub struct WordStrs<'a, B, S> {
 
 // -----------------------------------------------------------------------------
 impl<'a, B, S> WordStrs<'a, B, S> {
-    #[must_use]
-    #[inline]
-    pub(crate) fn new(chunk: &'a str) -> Self {
-        Self {
-            boundary: PhantomData,
-            inner: chunk,
-        }
-    }
-
     /// Views the underlying data as a subslice of the original data.
     ///
     /// This has the same lifetime as the original slice, and so the
@@ -45,6 +36,15 @@ impl<'a, B, S> WordStrs<'a, B, S> {
     #[inline]
     pub fn as_str(&self) -> &'a str {
         self.inner
+    }
+
+    #[must_use]
+    #[inline]
+    pub(crate) fn new(chunk: &'a str) -> Self {
+        Self {
+            boundary: PhantomData,
+            inner: chunk,
+        }
     }
 }
 

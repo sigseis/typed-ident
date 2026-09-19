@@ -13,7 +13,7 @@ use crate::syntax::{Segmentation, SubsetOf};
 /// Defines the valid composition of characters for a chunk (a slice of an
 /// identifier that contains no delimiters).
 ///
-/// # Works on Character Code Points
+/// # Works on Unicode Scalar Values
 ///
 /// Character profiles are defined in accordance with the default profile in
 /// [Unicode Standard Annex #31](http://www.unicode.org/reports/tr31/), which
@@ -22,7 +22,9 @@ use crate::syntax::{Segmentation, SubsetOf};
 ///
 /// If you need more complex validation, such as the emoji profile which must
 /// validate a specific ordering of special characters for emoji handling, you
-/// need to use a wrapper type to add that extra validation.
+/// need to implement your own [`CasedProfile`] type.
+///
+/// [`CasedProfile`]: crate::syntax::profile::case::CasedProfile
 pub trait Profile: SubsetOf<Self> + Sized {
     /// Whether or not a fragment containing characters in this profile are
     /// append-closed.
@@ -56,10 +58,10 @@ pub trait Profile: SubsetOf<Self> + Sized {
     ///
     /// * `` `` and `SC*` (empty string, or `S` followed by one or more `C`)
     ///
-    /// A valid chunk of characters may be `SCC`, after appending some other
-    /// string we may be left with `SCCSC`, but if `S ⊆ C`, then we can
+    /// A valid chunk of characters may be `SC*`, after appending some other
+    /// string we may be left with `SC*SC*`, but if `S ⊆ C`, then we can
     /// interpret any `S` character as a `C` character, and thus it's
-    /// syntactically `SCCCC` (which is still valid and within this set).
+    /// syntactically `SC*CC*`, which is just `SC*`.
     ///
     /// # When Is a Profile `Fragment` Append-Closed?
     ///
@@ -107,7 +109,7 @@ pub trait Profile: SubsetOf<Self> + Sized {
     /// [`is_ident_start_char`]: Profile::is_ident_start_char
     const APPEND_CLOSED: AppendClosed = AppendClosed::Empty;
 
-    /// The underlying profile that this profile is based on.
+    /// The underlying character profile that this profile is based on.
     ///
     /// This can be useful in identifying the core underlying profile for a type
     /// in a generic way (instead of handling each profile type specially). It
@@ -116,7 +118,7 @@ pub trait Profile: SubsetOf<Self> + Sized {
     ///
     /// # Implementation Suggestion
     ///
-    /// If you are defining a *new* profile (e.g., like [`Ascii`], [`Unicode`]),
+    /// If you are defining a char profile (e.g., like [`Ascii`], [`Unicode`]),
     /// then you should set this to `Self`. If you are defining a new
     /// `CasedProfile` (e.g., like [`Lower`], [`Upper`], etc). This should be
     /// set to the profile that the cased profile wraps.
@@ -125,7 +127,7 @@ pub trait Profile: SubsetOf<Self> + Sized {
     /// [`Unicode`]: crate::syntax::profile::Unicode
     /// [`Lower`]: crate::syntax::profile::Lower
     /// [`Upper`]: crate::syntax::profile::Upper
-    type BaseProfile: CharProfile;
+    type CharProfile: CharProfile;
 
     /// The segmentation strategy that this profile uses.
     ///
@@ -177,8 +179,9 @@ pub trait Profile: SubsetOf<Self> + Sized {
     /// *identifier*. Valid at fragment-start is defined by [`is_chunk_char`].
     /// Valid at identifier-start is defined by [`is_ident_start_char`].
     ///
-    /// However, note that it doesn't *require* presence. So it would be bad to
-    /// depend on this for a required character (like PHP's dollar sign).
+    /// However, note that it doesn't *require* presence. A valid identifier can
+    /// contain no chunk starts (either only delimiters, or only an identifier
+    /// start character leading into some other delimiters or chunk characters).
     ///
     /// [`is_chunk_char`]: Profile::is_chunk_char
     /// [`is_ident_start_char`]: Profile::is_ident_start_char
@@ -193,8 +196,8 @@ pub trait Profile: SubsetOf<Self> + Sized {
     /// *fragment* or *chunk*. Valid at fragment-start is defined by
     /// [`is_chunk_char`]. Valid at chunk-start is defined by [`is_chunk_start`].
     ///
-    /// However, note that it doesn't *require* presence. So it would be bad to
-    /// depend on this for a required character (like PHP's dollar sign).
+    /// However, note that it doesn't *require* presence. A valid identifier can
+    /// start instead with a delimiter.
     ///
     /// [`is_chunk_char`]: Profile::is_chunk_char
     /// [`is_chunk_start`]: Profile::is_chunk_start

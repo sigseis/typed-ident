@@ -219,7 +219,7 @@ pub trait Identifier {
     #[must_use = "this returns the remaining sub-fragment as a new fragment, without modifying the original"]
     #[inline]
     fn trim_delims(&self) -> &Fragment<Self::Boundary, Self::Delimiter, Self::Profile> {
-        self.as_ident().trim_delims()
+        self.as_fragment().trim_delims()
     }
 
     /// Trims the delimiters from the start of an identifier.
@@ -237,7 +237,7 @@ pub trait Identifier {
     #[must_use = "this returns the remaining sub-fragment as a new fragment, without modifying the original"]
     #[inline]
     fn trim_leading_delims(&self) -> &Fragment<Self::Boundary, Self::Delimiter, Self::Profile> {
-        self.as_ident().trim_leading_delims()
+        self.as_fragment().trim_leading_delims()
     }
 
     /// Trims the delimiters from the end of an identifier.
@@ -254,7 +254,7 @@ pub trait Identifier {
     #[must_use = "this returns the remaining sub-fragment as a new fragment, without modifying the original"]
     #[inline]
     fn trim_trailing_delims(&self) -> &Fragment<Self::Boundary, Self::Delimiter, Self::Profile> {
-        self.as_ident().trim_trailing_delims()
+        self.as_fragment().trim_trailing_delims()
     }
 
     /// Returns whether the identifier has leading delimiters.
@@ -407,6 +407,19 @@ pub trait Identifier {
         Self::Profile: crate::syntax::SubsetOf<P2>,
     {
         self.as_ident().cast()
+    }
+
+    /// Fallibly casts an identifier to another compatible format.
+    ///
+    /// See the [`Ident::try_cast`] documentation for details.
+    #[inline]
+    fn try_cast<B2, D2, P2>(&self) -> Result<&Ident<B2, D2, P2>, Error>
+    where
+        B2: Boundary,
+        D2: Delimiter,
+        P2: CasedProfile,
+    {
+        self.as_ident().try_cast()
     }
 
     /// Returns an iterator over the characters of an identifier and their

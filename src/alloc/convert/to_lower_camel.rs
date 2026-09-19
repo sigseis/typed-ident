@@ -16,14 +16,21 @@ use std_alloc::string::String;
 // TRAITS
 // =============================================================================
 
-/// Converts an identifier into a preset lower-camel identifier string.
+/// Provides methods for converting an identifier to lower-camel format, using
+/// plain, canonical, decorated, or delimited forms.
 ///
 /// See the [`convert`] module for more details.
 ///
+/// <div class="warning">
+///
+/// **NOTE:** These traits are currently being reconsidered. See issue [#17](https://github.com/sigseis/typed-ident/issues/17).
+///
+/// </div>
+///
 /// [`convert`]: crate::alloc::convert
 pub trait ToLowerCamel {
-    /// Returns a displayable type that converts the provided input to lower
-    /// camel plain form.
+    /// Returns a string of the provided input converted to lower camel plain
+    /// form.
     ///
     /// This method uses the default boundary options. If you have customized
     /// your boundary definitions, you almost certainly want to use the method
@@ -111,8 +118,8 @@ pub trait ToLowerCamel {
         self.to_lower_camel_opts::<Default>()
     }
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// camel in plain form, over some provided boundary options.
+    /// Returns a string of the provided input converted to lower camel plain
+    /// form.
     ///
     /// Use this method if you want to transform the boundary policy of the
     /// input string, or if you want to persist the same customized policy (in
@@ -166,8 +173,8 @@ pub trait ToLowerCamel {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_lower_camel_opts<O: Options>(&self) -> String;
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// camel in canonical form.
+    /// Returns a string of the provided input converted to lower camel
+    /// canonical form.
     ///
     /// This method uses the default boundary options. If you have customized
     /// your boundary definitions, you almost certainly want to use the method
@@ -255,8 +262,8 @@ pub trait ToLowerCamel {
         self.to_lower_camel_canonical_opts::<Default>()
     }
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// camel in canonical form, over some provided boundary options.
+    /// Returns a string of the provided input converted to lower camel
+    /// canonical form.
     ///
     /// Use this method if you want to transform the boundary policy of the
     /// input string, or if you want to persist the same customized policy (in
@@ -310,8 +317,8 @@ pub trait ToLowerCamel {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_lower_camel_canonical_opts<O: Options>(&self) -> String;
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// camel in decorated form.
+    /// Returns a string of the provided input converted to lower camel
+    /// decorated form.
     ///
     /// This method uses the default boundary options. If you have customized
     /// your boundary definitions, you almost certainly want to use the method
@@ -377,8 +384,8 @@ pub trait ToLowerCamel {
         self.to_lower_camel_decorated_opts::<Default>()
     }
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// camel in decorated form, over some provided boundary options.
+    /// Returns a string of the provided input converted to lower camel
+    /// decorated form.
     ///
     /// Use this method if you want to transform the boundary policy of the
     /// input string, or if you want to persist the same customized policy (in
@@ -432,8 +439,8 @@ pub trait ToLowerCamel {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_lower_camel_decorated_opts<O: Options>(&self) -> String;
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// camel in delimited form.
+    /// Returns a string of the provided input converted to lower camel
+    /// delimited form.
     ///
     /// This method uses the default boundary options. If you have customized
     /// your boundary definitions, you almost certainly want to use the method
@@ -496,8 +503,8 @@ pub trait ToLowerCamel {
         self.to_lower_camel_delimited_opts::<Default>()
     }
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// camel in delimited form, over some provided boundary options.
+    /// Returns a string of the provided input converted to lower camel
+    /// delimited form.
     ///
     /// Use this method if you want to transform the boundary policy of the
     /// input string, or if you want to persist the same customized policy (in

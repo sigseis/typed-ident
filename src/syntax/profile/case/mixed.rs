@@ -12,8 +12,8 @@ use core::marker::PhantomData;
 // TYPES
 // =============================================================================
 
-/// A case adapter for a character profile that accepts uncased and lowercase
-/// characters.
+/// A case adapter for a character profile which makes no further restrictions
+/// based on casing.
 pub struct Mixed<P>(PhantomData<P>);
 
 // =============================================================================
@@ -23,7 +23,7 @@ pub struct Mixed<P>(PhantomData<P>);
 // -----------------------------------------------------------------------------
 impl<P: CharProfile> Profile for Mixed<P> {
     const APPEND_CLOSED: AppendClosed = P::APPEND_CLOSED;
-    type BaseProfile = P;
+    type CharProfile = P;
     type Segmentation = P::Segmentation;
 
     #[inline]
@@ -67,24 +67,9 @@ impl<P: CharProfile> CasedProfile for Mixed<P> {
     }
 }
 
-/// Proof: If `Super` ⊆ `Subset`, then `Super` ⊆ `Mixed<Subset>`.
-///
-/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
-///
-/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
-///
-/// * `Mixed<Ascii>: SubsetOf<Unicode>`
-///
-/// # Proof
-///
-/// ```
-/// # use typed_ident::syntax::SubsetOf;
-/// # use typed_ident::syntax::profile::{Ascii, Mixed, Unicode};
-/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
-/// left_is_subset_of_right::<Mixed<Ascii>, Ascii>();
-/// left_is_subset_of_right::<Mixed<Unicode>, Unicode>();
-/// left_is_subset_of_right::<Mixed<Ascii>, Unicode>();
-/// ```
+// -----------------------------------------------------------------------------
+/// Proof: If `Subset` ⊆ `Superset`, then `Mixed<Subset>` ⊆ `Superset`
+// -----------------------------------------------------------------------------
 impl<Superset, Subset> SubsetOf<Superset> for Mixed<Subset>
 where
     Superset: CharProfile,
@@ -92,24 +77,9 @@ where
 {
 }
 
-/// Proof: If `Super` ⊆ `Subset`, then `Mixed<Super>` ⊆ `Mixed<Subset>`.
-///
-/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
-///
-/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
-///
-/// * `Mixed<Ascii>: SubsetOf<Mixed<Unicode>>`
-///
-/// # Proof
-///
-/// ```
-/// # use typed_ident::syntax::SubsetOf;
-/// # use typed_ident::syntax::profile::{Ascii, Mixed, Unicode};
-/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
-/// left_is_subset_of_right::<Mixed<Ascii>, Mixed<Ascii>>();
-/// left_is_subset_of_right::<Mixed<Unicode>, Mixed<Unicode>>();
-/// left_is_subset_of_right::<Mixed<Ascii>, Mixed<Unicode>>();
-/// ```
+// -----------------------------------------------------------------------------
+/// Proof: If `Subset` ⊆ `Superset`, then `Mixed<Subset>` ⊆ `Mixed<Superset>`
+// -----------------------------------------------------------------------------
 impl<Superset, Subset> SubsetOf<Mixed<Superset>> for Mixed<Subset>
 where
     Superset: CharProfile,

@@ -74,9 +74,31 @@ impl_displayable_type! {
 // TRAIT
 // =============================================================================
 
-/// Formats an identifier as a preset upper-hybrid identifier.
+/// Provides methods for formatting an identifier in upper-hybrid format, using
+/// plain, canonical, decorated, or delimited forms.
 ///
 /// See the [`fmt`] module for more details.
+///
+/// # Default Delimiter
+///
+/// These method additionally takes a `default_delim` parameter, which is
+/// to clarify which of the two delimiters should be produced if the
+/// formatting operation needs to produce a delimiter.
+///
+/// Some forms will attempt to keep delimiters from the source text in certain
+/// scenarios (such as the decorated and delimited forms). In these cases, the
+/// formatter will attempt to keep the original source delimiter. If it is not
+/// a valid hybrid-ident delimiter, then it will be mapped to the provided
+/// `default_delim`.
+///
+/// # Return Values
+///
+/// All of the methods on this trait return types that borrow the source
+/// identifier, and implement the `Display` trait so that they are usable from
+/// a formatting call (or convertible to a `String`, via `ToString`).
+///
+/// Calling these methods is cheap, since the work isn't done until we actually
+/// use it for a formatting operation.
 ///
 /// [`fmt`]: crate::core::fmt
 pub trait AsUpperHybrid {
@@ -86,10 +108,6 @@ pub trait AsUpperHybrid {
     /// This method uses the default boundary options. If you have customized
     /// your boundary definitions, you almost certainly want to use the method
     /// [`as_upper_hybrid_opts`].
-    ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -192,10 +210,6 @@ pub trait AsUpperHybrid {
     /// input string, or if you want to persist the same customized policy (in
     /// place of simply using the default).
     ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`fmt`]: crate::core::fmt
@@ -256,10 +270,6 @@ pub trait AsUpperHybrid {
     /// This method uses the default boundary options. If you have customized
     /// your boundary definitions, you almost certainly want to use the method
     /// [`as_upper_hybrid_canonical_opts`].
-    ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -362,10 +372,6 @@ pub trait AsUpperHybrid {
     /// input string, or if you want to persist the same customized policy (in
     /// place of simply using the default).
     ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`fmt`]: crate::core::fmt
@@ -429,15 +435,6 @@ pub trait AsUpperHybrid {
     /// This method uses the default boundary options. If you have customized
     /// your boundary definitions, you almost certainly want to use the method
     /// [`as_upper_hybrid_decorated_opts`].
-    ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
-    ///
-    /// The decorated formatter will attempt to keep the original delimiters.
-    /// But it will map delimiters outside of the character set of
-    /// `AsciiFlatLine`, and there can be instances where a delimiter is
-    /// produced to forcibly separate two chunks on an options difference.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -513,15 +510,6 @@ pub trait AsUpperHybrid {
     /// input string, or if you want to persist the same customized policy (in
     /// place of simply using the default).
     ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
-    ///
-    /// The decorated formatter will attempt to keep the original delimiters.
-    /// But it will map delimiters outside of the character set of
-    /// `AsciiFlatLine`, and there can be instances where a delimiter is
-    /// produced to forcibly separate two chunks on an options difference.
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`fmt`]: crate::core::fmt
@@ -585,15 +573,6 @@ pub trait AsUpperHybrid {
     /// This method uses the default boundary options. If you have customized
     /// your boundary definitions, you almost certainly want to use the method
     /// [`as_upper_hybrid_delimited_opts`].
-    ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
-    ///
-    /// The decorated formatter will attempt to keep the original delimiters.
-    /// But it will map delimiters outside of the character set of
-    /// `AsciiFlatLine`, and there can be instances where a delimiter is
-    /// produced to forcibly separate two chunks on an options difference.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -668,15 +647,6 @@ pub trait AsUpperHybrid {
     /// input string, or if you want to persist the same customized policy (in
     /// place of simply using the default).
     ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
-    ///
-    /// The decorated formatter will attempt to keep the original delimiters.
-    /// But it will map delimiters outside of the character set of
-    /// `AsciiFlatLine`, and there can be instances where a delimiter is
-    /// produced to forcibly separate two chunks on an options difference.
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`fmt`]: crate::core::fmt
@@ -743,7 +713,7 @@ pub trait AsUpperHybrid {
 impl<B: Boundary, D: Delimiter, P: Profile> AsUpperHybrid for Ident<B, D, P> {
     #[inline]
     fn as_upper_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> UpperHybrid<'_> {
-        UpperHybrid(Canonical::new::<B, D, P::BaseProfile, Standard<O>>(
+        UpperHybrid(Canonical::new::<B, D, P::CharProfile, Standard<O>>(
             self.as_str(),
             default_delim.as_char(),
             false,
@@ -754,7 +724,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsUpperHybrid for Ident<B, D, P> {
         &self,
         default_delim: AsciiFlatLine,
     ) -> UpperHybridCanonical<'_> {
-        UpperHybridCanonical(Canonical::new::<B, D, P::BaseProfile, Standard<O>>(
+        UpperHybridCanonical(Canonical::new::<B, D, P::CharProfile, Standard<O>>(
             self.as_str(),
             default_delim.as_char(),
             true,
@@ -765,7 +735,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsUpperHybrid for Ident<B, D, P> {
         &self,
         default_delim: AsciiFlatLine,
     ) -> UpperHybridDecorated<'_> {
-        UpperHybridDecorated(Decorated::new::<B, D, P::BaseProfile, Standard<O>>(
+        UpperHybridDecorated(Decorated::new::<B, D, P::CharProfile, Standard<O>>(
             self.as_str(),
             default_delim.as_char(),
             Some(match default_delim {
@@ -779,7 +749,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsUpperHybrid for Ident<B, D, P> {
         &self,
         default_delim: AsciiFlatLine,
     ) -> UpperHybridDelimited<'_> {
-        UpperHybridDelimited(Delimited::new::<B, D, P::BaseProfile, Standard<O>>(
+        UpperHybridDelimited(Delimited::new::<B, D, P::CharProfile, Standard<O>>(
             self.as_str(),
             default_delim.as_char(),
             Some(match default_delim {

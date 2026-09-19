@@ -30,13 +30,14 @@ pub(crate) enum GraphemeCase {
 
 // -----------------------------------------------------------------------------
 impl GraphemeCase {
+    /// Returns a grapheme case from a single character grapheme.
     #[inline]
     pub fn from_char(c: char) -> Self {
         Self::from_char_case(CharCase::new(c))
     }
 
     #[inline]
-    pub fn from_char_case(case: CharCase) -> Self {
+    fn from_char_case(case: CharCase) -> Self {
         match case {
             CharCase::Uncased => Self::Uncased,
             CharCase::Lower => Self::Lower,
@@ -47,7 +48,7 @@ impl GraphemeCase {
     }
 
     #[inline]
-    pub fn from_chars(chars: impl Iterator<Item = char>) -> Self {
+    fn from_chars(chars: impl Iterator<Item = char>) -> Self {
         let mut cases = chars
             .map(CharCase::new)
             .filter(|c| !matches!(c, CharCase::Uncased));
@@ -60,18 +61,23 @@ impl GraphemeCase {
         Self::from_char_case(case)
     }
 
+    /// Tests the case of each character within the grapheme, folding them into
+    #[inline]
+    pub fn new(grapheme: &str) -> Self {
+        Self::from_chars(grapheme.chars())
+    }
+
+    /// First applies a lowercase transformation on the characters, then tests
+    /// to see what the case of the resulting grapheme is.
     #[inline]
     pub fn new_lowercased(grapheme: &str) -> Self {
         Self::from_chars(grapheme.chars().flat_map(|c| c.to_lowercase()))
     }
 
+    /// First applies an uppercase transformation on the characters, then tests
+    /// to see what the case of the resulting grapheme is.
     #[inline]
-    pub fn new_uppercase(grapheme: &str) -> Self {
+    pub fn new_uppercased(grapheme: &str) -> Self {
         Self::from_chars(grapheme.chars().flat_map(|c| c.to_uppercase()))
-    }
-
-    #[inline]
-    pub fn new(grapheme: &str) -> Self {
-        Self::from_chars(grapheme.chars())
     }
 }

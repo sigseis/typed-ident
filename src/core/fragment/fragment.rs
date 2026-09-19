@@ -26,12 +26,87 @@ use core::marker::PhantomData;
 
 /// An immutable UTF-8 encoded slice of an [`Ident`].
 ///
+/// Any fragment must be a possible sub-slice of some theoretically-valid
+/// identifier over the same syntax type parameters. This can lead to surprising
+/// fragments that seem invalid (like `2` or `Upper` for lower-camel, etc).
+///
 /// This type can be returned during sub-slicing operations on a fragment or
-/// identifier (such as [`get`], [`matches`], [`split_at`], etc).
+/// identifier (such as [`get`], [`matches`], [`split_at`], etc). It can also
+/// be returned from taking further slices of a resulting fragment.
+///
+/// It exists to separate a completely valid, non-empty identifier from a slice
+/// of an identifier (which either may be empty or format-invalid).
 ///
 /// [`get`]: Fragment::get
 /// [`matches`]: Fragment::matches
 /// [`split_at`]: Fragment::split_at
+///
+/// # Construction
+///
+/// It's not usually recommended that you construct a fragment directly, usually
+/// it will be constructed for you as a result of doing some operation that
+/// returns a fragment (like the aforementioned slicing operations).
+///
+/// However, if you *do* want to construct a fragment, it is expected that you
+/// do so through some type alias which fully defines the fragment.
+///
+/// The common way to get a reasonable alias is through the [`presets`] module.
+///
+/// [`presets`]: crate::presets
+///
+/// ```
+/// use typed_ident::presets::unicode::lower_snake::LowerSnakeFragment;
+///
+/// // This appears to be a valid identifier, in this case also a valid fragment!
+/// let fragment = LowerSnakeFragment::new("lower_2snake")?;
+///
+/// // But not all fragments will appear to be valid identifiers.
+/// // Take for instance following, which is a slice of `lower_2snake`.
+/// // Though it is a valid fragment (part of an ident), it's not a valid ident.
+/// let fragment = LowerSnakeFragment::new("2snake")?;
+/// # Ok::<(), typed_ident::Error>(())
+/// ```
+///
+/// These presets are all just type aliases to `Fragment` with the generic type
+/// parameters filled-in. If you would like to define your own custom fragment,
+/// it's recommended that you do so by defining your own type alias.
+///
+/// ```
+/// use typed_ident::Fragment;
+/// use typed_ident::syntax::{boundary, delimiter, profile};
+///
+/// // An ASCII fragment using the uppercase ASCII profile.
+/// // Any ASCII punctuation is rejected as delimiters.
+/// type CustomFragment = Fragment<
+///     boundary::Standard,
+///     delimiter::AsciiPunctuation,
+///     profile::Upper<profile::Ascii>,
+/// >;
+///
+/// let ident = CustomFragment::new("UPPER#@IDENT")?;
+/// # Ok::<(), typed_ident::Error>(())
+/// ```
+///
+/// # Type Conversion
+///
+/// There's a few ways to convert between types depending on what you want to
+/// accomplish. These type conversions ***DO NOT*** reformat or change the input
+/// string. They just produce a new type of the target fragment syntax.
+///
+/// | **I Have a...**   | **I Want a...**   | **Method**                | **Validation Cost**  | **Allocation Cost** |
+/// |-------------------|-------------------|---------------------------|----------------------|---------------------|
+/// | `&Fragment<A..>`     | `&Fragment<B..>`     | [`cast`]  / [`as_ref`]    | None                 | None                |
+/// | `&Fragment<A..>`     | `&Fragment<B..>`     | [`try_cast`]              | Same as [`new`]      | None                |
+///
+/// [`as_ref`]: Fragment::as_ref
+/// [`cast`]: Fragment::cast
+/// [`new`]: Fragment::new
+/// [`try_cast`]: Fragment::try_cast
+///
+/// This type contains fewer conversion functions than [`Ident`], because it's
+/// less common to need as much functionality with a `Fragment`. However, it
+/// might be nice to have common conversion functions regardless, so follow
+/// issue [#19](https://github.com/sigseis/typed-ident/issues/19) to track this.
 ///
 /// # Type Parameters
 ///
@@ -39,80 +114,28 @@ use core::marker::PhantomData;
 ///
 /// * `B`: [`Boundary`] (a boundary definition; usually [`Standard`])
 /// * `D`: [`Delimiter`] (a delimiter type; [`HyphenMinus`], [`LowLine`], etc.)
-/// * `P`: [`Profile`] (a character profile; [`Ascii`], [`Unicode`], etc.)
+/// * `P`: [`CasedProfile`] (a cased profile; which is...)
+///   * A wrapping case profile (e.g. [`Mixed`], [`Lower`], etc.)
+///   * A specific character profile (e.g. [`Ascii`], [`Unicode`], etc.)
 ///
-/// # Character Requirements
-///
-/// The underlying string must either be empty, *or* satisfy the following:
-///
-/// 1. Starts with a valid starting sub-fragment, which is *either*:
-///    1. A delimiter character that is [`D::is_delim`].
-///    2. A chunk character that is [`P::is_chunk_char`], followed by 0 or more
-///       chunk characters which are [`P::is_chunk_continue`], up until the
-///       next [`D::is_delim`] character.
-/// 2. Followed by 0 or more continuing sub-fragments, which are *either*:
-///    1. A delimiter character that is [`D::is_chunk_delim`].
-///    2. A chunk character that is [`P::is_chunk_start`], followed by 0 or
-///       more chunk characters which are [`P::is_chunk_continue`], up until
-///       the next [`D::is_delim`] character.
-///
-/// This is a very technical way of saying that any valid fragment must be a
-/// possible sub-slice of some theoretically-valid identifier with the same
-/// syntax type parameters.
-///
-/// [`D::is_chunk_delim`]: crate::syntax::delimiter::Delimiter::is_chunk_delim
-/// [`D::is_delim`]: crate::syntax::delimiter::Delimiter::is_delim
-/// [`P::is_chunk_char`]: crate::syntax::profile::Profile::is_chunk_char
-/// [`P::is_chunk_continue`]: crate::syntax::profile::Profile::is_chunk_continue
-/// [`P::is_chunk_start`]: crate::syntax::profile::Profile::is_chunk_start
-///
-/// # Useful Properties
-///
-/// Some useful properties to be aware of when dealing with fragments:
-///
-/// * An empty string slice is always a valid fragment.
-/// * A slice of any fragment is itself a fragment over the same generics.
-///   * e.g. as long as we don't change the type parameters, you can slice a
-///     fragment and get another valid fragment over the same types.
-/// * You can trivially [`cast`] one fragment to another as long as the
-///   fragment's generic types are [`SubsetOf`] the target fragment's generics.
-///   * e.g. as long as we are casting to a more broad format, it's trivial and
-///     we do not need to check the format again (enforced by the trait system).
-///
-/// # Examples
-///
-/// It is recommended that you configure a type alias to work with fragments, so
-/// that you don't need to provide the type parameters everywhere (or use one of
-/// the provided [`presets`]).
-///
-/// ```
-/// // Custom Fragment Example
-/// use typed_ident::core::Fragment;
-/// use typed_ident::syntax::{boundary, delimiter, profile};
-/// type CustomFragment = Fragment<
-///     boundary::Standard,
-///     delimiter::LowLine,
-///     profile::Lower<profile::Unicode>,
-/// >;
-/// assert!(CustomFragment::new("only_accepts_lowercase").is_ok());
-///
-/// // Preset Fragment Example
-/// use typed_ident::presets::unicode::upper_camel::UpperCamelFragment;
-/// assert!(UpperCamelFragment::new("AcceptsUppercase_Camel").is_ok());
-/// ```
+/// See the [`syntax`] module definition if you plan on defining your own type
+/// aliases to understand better what these types mean and how they work.
 ///
 /// [`Ascii`]: crate::syntax::profile::Ascii
 /// [`Boundary`]: crate::syntax::boundary::Boundary
 /// [`Delimiter`]: crate::syntax::delimiter::Delimiter
-/// [`Standard`]: crate::syntax::boundary::Standard
 /// [`HyphenMinus`]: crate::syntax::delimiter::HyphenMinus
+/// [`Ident`]: crate::core::Ident
 /// [`LowLine`]: crate::syntax::delimiter::LowLine
+/// [`Lower`]: crate::syntax::profile::Lower
+/// [`Mixed`]: crate::syntax::profile::Mixed
 /// [`Profile`]: crate::syntax::profile::Profile
+/// [`Standard`]: crate::syntax::boundary::Standard
 /// [`SubsetOf`]: crate::syntax::SubsetOf
 /// [`Unicode`]: crate::syntax::profile::Unicode
 /// [`cast`]: Self::cast
 /// [`presets`]: crate::presets
-/// [`Ident`]: crate::core::Ident
+/// [`syntax`]: crate::syntax
 #[repr(transparent)]
 pub struct Fragment<B, D, P> {
     config: PhantomData<(B, D, P)>,
@@ -136,18 +159,16 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// A fragment is made of a string slice ([`&str`]), this function converts
     /// between the two. Not all string slices are valid fragments, however. A
     /// fragment requires that the characters it is comprised of satisfy certain
-    /// [requirements].
+    /// requirements.
     ///
     /// `new` checks to ensure these are satisfied before the conversion.
     ///
-    /// [requirements]: Self#character-requirements
-    ///
     /// # Errors
     ///
-    /// Returns `Err` if the string slice does not satisfy the character
-    /// requirements. If an invalid character is found then an [`Error`] is
-    /// returned, with [`byte_offset`] set to the byte index for the first
-    /// invalid character.
+    /// Returns [`Error`] if the fragment does not satisfy the character
+    /// requirements. If an invalid character is found then a `InvalidFormat`
+    /// error kind is returned, with [`byte_offset`] set to the byte index for
+    /// the first invalid character.
     ///
     /// [`Error`]: crate::Error
     /// [`byte_offset`]: crate::Error::byte_offset
@@ -166,15 +187,15 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
         Ok(Self::new_unchecked(s))
     }
 
-    /// Produces an iterator over the [`Segment`]s of a fragment, joining chunks
-    /// together into one chunk instead of separating based on boundary logic.
+    /// Produces an iterator over the [`Segment`]s (chunks and delimiters) of a
+    /// fragment.
     ///
     /// * The `Delimiter` variant is of type `D`.
     /// * The `Chunk` variant is of type [`Chunk<'_, B, D, P>`].
     ///
-    /// Usually, when breaking into segments, you want to also break chunk
-    /// boundaries. However, this iterator *will not* do that. It simply breaks
-    /// into broad segments and chunks.
+    /// Usually, when breaking into segments, you want to also break chunks into
+    /// words. However, this iterator *will not* do that. It simply breaks into
+    /// broad segments and chunks.
     ///
     /// If you want chunk boundaries to be broken, you should instead use the
     /// [`segments`] function.
@@ -191,8 +212,11 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// about the segments).
     ///
     /// In these cases, you should call [`type_erased`] to drop type information,
-    /// mapping to a `Segment</*Delimiter=*/char, /*Chunk=*/&str>` (you can call
-    /// this on the returned iterator, or on an individual segment).
+    /// mapping to a [`StrSegment`] (you can call this on the returned iterator,
+    /// or on an individual segment).
+    ///
+    /// [`StrSegment`]: crate::core::StrSegment
+    /// [`type_erased`]: crate::core::fragment::ChunkedSegments::type_erased
     ///
     /// # Examples
     ///
@@ -223,17 +247,14 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// assert_eq!(segments.next_back(), None);
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    ///
-    /// [`type_erased`]: crate::core::fragment::ChunkedSegments::type_erased
     #[must_use]
     #[inline]
     pub fn chunked_segments(&self) -> ChunkedSegments<'_, B, D, P> {
         ChunkedSegments::new(self)
     }
 
-    /// Produces an iterator over the [`Segment`]s of a fragment, and their
-    /// positions, joining chunks together into one chunk instead of separating
-    /// based on boundary logic.
+    /// Produces an iterator over the [`Segment`]s (chunks and delimiters) of a
+    /// fragment, and their positions.
     ///
     /// * The `Delimiter` variant is of type `D`.
     /// * The `Chunk` variant is of type [`Chunk<'_, B, D, P>`].
@@ -257,8 +278,11 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// about the segments).
     ///
     /// In these cases, you should call [`type_erased`] to drop type information,
-    /// mapping to a `Segment</*Delimiter=*/char, /*Chunk=*/&str>` (you can call
-    /// this on the returned iterator, or on an individual segment).
+    /// mapping to a [`StrSegment`] (you can call this on the returned iterator,
+    /// or on an individual segment).
+    ///
+    /// [`StrSegment`]: crate::core::StrSegment
+    /// [`type_erased`]: crate::core::fragment::ChunkedSegments::type_erased
     ///
     /// # Examples
     ///
@@ -289,21 +313,22 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// assert_eq!(segments.next_back(), None);
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    ///
-    /// [`type_erased`]: crate::core::fragment::ChunkedSegmentIndices::type_erased
     #[must_use]
     #[inline]
     pub fn chunked_segment_indices(&self) -> ChunkedSegmentIndices<'_, B, D, P> {
         ChunkedSegmentIndices::new(self)
     }
 
-    /// Produces an iterator over the [`Segment`]s of a fragment.
+    /// Produces an iterator over the [`Segment`]s (chunks and delimiters) of a
+    /// fragment, with each chunk further sub-divided into words.
     ///
     /// * The `Delimiter` variant is of type `D`.
     /// * The `Chunk` variant is of type [`Chunk<'_, B, D, P>`].
     ///
     /// This is similar to [`chunked_segments`], except that it will also break
     /// chunks based on the configured [`Boundary`] type parameter.
+    ///
+    /// See the [`core`] module documentation for details on what a word is.
     ///
     /// [`Segment`]: crate::core::Segment
     /// [`Chunk<'_, B, D, P>`]: crate::core::Chunk
@@ -318,10 +343,11 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// about the segments).
     ///
     /// In these cases, you should call [`type_erased`] to drop type information,
-    /// mapping to a `Segment</*Delimiter=*/char, /*Chunk=*/&str>` (you can call
-    /// this on the returned iterator, or on an individual segment).
+    /// mapping to a [`StrSegment`] (you can call this on the returned iterator,
+    /// or on an individual segment).
     ///
-    /// [`type_erased`]: crate::core::fragment::Segments::type_erased
+    /// [`StrSegment`]: crate::core::StrSegment
+    /// [`type_erased`]: crate::core::fragment::ChunkedSegments::type_erased
     ///
     /// # Examples
     ///
@@ -362,11 +388,14 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
         Segments::new(self)
     }
 
-    /// Produces an iterator over the [`Segment`]s of a fragment, and their
+    /// Produces an iterator over the [`Segment`]s (chunks and delimiters) of a
+    /// fragment, with each chunk further sub-divided into words, and their
     /// positions.
     ///
     /// This is similar to [`chunked_segment_indices`], except that it will also
     /// break chunks based on the configured [`Boundary`] type parameter.
+    ///
+    /// See the [`core`] module documentation for details on what a word is.
     ///
     /// [`Segment`]: crate::core::Segment
     /// [`chunked_segment_indices`]: Self::chunked_segment_indices
@@ -380,8 +409,11 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// about the segments).
     ///
     /// In these cases, you should call [`type_erased`] to drop type information,
-    /// mapping to a `Segment</*Delimiter=*/char, /*Chunk=*/&str>` (you can call
-    /// this on the returned iterator, or on an individual segment).
+    /// mapping to a [`StrSegment`] (you can call this on the returned iterator,
+    /// or on an individual segment).
+    ///
+    /// [`StrSegment`]: crate::core::StrSegment
+    /// [`type_erased`]: crate::core::fragment::ChunkedSegments::type_erased
     ///
     /// # Examples
     ///
@@ -416,10 +448,6 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// assert_eq!(segments.next_back(), None);
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    ///
-    /// [`type_erased`]: crate::core::fragment::Segments::type_erased
-    /// [`chunked_segment_indices`]: Self::chunked_segment_indices
-    /// [`Boundary`]: crate::syntax::boundary::Boundary
     #[must_use]
     #[inline]
     pub fn segment_indices(&self) -> SegmentIndices<'_, B, D, P> {

@@ -10,7 +10,7 @@ use crate::syntax::{Delimiter, Profile, SyntaxError};
 // =============================================================================
 
 /// A trait which further distinguishes a profile as an adapter of another base
-/// profile, with some new casing rules mixed in.
+/// character profile, with some new casing rules mixed in.
 ///
 /// # Note
 ///

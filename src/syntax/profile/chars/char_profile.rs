@@ -10,5 +10,5 @@ use crate::syntax::profile::Profile;
 // =============================================================================
 
 /// A marker trait that declares a type to be a character profile specifically
-/// (as opposed to an adapted profile).
+/// (as opposed to a cased profile).
 pub trait CharProfile: Profile {}

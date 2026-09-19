@@ -14,25 +14,13 @@
 /// It's valid to *not* implement this trait if you aren't certain, it just
 /// prevents certain zero-cost casts from being possible.
 ///
-/// # Burden of Proof
+/// # Always Implement `SubsetOf<Self>`
 ///
-/// While it's not an unsafe trait itself, since it's tricky and easy to get
-/// wrong, it's highly recommended that each implementation of `SubsetOf`
-/// demonstrates why that implementation is sane.
+/// It is *always* safe (and required) to implement this against the delimiter
+/// or profile that you're defining. We don't do this by default to leave the
+/// generic impl space open for more complex generic impls.
 ///
-/// The format of this is "Proof: (Brief Reason)", and then it can be
-/// followed-up with more details if necessary to make the reason clearer. See
-/// some of the implementations of this trait in this crate as an example.
-///
-/// # Always Sane: `SubsetOf<Self>`
-///
-/// It is *always* sane (and recommended) to implement this against yourself.
-/// We don't do this by default to leave the generic impl space open for more
-/// complex generic impls.
-///
-/// * `impl SubsetOf<T> for T {}`
-///
-/// For more complex cases...
+/// # Conditionally Implement `SubsetOf<Other>`
 ///
 /// You can implement this when the validation property of a syntax rule are
 /// *all* supersets (or equal-to) the validation properties of your defined
@@ -40,12 +28,12 @@
 ///
 /// For [`Delimiter`], you can implement `SubsetOf<Super>` if:
 ///
-/// * `Self::is_ident_start` ⊆ `Super::is_ident_start`, *and...*
+/// * `Self::is_ident_start_delim` ⊆ `Super::is_ident_start_delim`, *and...*
 /// * `Self::is_chunk_delim` ⊆ `Super::is_chunk_delim`
 ///
 /// For [`Profile`], you can implement `SubsetOf<Super>` if:
 ///
-/// * `Self::is_ident_start` ⊆ `Super::is_ident_start`, *and...*
+/// * `Self::is_ident_start_char` ⊆ `Super::is_ident_start_char`, *and...*
 /// * `Self::is_chunk_start` ⊆ `Super::is_chunk_start`, *and...*
 /// * `Self::is_chunk_continue` ⊆ `Super::is_chunk_continue`
 ///

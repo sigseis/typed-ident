@@ -31,7 +31,7 @@ impl<'a, const UPPER: bool> Canonical<'a, UPPER> {
         f: &mut core::fmt::Formatter<'_>,
     ) -> core::fmt::Result {
         let writer = Writer::<UPPER>::new(f);
-        writer.write_canonical::<T, P::BaseProfile>(
+        writer.write_canonical::<T, P::CharProfile>(
             &mut StrSegments::<B, D, P::Segmentation>::new(self.ident).filter_map(|s| match s {
                 Segment::Chunk(c) => Some(c),
                 _ => None,
