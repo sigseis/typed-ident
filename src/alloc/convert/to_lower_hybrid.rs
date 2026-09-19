@@ -16,63 +16,37 @@ use std_alloc::string::String;
 // TRAITS
 // =============================================================================
 
-/// Converts an identifier into a preset lower-hybrid identifier string.
+/// Provides methods for converting an identifier to lower-hybrid format, using
+/// plain, canonical, decorated, or delimited forms.
 ///
 /// See the [`convert`] module for more details.
 ///
+/// <div class="warning">
+///
+/// **NOTE:** These traits are currently being reconsidered. See issue [#17](https://github.com/sigseis/typed-ident/issues/17).
+///
+/// </div>
+///
+/// # Default Delimiter
+///
+/// These method additionally takes a `default_delim` parameter, which is
+/// to clarify which of the two delimiters should be produced if the
+/// conversion operation needs to produce a delimiter.
+///
+/// Some forms will attempt to keep delimiters from the source text in certain
+/// scenarios (such as the decorated and delimited forms). In these cases, the
+/// formatter will attempt to keep the original source delimiter. If it is not
+/// a valid hybrid-ident delimiter, then it will be mapped to the provided
+/// `default_delim`.
+///
 /// [`convert`]: crate::alloc::convert
-///
-/// # Examples
-///
-/// ```
-/// # use typed_ident::alloc::convert::*;
-/// # use typed_ident::presets::unicode::*;
-/// # use typed_ident::syntax::delimiter::*;
-/// assert_eq!(
-///     LowerCamelIdent::new("lowerCamel")?.to_lower_hybrid_canonical(AsciiFlatLine::LowLine),
-///     "lowerCamel"
-/// );
-/// assert_eq!(
-///     LowerHybridIdent::new("lowerHybrid")?.to_lower_hybrid_canonical(AsciiFlatLine::LowLine),
-///     "lowerHybrid"
-/// );
-/// assert_eq!(
-///     LowerKebabIdent::new("lower-kebab")?.to_lower_hybrid_canonical(AsciiFlatLine::LowLine),
-///     "lowerKebab"
-/// );
-/// assert_eq!(
-///     LowerSnakeIdent::new("lower_snake")?.to_lower_hybrid_canonical(AsciiFlatLine::LowLine),
-///     "lowerSnake"
-/// );
-/// assert_eq!(
-///     UpperCamelIdent::new("UpperCamel")?.to_lower_hybrid_canonical(AsciiFlatLine::LowLine),
-///     "upperCamel"
-/// );
-/// assert_eq!(
-///     UpperHybridIdent::new("UpperHybrid")?.to_lower_hybrid_canonical(AsciiFlatLine::LowLine),
-///     "upperHybrid"
-/// );
-/// assert_eq!(
-///     UpperKebabIdent::new("UPPER-KEBAB")?.to_lower_hybrid_canonical(AsciiFlatLine::LowLine),
-///     "upperKebab"
-/// );
-/// assert_eq!(
-///     UpperSnakeIdent::new("UPPER_SNAKE")?.to_lower_hybrid_canonical(AsciiFlatLine::LowLine),
-///     "upperSnake"
-/// );
-/// # Ok::<(), typed_ident::Error>(())
-/// ```
 pub trait ToLowerHybrid {
-    /// Returns a displayable type that converts the provided input to lower
-    /// hybrid in plain form.
+    /// Returns a string of the provided input converted to lower hybrid plain
+    /// form.
     ///
     /// This method uses the default boundary options. If you have customized
     /// your boundary definitions, you almost certainly want to use the method
     /// [`to_lower_hybrid_opts`].
-    ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -158,16 +132,12 @@ pub trait ToLowerHybrid {
         self.to_lower_hybrid_opts::<Default>(default_delim)
     }
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// hybrid in plain form, over some provided boundary options.
+    /// Returns a string of the provided input converted to lower hybrid plain
+    /// form.
     ///
     /// Use this method if you want to transform the boundary policy of the
     /// input string, or if you want to persist the same customized policy (in
     /// place of simply using the default).
-    ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -219,16 +189,12 @@ pub trait ToLowerHybrid {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_lower_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> String;
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// hybrid in canonical form.
+    /// Returns a string of the provided input converted to lower hybrid
+    /// canonical form.
     ///
     /// This method uses the default boundary options. If you have customized
     /// your boundary definitions, you almost certainly want to use the method
     /// [`to_lower_hybrid_canonical_opts`].
-    ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -314,16 +280,12 @@ pub trait ToLowerHybrid {
         self.to_lower_hybrid_canonical_opts::<Default>(default_delim)
     }
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// hybrid in canonical form, over some provided boundary options.
+    /// Returns a string of the provided input converted to lower hybrid
+    /// canonical form.
     ///
     /// Use this method if you want to transform the boundary policy of the
     /// input string, or if you want to persist the same customized policy (in
     /// place of simply using the default).
-    ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -375,21 +337,12 @@ pub trait ToLowerHybrid {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_lower_hybrid_canonical_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> String;
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// hybrid in decorated form.
+    /// Returns a string of the provided input converted to lower hybrid
+    /// decorated form.
     ///
     /// This method uses the default boundary options. If you have customized
     /// your boundary definitions, you almost certainly want to use the method
     /// [`to_lower_hybrid_decorated_opts`].
-    ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
-    ///
-    /// The decorated formatter will attempt to keep the original delimiters.
-    /// But it will map delimiters outside of the character set of
-    /// `AsciiFlatLine`, and there can be instances where a delimiter is
-    /// produced to forcibly separate two chunks on an options difference.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -450,21 +403,12 @@ pub trait ToLowerHybrid {
         self.to_lower_hybrid_decorated_opts::<Default>(default_delim)
     }
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// hybrid in decorated form, over some provided boundary options.
+    /// Returns a string of the provided input converted to lower hybrid
+    /// decorated form.
     ///
     /// Use this method if you want to transform the boundary policy of the
     /// input string, or if you want to persist the same customized policy (in
     /// place of simply using the default).
-    ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
-    ///
-    /// The decorated formatter will attempt to keep the original delimiters.
-    /// But it will map delimiters outside of the character set of
-    /// `AsciiFlatLine`, and there can be instances where a delimiter is
-    /// produced to forcibly separate two chunks on an options difference.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -514,21 +458,12 @@ pub trait ToLowerHybrid {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_lower_hybrid_decorated_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> String;
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// hybrid in delimited form.
+    /// Returns a string of the provided input converted to lower hybrid
+    /// delimited form.
     ///
     /// This method uses the default boundary options. If you have customized
     /// your boundary definitions, you almost certainly want to use the method
     /// [`to_lower_hybrid_delimited_opts`].
-    ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
-    ///
-    /// The decorated formatter will attempt to keep the original delimiters.
-    /// But it will map delimiters outside of the character set of
-    /// `AsciiFlatLine`, and there can be instances where a delimiter is
-    /// produced to forcibly separate two chunks on an options difference.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -588,21 +523,12 @@ pub trait ToLowerHybrid {
         self.to_lower_hybrid_delimited_opts::<Default>(default_delim)
     }
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// hybrid in delimited form, over some provided boundary options.
+    /// Returns a string of the provided input converted to lower hybrid
+    /// delimited form.
     ///
     /// Use this method if you want to transform the boundary policy of the
     /// input string, or if you want to persist the same customized policy (in
     /// place of simply using the default).
-    ///
-    /// This method additionally takes a `default_delim` parameter, which is
-    /// to clarify which of the two delimiters should be produces if the
-    /// formatting operation needs to produces a delimiter.
-    ///
-    /// The decorated formatter will attempt to keep the original delimiters.
-    /// But it will map delimiters outside of the character set of
-    /// `AsciiFlatLine`, and there can be instances where a delimiter is
-    /// produced to forcibly separate two chunks on an options difference.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///

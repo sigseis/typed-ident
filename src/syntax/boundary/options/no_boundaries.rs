@@ -11,7 +11,7 @@ use crate::syntax::boundary::Options;
 
 /// Never introduces a boundary.
 ///
-/// For more information, see the [`boundary`](crate::syntax::boundary#options) module.
+/// For more information, see the [`boundary`](crate::syntax::boundary#configuring-the-standard-implementation) module documentation.
 pub enum NoBoundaries {}
 
 // =============================================================================

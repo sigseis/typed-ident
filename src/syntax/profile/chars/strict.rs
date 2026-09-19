@@ -55,9 +55,9 @@ use crate::syntax::{SubsetOf, segmentation};
 /// camel look a certain way (e.g. that the first character is upper or lower
 /// compatible).
 ///
-/// Strict processing is a bit slower, and causes the profile to no longer be
+/// Strict processing is a bit slower, as it causes the profile to no longer be
 /// `APPEND_CLOSED` for fragments (which reduces the optimizations we can do).
-/// It costs you something, and *usually* it's not worth the cost.
+/// So you should only use it when you want to be extra strict on the input.
 pub enum Strict {}
 
 // =============================================================================
@@ -67,7 +67,7 @@ pub enum Strict {}
 // -----------------------------------------------------------------------------
 impl Profile for Strict {
     const APPEND_CLOSED: AppendClosed = AppendClosed::Chunk;
-    type BaseProfile = Self;
+    type CharProfile = Self;
     type Segmentation = segmentation::Grapheme;
 
     #[inline(always)]

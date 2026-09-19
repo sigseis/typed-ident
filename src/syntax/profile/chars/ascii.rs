@@ -50,7 +50,7 @@ impl Ascii {
 // -----------------------------------------------------------------------------
 impl Profile for Ascii {
     const APPEND_CLOSED: AppendClosed = AppendClosed::Fragment;
-    type BaseProfile = Self;
+    type CharProfile = Self;
     type Segmentation = segmentation::Char;
 
     #[inline(always)]

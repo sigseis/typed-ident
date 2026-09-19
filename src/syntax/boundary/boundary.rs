@@ -21,10 +21,17 @@ use core::num::NonZero;
 ///
 /// The functions on this type are all passed a [`Segmentation`] type parameter.
 ///
-/// The reason for this is - the profile dictates the ***code*** segmentation
-/// properties, but the boundary dictates the ***chunk*** segmentation
-/// properties. As such, [`Profile`] needs to feed the segmentation type into
-/// these functions.
+/// The [`Profile`] type knows what is and isn't a valid Unicode code-point
+/// (`char`). And so it knows how to validly iterate over text graphemes.
+///
+/// * For ASCII text, you only need a simple iterator, which looks at each
+///   character.
+/// * For non-ASCII text, you need a more complex iterator (typically
+///   `unicode-segmentation`).
+///
+/// Then, `Boundary` knows how to look over this text to identify places to
+/// introduce boundaries. Usually you will want to use the provided segmentation
+/// policy to do this properly.
 ///
 /// [`Profile`]: crate::syntax::profile::Profile
 /// [`Segmentation`]: crate::syntax::segmentation::Segmentation
@@ -34,7 +41,7 @@ pub trait Boundary {
     ///
     /// For all practical purposes, if you are implementing a custom boundary,
     /// this should be set to `true`, so it is defaulted to that. It exists as a
-    /// way to optimize some operations when there's provable no boundaries.
+    /// way to optimize some operations when there's provably no boundaries.
     const CAN_FIND_BOUNDARIES: bool = true;
 
     /// Finds the next index that a boundary should be introduced on.
@@ -45,11 +52,11 @@ pub trait Boundary {
     /// the boundary exists at. If there are no remaining boundaries, `None` is
     /// returned.
     ///
-    /// This function should never return `Some(s.len())`. If it does, then some
-    /// functionality may not work as expected.
+    /// This function should avoid returning `Some(s.len())`. If it does, then
+    /// some functionality may not work as expected.
     fn find_boundary<S: Segmentation>(chunk: &str) -> Option<NonZero<usize>>;
 
-    /// Finds the next index from the back of the string that a boundary should
+    /// Finds the next index from the end of the string that a boundary should
     /// be introduced on.
     ///
     /// # Returns
@@ -58,13 +65,13 @@ pub trait Boundary {
     /// the boundary exists at. If there are no remaining boundaries, `None` is
     /// returned.
     ///
-    /// This function should never return `Some(s.len())`. If it does, then some
-    /// functionality may not work as expected.
+    /// This function should avoid returning `Some(s.len())`. If it does, then
+    /// some functionality may not work as expected.
     ///
     /// # Important
     ///
-    /// This should be implemented in a way, such that it identifies the same
-    /// boundaries as `find_boundary`, just starting from the back of the string
+    /// This should be implemented in a way such that it identifies the same
+    /// boundaries as `find_boundary`, just starting from the end of the string
     /// instead.
     ///
     /// If it's not implemented that way, how your chunk will split could change
@@ -78,8 +85,8 @@ pub trait Boundary {
     /// Returns `true` if a chunk boundary exists within a provided chunk at a
     /// given index. Returns false otherwise.
     ///
-    /// This function should never return `true` at index `0` or `s.len()`. If
-    /// it does, then some functionality may not work as expected.
+    /// This function should avoid returning `true` at index `0` or `s.len()`.
+    /// If it does, then some functionality may not work as expected.
     ///
     /// # Panics
     ///

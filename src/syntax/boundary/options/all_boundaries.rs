@@ -13,7 +13,7 @@ use crate::syntax::boundary::Options;
 ///
 /// That includes transition to/from ASCII digits, as well as `CAMEL` and `HAT`.
 ///
-/// For more information, see the [`boundary`](crate::syntax::boundary#options) module.
+/// For more information, see the [`boundary`](crate::syntax::boundary#configuring-the-standard-implementation) module documentation.
 pub enum AllBoundaries {}
 
 // =============================================================================

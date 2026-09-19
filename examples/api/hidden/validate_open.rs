@@ -20,7 +20,7 @@ enum AsciiOpen {}
 // -----------------------------------------------------------------------------
 impl Profile for AsciiOpen {
     const APPEND_CLOSED: AppendClosed = AppendClosed::Empty;
-    type BaseProfile = Self;
+    type CharProfile = Self;
     type Segmentation = segmentation::Char;
 
     #[inline(always)]
@@ -57,7 +57,7 @@ enum UnicodeOpen {}
 // -----------------------------------------------------------------------------
 impl Profile for UnicodeOpen {
     const APPEND_CLOSED: AppendClosed = AppendClosed::Empty;
-    type BaseProfile = Self;
+    type CharProfile = Self;
     type Segmentation = segmentation::Grapheme;
 
     #[inline(always)]

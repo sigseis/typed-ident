@@ -57,9 +57,23 @@ impl_displayable_type! {
 // TRAIT
 // =============================================================================
 
-/// Formats an identifier as a preset upper-snake identifier.
+/// Provides methods for formatting an identifier in upper-snake format, using
+/// plain, canonical, or decorated forms.
+///
+/// For explicit-delimited identifiers like this one, there's no difference
+/// between the decorated and delimited forms. So a delimited method is not
+/// provided.
 ///
 /// See the [`fmt`] module for more details.
+///
+/// # Return Values
+///
+/// All of the methods on this trait return types that borrow the source
+/// identifier, and implement the `Display` trait so that they are usable from
+/// a formatting call (or convertible to a `String`, via `ToString`).
+///
+/// Calling these methods is cheap, since the work isn't done until we actually
+/// use it for a formatting operation.
 ///
 /// [`fmt`]: crate::core::fmt
 pub trait AsUpperSnake {
@@ -321,7 +335,7 @@ pub trait AsUpperSnake {
 impl<B: Boundary, D: Delimiter, P: Profile> AsUpperSnake for Ident<B, D, P> {
     #[inline]
     fn as_upper_snake(&self) -> UpperSnake<'_> {
-        UpperSnake(Canonical::new::<B, D, P::BaseProfile>(
+        UpperSnake(Canonical::new::<B, D, P::CharProfile>(
             self.as_str(),
             '_',
             false,
@@ -329,7 +343,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsUpperSnake for Ident<B, D, P> {
     }
     #[inline]
     fn as_upper_snake_canonical(&self) -> UpperSnakeCanonical<'_> {
-        UpperSnakeCanonical(Canonical::new::<B, D, P::BaseProfile>(
+        UpperSnakeCanonical(Canonical::new::<B, D, P::CharProfile>(
             self.as_str(),
             '_',
             true,
@@ -337,6 +351,6 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsUpperSnake for Ident<B, D, P> {
     }
     #[inline]
     fn as_upper_snake_decorated(&self) -> UpperSnakeDecorated<'_> {
-        UpperSnakeDecorated(Decorated::new::<B, D, P::BaseProfile>(self.as_str(), '_'))
+        UpperSnakeDecorated(Decorated::new::<B, D, P::CharProfile>(self.as_str(), '_'))
     }
 }

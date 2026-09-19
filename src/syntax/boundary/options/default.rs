@@ -9,9 +9,9 @@ use crate::syntax::boundary::Options;
 // TYPE
 // =============================================================================
 
-/// Introduces a boundary only on `HAT` and `CAMEL` conditions.
+/// Introduces a boundary only on `CAMEL` and `HAT` conditions.
 ///
-/// For more information, see the [`boundary`](crate::syntax::boundary#options) module.
+/// For more information, see the [`boundary`](crate::syntax::boundary#configuring-the-standard-implementation) module documentation.
 pub enum Default {}
 
 // =============================================================================

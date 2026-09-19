@@ -30,7 +30,7 @@ impl<'a, const UPPER: bool> Delimited<'a, UPPER> {
         f: &mut core::fmt::Formatter<'_>,
     ) -> core::fmt::Result {
         let writer = Writer::<UPPER>::new(f);
-        writer.write_delimited::<T, P::BaseProfile>(
+        writer.write_delimited::<T, P::CharProfile>(
             &mut StrSegments::<B, D, P::Segmentation>::new(self.ident),
             self.default_delim,
             self.alternative_delim,

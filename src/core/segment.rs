@@ -27,31 +27,46 @@ use crate::syntax::{Boundary, CasedProfile, Delimiter};
 /// * `D`: The delimiter from the fragment/identifier.
 /// * `C`: A chunk formed from the type parameters ([`&Chunk<B, D, P>`]).
 ///
-/// If you don't need strong typing, you can use the [`type_erased`] method to
-/// drop the type information (producing `char` and `&str`). There is a typedef
-/// associated with this type for convenience ([`StrSegment`]).
-///
 /// You have two main things you can control about how segmentation happens;
-/// whether or not a contiguous chunk is broken into it's largest "words" (runs
-/// of characters with no natural boundaries as defined by `B`), and whether or
-/// not you are returned the byte offset to the segment from the original data.
 ///
-/// | **Words \\ Indices** |        **No**        |           **Yes**           |
-/// |----------------------|----------------------|-----------------------------|
-/// | **No**               | [`chunked_segments`] | [`chunked_segment_indices`] |
-/// | **Yes**              | [`segments`]         | [`segment_indices`]         |
+/// * Whether or not indices are returned along with the segments.
+/// * Whether or not we return the entire chunk, versus further splitting the
+///   chunk into "words" based on the identifier's defined [`Boundary`].
 ///
-/// Normally, you'll want chunks broken into their largest words. So we've named
-/// the variant that breaks chunks into their largest words simply [`segments`].
+/// |            | **No Indices**       | **Indices**                 |
+/// |------------|----------------------|-----------------------------|
+/// | **Chunks** | [`chunked_segments`] | [`chunked_segment_indices`] |
+/// | **Words**  | [`segments`]         | [`segment_indices`]         |
+///
+/// Normally, you'll want chunks broken into words. So we've named the variant
+/// that breaks chunks into words simply [`segments`].
 ///
 /// See the respective functions for more details.
 ///
+/// # Type Erasure
+///
+/// If you don't need strong typing, you can use the [`type_erased`] methods to
+/// drop the type information (producing `char` and `&str`). There is a typedef
+/// associated with this type for convenience ([`StrSegment`]).
+///
+/// There are different levels of type-erasure, depending on which type
+/// information you want to drop.
+///
+/// | **Method**            | **Delimiter Becomes...** | **Chunk Becomes...** |
+/// |-----------------------|--------------------------|----------------------|
+/// | [`type_erased`]       | `char`                   | `&str`               |
+/// | [`type_erased_chunk`] | `D` *(Unchanged)*        | `&str`               |
+/// | [`type_erased_delim`] | `char`                   | `C` *(Unchanged)*    |
+///
+/// [`Boundary`]: crate::syntax::boundary::Boundary
 /// [`&Chunk<B, D, P>`]: crate::core::Chunk
 /// [`chunked_segment_indices`]: crate::core::fragment::Fragment::chunked_segment_indices
 /// [`chunked_segments`]: crate::core::fragment::Fragment::chunked_segments
 /// [`segment_indices`]: crate::core::fragment::Fragment::segment_indices
 /// [`segments`]: crate::core::fragment::Fragment::segments
 /// [`type_erased`]: Self::type_erased
+/// [`type_erased_chunk`]: Self::type_erased_chunk
+/// [`type_erased_delim`]: Self::type_erased_delim
 #[derive(Copy, Clone, Debug, Eq, Hash, Ord)]
 pub enum Segment<D, C> {
     /// A chunk (run of non-delimiter characters) of an identifier.
@@ -68,6 +83,11 @@ pub enum Segment<D, C> {
 impl<'a, B, D: Delimiter, P> Segment<D, &'a Chunk<B, D, P>> {
     /// A helper type that converts a string slice segment to a typed segment
     /// without checking the underlying data.
+    ///
+    /// # Safety
+    ///
+    /// This is always memory-safe, but it can produce invalid logic if used
+    /// improperly. Because it's difficult to use properly, it's `pub(crate)`.
     #[inline]
     pub(crate) fn from_unchecked(orig: StrSegment<'a>) -> Self {
         match orig {
@@ -77,6 +97,9 @@ impl<'a, B, D: Delimiter, P> Segment<D, &'a Chunk<B, D, P>> {
     }
 
     /// Returns `true` if the contents of this segment is an empty chunk.
+    ///
+    /// Since a delimiter can never be empty, if the segment is a delimiter,
+    /// this will return `false`.
     ///
     /// # Examples
     ///
@@ -469,7 +492,7 @@ impl<D, C> Segment<D, C> {
         }
     }
 
-    /// Returns `true` if the segment contains a delimiter, `false` if not.
+    /// Returns `true` for every delimiter.
     ///
     /// # Examples
     ///
@@ -488,8 +511,7 @@ impl<D, C> Segment<D, C> {
         matches!(self, Self::Delim(_))
     }
 
-    /// Returns `true` if the segment contains a delimiter, *and* if the
-    /// provided predicate passes. Returns `false` if not.
+    /// Returns `true` if a delimiter and the predicate passes.
     ///
     /// # Examples
     ///
@@ -512,9 +534,8 @@ impl<D, C> Segment<D, C> {
         }
     }
 
-    /// Returns `true` if the segment contains a delimiter, *or* if the segment
-    /// contained a chunk, and provided predicate passes. Returns `false`
-    /// otherwise.
+    /// Returns `true` for every delimiter. For a chunk, returns the result of
+    /// the predicate.
     ///
     /// # Examples
     ///
@@ -537,7 +558,7 @@ impl<D, C> Segment<D, C> {
         }
     }
 
-    /// Returns `true` if the segment contains a chunk, `false` if not.
+    /// Returns `true` for every chunk.
     ///
     /// # Examples
     ///
@@ -556,8 +577,7 @@ impl<D, C> Segment<D, C> {
         matches!(self, Self::Chunk(_))
     }
 
-    /// Returns `true` if the segment contains a chunk, *and* if the provided
-    /// predicate passes. Returns `false` otherwise.
+    /// Returns `true` if a chunk and the predicate passes.
     ///
     /// # Examples
     ///
@@ -580,9 +600,8 @@ impl<D, C> Segment<D, C> {
         }
     }
 
-    /// Returns `true` if the segment contains a chunk, *or* if the segment
-    /// contained a delimiter, and provided predicate passes. Returns `false`
-    /// otherwise.
+    /// Returns `true` if a chunk. For a delimiter, returns the result of
+    /// the predicate.
     ///
     /// # Examples
     ///

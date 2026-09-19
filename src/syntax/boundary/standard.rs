@@ -28,7 +28,8 @@ use core::num::NonZero;
 /// [`Default`] options when another options type is not provided.
 ///
 /// For a description of how boundaries are formed in this implementation, see
-/// the [`boundary`](crate::syntax::boundary#options) module documentation.
+/// the [`boundary`](crate::syntax::boundary#configuring-the-standard-implementation)
+/// module documentation.
 ///
 /// [`Default`]: crate::syntax::boundary::options::Default
 /// [`Options`]: crate::syntax::boundary::options::Options

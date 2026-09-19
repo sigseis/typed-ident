@@ -11,52 +11,59 @@ The main formatting traits defined by this module are:
 * [`AsUpperKebab`] - for identifiers of the format `UPPER-KEBAB-CASE`.
 * [`AsUpperSnake`] - for identifiers of the format `UPPER_SNAKE_CASE`.
 
+These traits can be called if you just need to reformat an identifier for some logged or displayed output, or if you need a string (obtainable by calling `.to_string()` on the result).
+
 If you include the trait, then you should be able to use any of the defined functions, as all valid identifiers support these formatting operations.
 
 # How Does Formatting Work?
 
-There's two kinds of identifier formats; ones that want explicit delimiters, and ones that can depend on casing (in addition to delimiters where casing is insufficient).
+There are two kinds of identifier formats; ones that want explicit delimiters, and ones that can depend on casing (in addition to delimiters where casing is insufficient).
 
-The **Explicit delimiter identifiers** (`kebab` and `snake`), the algorithm is pretty simple - you iterate over segments, ensuring there's a delimiter between chunks, and converting to the target case. That's really all there is to it.
+The **Explicit-delimited identifiers** (`kebab` and `snake`), the algorithm is pretty simple - you iterate over segments, ensuring there's a delimiter between words, and converting to the target case.
 
-The **Implicit delimiter identifiers** (`camel` and `hybrid`), things are a little more complicated.
+The **Implicit-delimited identifiers** (`camel` and `hybrid`), things are a little more complicated.
 
 During the conversion process, we keep track of the last-inserted character's case, and we will do a boundary case check to see if the current and next character forms a boundary. If it does - we accept that as satisfactory, and push the character. If it *does not* - then we need to introduce a delimiter to keep the chunks separated.
 
-The goal of any formatting operation is *not to join chunks*.
+The goal of any formatting operation is *not to merge chunks*.
 
 ## What Happens to the Delimiters?
 
 Unlike a traditional case conversion library, this library *knows* it's dealing with identifiers.
 
-Like it or not, delimiters sometimes are used as a part of identifiers to pass along some implicit information. For example, `_ident` in Rust is an identifier that is not used. The leading `_` isn't required, but we add it to suggest this implicit fact that it is unused.
+Delimiters sometimes are used as a part of identifiers to pass along some implicit information. For example, `_ident` in Rust is an identifier that is not used. The leading `_` isn't required, but we add it to suggest this implicit fact that it is unused.
 
 We informally call such non-essential delimiters "decorative".
 
-There's three formats you can apply over your formatting operations:
+There's four kinds of formats you can apply over your formatting operations:
 
-1. `Canonical` - Get rid of all non-essential delimiters.
-2. `Decorated` - Keep all purely decorative delimiters (but allow stripping of non-decorative ones).
-3. `Delimited` - Keep all delimiters, regardless of whether they're decorative or not.
+| **Form**      | **Leading/Trailing Delimiters**       | **Other Delimiters**                                                             |
+|---------------|---------------------------------------|----------------------------------------------------------------------------------|
+| **Plain**     | Removed                               | Removed unless necessary to separate chunks                                      |
+| **Canonical** | Removed unless necessary for validity | Removed unless necessary to separate chunks                                      |
+| **Decorated** | Retained                              | Retained if >1 delimiters, otherwise removed if not necessary to separate chunks |
+| **Delimited** | Retained                              | Retained                                                                         |
 
-This library allows you to choose, so it's really up to you. All of the functions are named with an explicit mode of operation at the end ([`as_lower_camel_canonical`] vs [`as_lower_camel_decorated`], etc). So you *will* have to make a choice.
-
-Perhaps this is best demonstrated with an example:
+This library allows you to choose, so it's up to you.
 
 ```rust
 # use typed_ident::core::fmt::*;
 # use typed_ident::presets::unicode::*;
 assert_eq!(
-    SnakeIdent::new("__foo_bar__baz__")?.as_upper_camel_canonical().to_string(),
-    "FooBarBaz"
+    SnakeIdent::new("__2foo_bar__baz__")?.as_upper_camel().to_string(),
+    "2fooBarBaz"
 );
 assert_eq!(
-    SnakeIdent::new("__foo_bar__baz__")?.as_upper_camel_decorated().to_string(),
-    "__FooBar__Baz__"
+    SnakeIdent::new("__2foo_bar__baz__")?.as_upper_camel_canonical().to_string(),
+    "_2fooBarBaz"
 );
 assert_eq!(
-    SnakeIdent::new("__foo_bar__baz__")?.as_upper_camel_delimited().to_string(),
-    "__Foo_Bar__Baz__"
+    SnakeIdent::new("__2foo_bar__baz__")?.as_upper_camel_decorated().to_string(),
+    "__2fooBar__Baz__"
+);
+assert_eq!(
+    SnakeIdent::new("__2foo_bar__baz__")?.as_upper_camel_delimited().to_string(),
+    "__2foo_Bar__Baz__"
 );
 
 // Note: Delimited is based on whether or not there were already delimiters:
@@ -67,13 +74,7 @@ assert_eq!(
 # Ok::<(), typed_ident::Error>(())
 ```
 
-I avoided having a seemingly-default function like `as_lower_camel`, because I believe people will disagree on what the default should be. Most case conversion libraries implement "canonical" form, but if I were to select a default for this library, I would select "decorated" form (since, as mentioned, decoration is sometimes important on an identifier).
-
-*NOTE: `kebab` and `snake` don't have a "delimited" format, because by-definition they already require a delimiter. So `Decorated` includes this case within its definition. Delimited format only makes sense on formats that don't require delimiters (camel-like).*
-
-[`as_lower_camel_canonical`]: AsLowerCamel::as_lower_camel_canonical
-[`as_lower_camel_decorated`]: AsLowerCamel::as_lower_camel_decorated
-
+*NOTE: `kebab` and `snake` don't have a "delimited" format, because by-definition they already require a delimiter. So `Decorated` includes this case within its definition. Delimited format only makes sense on formats that don't require delimiters (camel-ident and hybrid-ident).*
 
 ## Edge-Case: Multiple Uppercase Expansion
 

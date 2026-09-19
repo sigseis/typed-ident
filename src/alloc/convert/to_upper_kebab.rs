@@ -15,54 +15,25 @@ use std_alloc::string::String;
 // TRAITS
 // =============================================================================
 
-/// Converts an identifier into a preset upper-kebab identifier string.
+/// Provides methods for converting an identifier to upper-kebab format, using
+/// plain, canonical, or decorated forms.
+///
+/// For explicit-delimited identifiers like this one, there's no difference
+/// between the decorated and delimited forms. So a delimited method is not
+/// provided.
 ///
 /// See the [`convert`] module for more details.
 ///
+/// <div class="warning">
+///
+/// **NOTE:** These traits are currently being reconsidered. See issue [#17](https://github.com/sigseis/typed-ident/issues/17).
+///
+/// </div>
+///
 /// [`convert`]: crate::alloc::convert
-///
-/// # Examples
-///
-/// ```
-/// # use typed_ident::alloc::convert::*;
-/// # use typed_ident::presets::unicode::*;
-/// assert_eq!(
-///     LowerCamelIdent::new("lowerCamel")?.to_upper_kebab_canonical(),
-///     "LOWER-CAMEL"
-/// );
-/// assert_eq!(
-///     LowerHybridIdent::new("lowerHybrid")?.to_upper_kebab_canonical(),
-///     "LOWER-HYBRID"
-/// );
-/// assert_eq!(
-///     LowerKebabIdent::new("lower-kebab")?.to_upper_kebab_canonical(),
-///     "LOWER-KEBAB"
-/// );
-/// assert_eq!(
-///     LowerSnakeIdent::new("lower_snake")?.to_upper_kebab_canonical(),
-///     "LOWER-SNAKE"
-/// );
-/// assert_eq!(
-///     UpperCamelIdent::new("UpperCamel")?.to_upper_kebab_canonical(),
-///     "UPPER-CAMEL"
-/// );
-/// assert_eq!(
-///     UpperHybridIdent::new("UpperHybrid")?.to_upper_kebab_canonical(),
-///     "UPPER-HYBRID"
-/// );
-/// assert_eq!(
-///     UpperKebabIdent::new("UPPER-KEBAB")?.to_upper_kebab_canonical(),
-///     "UPPER-KEBAB"
-/// );
-/// assert_eq!(
-///     UpperSnakeIdent::new("UPPER_SNAKE")?.to_upper_kebab_canonical(),
-///     "UPPER-SNAKE"
-/// );
-/// # Ok::<(), typed_ident::Error>(())
-/// ```
 pub trait ToUpperKebab {
-    /// Returns a displayable type that converts the provided input to upper
-    /// kebab in plain form.
+    /// Returns a string of the provided input converted to upper kebab plain
+    /// form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -142,8 +113,8 @@ pub trait ToUpperKebab {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_upper_kebab(&self) -> String;
 
-    /// Returns a displayable type that converts the provided input to upper
-    /// kebab in canonical form.
+    /// Returns a string of the provided input converted to upper kebab
+    /// canonical form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -223,8 +194,8 @@ pub trait ToUpperKebab {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_upper_kebab_canonical(&self) -> String;
 
-    /// Returns a displayable type that converts the provided input to upper
-    /// kebab in decorated form.
+    /// Returns a string of the provided input converted to upper kebab
+    /// decorated form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///

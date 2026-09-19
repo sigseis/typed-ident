@@ -11,13 +11,16 @@ use crate::syntax::{Boundary, Delimiter, Segmentation};
 // TYPES
 // =============================================================================
 
-/// An iterator over the word-separated segment string slices of a fragment and
+/// An iterator over the type-erased words and delimiters of a fragment and
 /// their positions.
 ///
 /// This struct is created by calling [`type_erased`] on the [`SegmentIndices`]
 /// iterator.
 ///
+/// See the [`core`] module documentation for an explanation of a "word".
+///
 /// [`SegmentIndices`]: crate::core::fragment::SegmentIndices
+/// [`core`]: crate::core
 /// [`type_erased`]: crate::core::fragment::SegmentIndices::type_erased
 pub struct StrSegmentIndices<'a, B, D, S> {
     front_offset: usize,

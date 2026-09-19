@@ -150,16 +150,18 @@ impl CharCase {
         Self::new(c) != Self::Uncased
     }
 
-    #[inline(always)]
-    pub fn is_titlecase(c: char) -> bool {
-        // TODO: After `char::case` is stable, we won't need to provide this function any more.
-        //
-        // see: https://github.com/rust-lang/rust/issues/153892
-        generated::is_titlecase(c)
-    }
-
     #[inline]
     fn is_non_greek_titlecase(c: char) -> bool {
         generated::is_titlecase(c) && !generated::is_titlecase_greek_variant(c)
+    }
+
+    /// Given a character code point, tell whether or not it's titlecase.
+    #[inline(always)]
+    pub fn is_titlecase(c: char) -> bool {
+        // TODO: After `char::case` is stable, we won't need to provide this
+        // function any more.
+        //
+        // see: https://github.com/rust-lang/rust/issues/153892
+        generated::is_titlecase(c)
     }
 }

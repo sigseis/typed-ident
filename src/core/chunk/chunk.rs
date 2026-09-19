@@ -36,61 +36,100 @@ use crate::syntax::{Boundary, CasedProfile, Delimiter};
 /// [`chunked_segments`]: Fragment::chunked_segments
 /// [`segments`]: Fragment::segments
 ///
+/// # Construction
+///
+/// It's not usually recommended that you construct a chunk directly, usually it
+/// will be constructed for you as a result of doing some operation that returns
+/// a chunk (like the aforementioned [`segments`] method).
+///
+/// However, if you *do* want to construct a chunk, it is expected that you do
+/// so through some type alias which fully defines the chunk.
+///
+/// The common way to get a reasonable alias is through the [`presets`] module.
+///
+/// [`presets`]: crate::presets
+///
+/// ```
+/// use typed_ident::presets::unicode::lower_camel::*;
+///
+/// // This appears to be a valid identifier, in this case also a valid chunk!
+/// let chunk = LowerCamelChunk::new("lowerCamel")?;
+///
+/// // But not all chunks will appear to be valid identifiers.
+/// // Take for instance following, which is a slice of `lowerCamel`.
+/// // It appears to instead be `UpperCamel` - a valid lower-camel chunk.
+/// let chunk = LowerCamelChunk::new("Camel")?;
+/// # Ok::<(), typed_ident::Error>(())
+/// ```
+///
+/// These presets are all just type aliases to `Chunk` with the generic type
+/// parameters filled-in. If you would like to define your own custom chunk,
+/// it's recommended that you do so by defining your own type alias.
+///
+/// ```
+/// use typed_ident::Chunk;
+/// use typed_ident::syntax::{boundary, delimiter, profile};
+///
+/// // An ASCII chunk using the uppercase ASCII profile.
+/// // Any ASCII punctuation is rejected as delimiters.
+/// type CustomChunk = Chunk<
+///     boundary::Standard,
+///     delimiter::AsciiPunctuation,
+///     profile::Upper<profile::Ascii>,
+/// >;
+///
+/// let ident = CustomChunk::new("UPPERIDENT")?;
+/// # Ok::<(), typed_ident::Error>(())
+/// ```
+///
+/// # Type Conversion
+///
+/// There's a few ways to convert between types depending on what you want to
+/// accomplish. These type conversions ***DO NOT*** reformat or change the input
+/// string. They just produce a new type of the target chunk syntax.
+///
+/// | **I Have a...**   | **I Want a...**   | **Method**                | **Validation Cost**  | **Allocation Cost** |
+/// |-------------------|-------------------|---------------------------|----------------------|---------------------|
+/// | `&Chunk<A..>`     | `&Chunk<B..>`     | [`cast`]  / [`as_ref`]    | None                 | None                |
+/// | `&Chunk<A..>`     | `&Chunk<B..>`     | [`try_cast`]              | Same as [`new`]      | None                |
+///
+/// [`as_ref`]: Chunk::as_ref
+/// [`cast`]: Chunk::cast
+/// [`new`]: Chunk::new
+/// [`try_cast`]: Chunk::try_cast
+///
+/// This type contains fewer conversion functions than [`Ident`], because it's
+/// less common to need as much functionality with a `Chunk`. However, it might
+/// be nice to have common conversion functions regardless, so follow issue
+/// [#19](https://github.com/sigseis/typed-ident/issues/19) to track this.
+///
 /// # Type Parameters
 ///
 /// The type parameters used on this type are:
 ///
 /// * `B`: [`Boundary`] (a boundary definition; usually [`Standard`])
 /// * `D`: [`Delimiter`] (a delimiter type; [`HyphenMinus`], [`LowLine`], etc.)
-/// * `P`: [`Profile`] (a character profile; [`Ascii`], [`Unicode`], etc.)
+/// * `P`: [`CasedProfile`] (a cased profile; which is...)
+///   * A wrapping case profile (e.g. [`Mixed`], [`Lower`], etc.)
+///   * A specific character profile (e.g. [`Ascii`], [`Unicode`], etc.)
 ///
-/// # Useful Properties
-///
-/// Some useful properties to be aware of when dealing with chunks:
-///
-/// * An empty string slice is always a valid chunk.
-/// * A slice of any chunk is itself a chunk over the same generics.
-///   * e.g. as long as we don't change the type parameters, you can slice a
-///     chunk and get another valid chunk over the same types.
-/// * You can trivially [`cast`] one chunk to another as long as the
-///   chunk's generic types are [`SubsetOf`] the target chunk's generics.
-///   * e.g. as long as we are casting to a more broad format, it's trivial and
-///     we do not need to check the format again (enforced by the trait system).
-///
-/// # Examples
-///
-/// It is recommended that you configure a type alias to work with chunks, so
-/// that you don't need to provide the type parameters everywhere (or use one of
-/// the provided [`presets`]).
-///
-/// ```
-/// // Custom Chunk Example
-/// use typed_ident::core::Chunk;
-/// use typed_ident::syntax::{boundary, delimiter, profile};
-/// type CustomChunk = Chunk<
-///     boundary::Standard,
-///     delimiter::LowLine,
-///     profile::Lower<profile::Unicode>,
-/// >;
-/// assert!(CustomChunk::new("onlyacceptslowercase").is_ok());
-///
-/// // Preset Chunk Example
-/// use typed_ident::presets::unicode::upper_camel::UpperCamelChunk;
-/// assert!(UpperCamelChunk::new("AcceptsUppercase").is_ok());
-/// ```
+/// See the [`syntax`] module definition if you plan on defining your own type
+/// aliases to understand better what these types mean and how they work.
 ///
 /// [`Ascii`]: crate::syntax::profile::Ascii
 /// [`Boundary`]: crate::syntax::boundary::Boundary
 /// [`Delimiter`]: crate::syntax::delimiter::Delimiter
-/// [`Standard`]: crate::syntax::boundary::Standard
 /// [`HyphenMinus`]: crate::syntax::delimiter::HyphenMinus
 /// [`Ident`]: crate::core::Ident
 /// [`LowLine`]: crate::syntax::delimiter::LowLine
+/// [`Lower`]: crate::syntax::profile::Lower
+/// [`Mixed`]: crate::syntax::profile::Mixed
 /// [`Profile`]: crate::syntax::profile::Profile
+/// [`Standard`]: crate::syntax::boundary::Standard
 /// [`SubsetOf`]: crate::syntax::SubsetOf
 /// [`Unicode`]: crate::syntax::profile::Unicode
 /// [`cast`]: Self::cast
-/// [`presets`]: crate::presets
+/// [`syntax`]: crate::syntax
 #[repr(transparent)]
 pub struct Chunk<B, D, P> {
     inner: Fragment<B, D, P>,
@@ -119,9 +158,10 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Chunk<B, D, P> {
     ///
     /// # Errors
     ///
-    /// Returns `Err` if the fragment contains any delimiters. If a delimiter is
-    /// found, [`Error`] is returned with [`byte_offset`] set to the byte index
-    /// for the first invalid character.
+    /// Returns [`Error`] if the chunk does not satisfy the character
+    /// requirements. If an invalid character is found then a `InvalidFormat`
+    /// error kind is returned, with [`byte_offset`] set to the byte index for
+    /// the first invalid character.
     ///
     /// [`Error`]: crate::Error
     /// [`byte_offset`]: crate::Error::byte_offset
@@ -146,8 +186,10 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Chunk<B, D, P> {
     /// Returns `true` if the current chunk is a "word", `false` otherwise.
     ///
     /// This is not a word in a linguistic sense, rather this is an *identifier
-    /// word*. An identifier word is a chunk of an identifier which contains no
-    /// boundaries (no natural split points).
+    /// word*. An identifier word is a non-empty chunk of an identifier which
+    /// contains no boundaries (no natural split points).
+    ///
+    /// See the [`core`] module documentation for more information.
     ///
     /// # Examples
     ///
@@ -155,7 +197,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Chunk<B, D, P> {
     ///
     /// ```
     /// # use typed_ident::presets::unicode::upper_camel::*;
-    /// assert!(UpperCamelChunk::new("")?.is_word());
+    /// assert!(!UpperCamelChunk::new("")?.is_word());
     /// assert!(UpperCamelChunk::new("Word")?.is_word());
     /// assert!(!UpperCamelChunk::new("NotWord")?.is_word());
     /// # Ok::<(), typed_ident::Error>(())
@@ -163,33 +205,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Chunk<B, D, P> {
     #[must_use]
     #[inline]
     pub fn is_word(&self) -> bool {
-        B::find_boundary::<P::Segmentation>(self.as_str()).is_none()
-    }
-
-    /// Produces an iterator over the words of a chunk, and their positions.
-    ///
-    /// This is not a word in a linguistic sense, rather this is an *identifier
-    /// word*. An identifier word is a chunk of an identifier which contains no
-    /// boundaries (no natural split points).
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::presets::unicode::upper_camel::*;
-    /// let chunk = UpperCamelChunk::new("UpperCamelChunk")?;
-    /// let mut words = chunk.word_indices().type_erased();
-    /// assert_eq!(words.next(), Some((0, "Upper")));
-    /// assert_eq!(words.next(), Some((5, "Camel")));
-    /// assert_eq!(words.next(), Some((10, "Chunk")));
-    /// assert_eq!(words.next(), None);
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use]
-    #[inline(always)]
-    pub fn word_indices(&self) -> WordIndices<'_, B, D, P> {
-        WordIndices::new(self)
+        !self.is_empty() && B::find_boundary::<P::Segmentation>(self.as_str()).is_none()
     }
 
     /// Produces an iterator over the words of a chunk.
@@ -197,6 +213,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Chunk<B, D, P> {
     /// This is not a word in a linguistic sense, rather this is an *identifier
     /// word*. An identifier word is a chunk of an identifier which contains no
     /// boundaries (no natural split points).
+    ///
+    /// See the [`core`] module documentation for more information.
     ///
     /// # Examples
     ///
@@ -217,6 +235,34 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Chunk<B, D, P> {
     pub fn words(&self) -> Words<'_, B, D, P> {
         Words::new(self)
     }
+
+    /// Produces an iterator over the words of a chunk, and their positions.
+    ///
+    /// This is not a word in a linguistic sense, rather this is an *identifier
+    /// word*. An identifier word is a chunk of an identifier which contains no
+    /// boundaries (no natural split points).
+    ///
+    /// See the [`core`] module documentation for more information.
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::presets::unicode::upper_camel::*;
+    /// let chunk = UpperCamelChunk::new("UpperCamelChunk")?;
+    /// let mut words = chunk.word_indices().type_erased();
+    /// assert_eq!(words.next(), Some((0, "Upper")));
+    /// assert_eq!(words.next(), Some((5, "Camel")));
+    /// assert_eq!(words.next(), Some((10, "Chunk")));
+    /// assert_eq!(words.next(), None);
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use]
+    #[inline(always)]
+    pub fn word_indices(&self) -> WordIndices<'_, B, D, P> {
+        WordIndices::new(self)
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -225,14 +271,20 @@ impl<B, D: Delimiter, P> Chunk<B, D, P> {
     ///
     /// A chunk is a slice of a fragment that contains no delimiters, this
     /// function converts between the two. Not all fragments are valid chunks,
-    /// however. `new` checks to ensure the fragment contains no delimiters
+    /// however.
+    ///
+    /// `from_fragment` checks to ensure the fragment contains no delimiters
     /// before the conversion.
     ///
     /// # Errors
     ///
-    /// Returns `Err` if the fragment contains any delimiters. If a delimiter is
-    /// found, [`Error`] is returned with [`byte_offset`] set to the byte index
-    /// for the first invalid character.
+    /// Returns [`Error`] if the chunk does not satisfy the character
+    /// requirements. If a delimiter character is found then a `InvalidFormat`
+    /// error kind is returned, with [`byte_offset`] set to the byte index for
+    /// the first delimiter character.
+    ///
+    /// [`Error`]: crate::Error
+    /// [`byte_offset`]: crate::Error::byte_offset
     ///
     /// # Examples
     ///
@@ -245,9 +297,6 @@ impl<B, D: Delimiter, P> Chunk<B, D, P> {
     /// assert_eq!(chunk, "AnUpperCamelFragment");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    ///
-    /// [`Error`]: crate::core::Error
-    /// [`byte_offset`]: crate::core::Error::byte_offset
     #[inline]
     pub fn from_fragment(fragment: &Fragment<B, D, P>) -> Result<&Self, Error> {
         for (idx, c) in fragment.char_indices() {

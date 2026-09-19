@@ -12,7 +12,7 @@ use core::marker::PhantomData;
 // TYPES
 // =============================================================================
 
-/// An iterator over the contiguous segments of a fragment.
+/// An iterator over the chunks and delimiters of a fragment.
 ///
 /// This struct is created by calling [`chunked_segments`] on the [`Fragment`]
 /// type.
@@ -31,15 +31,6 @@ pub struct ChunkedSegments<'a, B, D, P> {
 
 // -----------------------------------------------------------------------------
 impl<'a, B, D, P> ChunkedSegments<'a, B, D, P> {
-    #[must_use]
-    #[inline]
-    pub(crate) fn new(fragment: &'a Fragment<B, D, P>) -> Self {
-        Self {
-            syntax: PhantomData,
-            iter: ChunkedStrSegments::new(fragment.as_str()),
-        }
-    }
-
     /// Views the underlying data as a subslice of the original data.
     ///
     /// This has the same lifetime as the original slice, and so the
@@ -58,6 +49,15 @@ impl<'a, B, D, P> ChunkedSegments<'a, B, D, P> {
     #[inline]
     pub fn as_str(&self) -> &'a str {
         self.iter.as_str()
+    }
+
+    #[must_use]
+    #[inline]
+    pub(crate) fn new(fragment: &'a Fragment<B, D, P>) -> Self {
+        Self {
+            syntax: PhantomData,
+            iter: ChunkedStrSegments::new(fragment.as_str()),
+        }
     }
 
     /// Drops the syntax type information associated with this iterator.

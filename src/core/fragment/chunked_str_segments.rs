@@ -11,7 +11,7 @@ use core::marker::PhantomData;
 // TYPES
 // =============================================================================
 
-/// An iterator over the contiguous segment string slices of a fragment.
+/// An iterator over the type-erased chunk and delimiters of a fragment.
 ///
 /// This struct is created by calling [`type_erased`] on the [`ChunkedSegments`]
 /// iterator.

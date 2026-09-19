@@ -15,7 +15,7 @@ use core::hash::Hash;
 /// A trait for signifying that a type can be used as a delimiter in an
 /// identifier.
 ///
-/// # Must Be a Char!
+/// # Must Be a Char
 ///
 /// A delimiter must be exactly one [`char`] (one unicode code point).
 ///
@@ -23,7 +23,7 @@ use core::hash::Hash;
 /// this crate will consider them incomplete parts of the surrounding chunk,
 /// *NOT* a part of the delimiter (even if they visually appear that way).
 ///
-/// # Must be Optional!
+/// # Must be Optional
 ///
 /// A valid identifier is allowed to have no delimiters whatsoever.
 ///
@@ -56,7 +56,7 @@ use core::hash::Hash;
 /// }
 /// ```
 ///
-/// # Must *NOT* Be Stateful!
+/// # Must Be Stateless
 ///
 /// A delimiter character must not be different depending on whether it's been
 /// parsed from [`is_ident_start_delim`] vs. [`is_chunk_delim`].
@@ -73,11 +73,19 @@ use core::hash::Hash;
 /// enum BadDelimiter {
 ///     FoundAtStart,
 ///     FoundInChunk,
+///     FoundSomewhere,
 /// }
 ///
 /// impl Delimiter for BadDelimiter {
 ///     fn as_char(&self) -> char {
 ///         '_'
+///     }
+///     fn from_char(c: char) -> Option<Self> {
+///         if c == '_' {
+///             Some(Self::FoundSomewhere)
+///         } else {
+///             None
+///         }
 ///     }
 ///     fn from_ident_start(c: char) -> Option<Self> {
 ///         if c == '_' {
@@ -123,7 +131,8 @@ pub trait Delimiter:
     /// # When Is a Delimiter `Fragment` Append-Closed?
     ///
     /// Simply put, if [`is_chunk_delim`] is a superset (or equal to) the set of
-    /// valid characters for [`is_ident_start_delim`], then set this to `Fragment`.
+    /// valid characters for [`is_ident_start_delim`], then you can set this to
+    /// `Fragment`.
     ///
     /// Imagine we represent delimiter characters in a fragment as:
     ///
@@ -132,12 +141,12 @@ pub trait Delimiter:
     ///
     /// Abstractly, all valid fragments containing only delimiters would be:
     ///
-    /// * `` `` and `ID*` (empty string, or `I` followed by one or more `D`)
+    /// * `` `` and `ID*` (empty string, or `I` followed by zero or more `D`)
     ///
-    /// A valid fragment of delimiters may be `IDD`, after appending some other
-    /// string we may be left with `IDDID`, but if `I ⊆ D`, then we can
+    /// A valid fragment of delimiters may be `ID*`, after appending some other
+    /// string we may be left with `ID*ID*`, but if `I ⊆ D`, then we can
     /// interpret any `I` character as a `D` character, and thus it's
-    /// syntactically `IDDDD` (which is still valid and within this set).
+    /// syntactically `ID*DD*`, which is just `ID*`.
     ///
     /// # When Is a Delimiter `Identifier` Append-Closed?
     ///
@@ -198,17 +207,14 @@ pub trait Delimiter:
     /// [`from_chunk_delim`]: Delimiter::from_chunk_delim
     /// [`from_ident_start`]: Delimiter::from_ident_start
     #[must_use]
-    #[inline]
-    fn from_char(c: char) -> Option<Self> {
-        Self::from_ident_start(c).or_else(|| Self::from_chunk_delim(c))
-    }
+    fn from_char(c: char) -> Option<Self>;
 
     /// Attempts to convert a character to a delimiter which is valid only at
     /// the absolute start of an identifier.
     ///
     /// # Important
     ///
-    /// This is at the start of an *identifier*, not at the start of a
+    /// This is at the start of an *identifier*, not at the start of any random
     /// *fragment*. Valid at fragment-start is defined by [`from_char`].
     ///
     /// However, note that it doesn't *require* presence. So it would be bad to
@@ -216,12 +222,18 @@ pub trait Delimiter:
     ///
     /// [`from_char`]: Delimiter::from_char
     #[must_use]
-    fn from_ident_start(c: char) -> Option<Self>;
+    #[inline]
+    fn from_ident_start(c: char) -> Option<Self> {
+        Self::from_char(c)
+    }
 
     /// Attempts to convert a character to a delimiter which is valid at any
     /// position other than the absolute start of an identifier.
     #[must_use]
-    fn from_chunk_delim(c: char) -> Option<Self>;
+    #[inline]
+    fn from_chunk_delim(c: char) -> Option<Self> {
+        Self::from_char(c)
+    }
 
     /// Whether or not the provided character is a delimiter.
     ///
@@ -238,7 +250,7 @@ pub trait Delimiter:
     ///
     /// e.g. this should always be true:
     ///
-    /// * `assert_eq!(D::from_ident_start(c).is_some(), D::is_ident_start(c))`
+    /// * `assert_eq!(D::from_ident_start(c).is_some(), D::is_ident_start_delim(c))`
     #[must_use]
     #[inline]
     fn is_ident_start_delim(c: char) -> bool {

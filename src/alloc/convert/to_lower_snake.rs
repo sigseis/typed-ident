@@ -15,54 +15,25 @@ use std_alloc::string::String;
 // TRAITS
 // =============================================================================
 
-/// Converts an identifier into a preset lower-snake identifier string.
+/// Provides methods for converting an identifier to lower-snake format, using
+/// plain, canonical, or decorated forms.
+///
+/// For explicit-delimited identifiers like this one, there's no difference
+/// between the decorated and delimited forms. So a delimited method is not
+/// provided.
+///
+/// <div class="warning">
+///
+/// **NOTE:** These traits are currently being reconsidered. See issue [#17](https://github.com/sigseis/typed-ident/issues/17).
+///
+/// </div>
 ///
 /// See the [`convert`] module for more details.
 ///
 /// [`convert`]: crate::alloc::convert
-///
-/// # Examples
-///
-/// ```
-/// # use typed_ident::alloc::convert::*;
-/// # use typed_ident::presets::unicode::*;
-/// assert_eq!(
-///     LowerCamelIdent::new("lowerCamel")?.to_lower_snake_canonical(),
-///     "lower_camel"
-/// );
-/// assert_eq!(
-///     LowerHybridIdent::new("lowerHybrid")?.to_lower_snake_canonical(),
-///     "lower_hybrid"
-/// );
-/// assert_eq!(
-///     LowerKebabIdent::new("lower-kebab")?.to_lower_snake_canonical(),
-///     "lower_kebab"
-/// );
-/// assert_eq!(
-///     LowerSnakeIdent::new("lower_snake")?.to_lower_snake_canonical(),
-///     "lower_snake"
-/// );
-/// assert_eq!(
-///     UpperCamelIdent::new("UpperCamel")?.to_lower_snake_canonical(),
-///     "upper_camel"
-/// );
-/// assert_eq!(
-///     UpperHybridIdent::new("UpperHybrid")?.to_lower_snake_canonical(),
-///     "upper_hybrid"
-/// );
-/// assert_eq!(
-///     UpperKebabIdent::new("UPPER-KEBAB")?.to_lower_snake_canonical(),
-///     "upper_kebab"
-/// );
-/// assert_eq!(
-///     UpperSnakeIdent::new("UPPER_SNAKE")?.to_lower_snake_canonical(),
-///     "upper_snake"
-/// );
-/// # Ok::<(), typed_ident::Error>(())
-/// ```
 pub trait ToLowerSnake {
-    /// Returns a displayable type that converts the provided input to lower
-    /// snake in plain form.
+    /// Returns a string of the provided input converted to lower snake plain
+    /// form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -142,8 +113,8 @@ pub trait ToLowerSnake {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_lower_snake(&self) -> String;
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// snake in canonical form.
+    /// Returns a string of the provided input converted to lower snake
+    /// canonical form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
@@ -223,8 +194,8 @@ pub trait ToLowerSnake {
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
     fn to_lower_snake_canonical(&self) -> String;
 
-    /// Returns a displayable type that converts the provided input to lower
-    /// snake in decorated form.
+    /// Returns a string of the provided input converted to lower snake
+    /// decorated form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///

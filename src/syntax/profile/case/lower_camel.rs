@@ -43,9 +43,8 @@ use core::marker::PhantomData;
 ///
 /// The way to prevent this is to disallow Mn/Mc/Me characters on chunk start.
 ///
-/// You can get a profile which does this by enabling `unicode-strict`. This
-/// will enable the [`Strict`] profile which can be used directly - or if you
-/// have presets enabled - used indirectly through [`strict`] presets.
+/// The [`Strict`] profile disallows such characters on chunk start, which can
+/// be used either directly or through the [`strict`] presets.
 ///
 /// ```
 /// use typed_ident::presets::strict::LowerCamelIdent;
@@ -75,7 +74,7 @@ impl<P: CharProfile> Profile for LowerCamel<P> {
         true => AppendClosed::Chunk,
         false => AppendClosed::Empty,
     };
-    type BaseProfile = P;
+    type CharProfile = P;
     type Segmentation = P::Segmentation;
 
     #[inline(always)]
@@ -119,24 +118,9 @@ impl<P: CharProfile> CasedProfile for LowerCamel<P> {
     }
 }
 
-/// Proof: If `Super` ⊆ `Subset`, then `Super` ⊆ `LowerCamel<Subset>`.
-///
-/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
-///
-/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
-///
-/// * `LowerCamel<Ascii>: SubsetOf<Unicode>`
-///
-/// # Proof
-///
-/// ```
-/// # use typed_ident::syntax::SubsetOf;
-/// # use typed_ident::syntax::profile::{Ascii, LowerCamel, Unicode};
-/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
-/// left_is_subset_of_right::<LowerCamel<Ascii>, Ascii>();
-/// left_is_subset_of_right::<LowerCamel<Unicode>, Unicode>();
-/// left_is_subset_of_right::<LowerCamel<Ascii>, Unicode>();
-/// ```
+// -----------------------------------------------------------------------------
+/// Proof: If `Subset` ⊆ `Superset`, then `LowerCamel<Subset>` ⊆ `Superset`
+// -----------------------------------------------------------------------------
 impl<Superset, Subset> SubsetOf<Superset> for LowerCamel<Subset>
 where
     Superset: CharProfile,
@@ -144,24 +128,9 @@ where
 {
 }
 
-/// Proof: If `Super` ⊆ `Subset`, then `Mixed<Super>` ⊆ `LowerCamel<Subset>`.
-///
-/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
-///
-/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
-///
-/// * `LowerCamel<Ascii>: SubsetOf<Mixed<Unicode>>`
-///
-/// # Proof
-///
-/// ```
-/// # use typed_ident::syntax::SubsetOf;
-/// # use typed_ident::syntax::profile::{Ascii, LowerCamel, Mixed, Unicode};
-/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
-/// left_is_subset_of_right::<LowerCamel<Ascii>, Mixed<Ascii>>();
-/// left_is_subset_of_right::<LowerCamel<Unicode>, Mixed<Unicode>>();
-/// left_is_subset_of_right::<LowerCamel<Ascii>, Mixed<Unicode>>();
-/// ```
+// -----------------------------------------------------------------------------
+/// Proof: If `Subset` ⊆ `Superset`, then `LowerCamel<Subset>` ⊆ `Mixed<Superset>`
+// -----------------------------------------------------------------------------
 impl<Superset, Subset> SubsetOf<Mixed<Superset>> for LowerCamel<Subset>
 where
     Superset: CharProfile,
@@ -169,24 +138,9 @@ where
 {
 }
 
-/// Proof: If `Super` ⊆ `Subset`, then `LowerCamel<Super>` ⊆ `LowerCamel<Subset>`.
-///
-/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
-///
-/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
-///
-/// * `LowerCamel<Ascii>: SubsetOf<LowerCamel<Unicode>>`
-///
-/// # Proof
-///
-/// ```
-/// # use typed_ident::syntax::SubsetOf;
-/// # use typed_ident::syntax::profile::{Ascii, LowerCamel, Unicode};
-/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
-/// left_is_subset_of_right::<LowerCamel<Ascii>, LowerCamel<Ascii>>();
-/// left_is_subset_of_right::<LowerCamel<Unicode>, LowerCamel<Unicode>>();
-/// left_is_subset_of_right::<LowerCamel<Ascii>, LowerCamel<Unicode>>();
-/// ```
+// -----------------------------------------------------------------------------
+/// Proof: If `Subset` ⊆ `Superset`, then `LowerCamel<Subset>` ⊆ `LowerCamel<Superset>`
+// -----------------------------------------------------------------------------
 impl<Superset, Subset> SubsetOf<LowerCamel<Superset>> for LowerCamel<Subset>
 where
     Superset: CharProfile,
@@ -194,24 +148,9 @@ where
 {
 }
 
-/// Proof: If `Super` ⊆ `Subset`, then `Camel<Super>` ⊆ `LowerCamel<Subset>`.
-///
-/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
-///
-/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
-///
-/// * `LowerCamel<Ascii>: SubsetOf<Camel<Unicode>>`
-///
-/// # Proof
-///
-/// ```
-/// # use typed_ident::syntax::SubsetOf;
-/// # use typed_ident::syntax::profile::{Ascii, Camel, LowerCamel, Unicode};
-/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
-/// left_is_subset_of_right::<LowerCamel<Ascii>, Camel<Ascii>>();
-/// left_is_subset_of_right::<LowerCamel<Unicode>, Camel<Unicode>>();
-/// left_is_subset_of_right::<LowerCamel<Ascii>, Camel<Unicode>>();
-/// ```
+// -----------------------------------------------------------------------------
+/// Proof: If `Subset` ⊆ `Superset`, then `LowerCamel<Subset>` ⊆ `Camel<Superset>`
+// -----------------------------------------------------------------------------
 impl<Superset, Subset> SubsetOf<Camel<Superset>> for LowerCamel<Subset>
 where
     Superset: CharProfile,

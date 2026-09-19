@@ -277,6 +277,109 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
 
 // -----------------------------------------------------------------------------
 impl<B, D, P> Ident<B, D, P> {
+    /// Zero-cost conversion into a different boxed, type-configured identifier.
+    ///
+    /// This is the boxed, by-value equivalent of [`cast`], see that function
+    /// for details on how this works. If you don't need to consume the boxed
+    /// value, you can instead use that function to get a reference to a
+    /// different type-configured identifier.
+    ///
+    /// [`cast`]: Self::cast
+    ///
+    /// # Examples
+    ///
+    /// Example traversing case profile boundary:
+    ///
+    /// ```
+    /// # use typed_ident::presets::unicode::lower_snake::*;
+    /// # use typed_ident::presets::unicode::lower_camel::*;
+    /// // Compilable Cast:
+    /// let original = LowerSnakeIdent::new_boxed(String::from("apple"))?;
+    /// let converted: Box<LowerCamelIdent> = original.convert();
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    ///
+    /// ```compile_fail
+    /// # use typed_ident::presets::unicode::lower_snake::*;
+    /// # use typed_ident::presets::unicode::lower_camel::*;
+    /// // Bad Cast (Fails Compilation):
+    /// let original = LowerCamelIdent::new_boxed(String::from("apple"))?;
+    /// let converted: Box<LowerSnakeIdent> = original.convert();
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    ///
+    /// Example traversing character profile boundary:
+    ///
+    /// ```
+    /// # use typed_ident::presets::ascii::lower_snake as ascii;
+    /// # use typed_ident::presets::unicode::lower_snake as unicode;
+    /// // Compilable Cast:
+    /// let original = ascii::LowerSnakeIdent::new_boxed(String::from("apple"))?;
+    /// let converted: Box<unicode::LowerSnakeIdent> = original.convert();
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    ///
+    /// ```compile_fail
+    /// # use typed_ident::presets::ascii::lower_snake as ascii;
+    /// # use typed_ident::presets::unicode::lower_snake as unicode;
+    /// // Bad Cast (Fails Compilation):
+    /// let original = unicode::LowerSnakeIdent::new_boxed(String::from("apple"))?;
+    /// let converted: Box<ascii::LowerSnakeIdent> = original.convert();
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    ///
+    /// Example traversing delimiter boundary:
+    ///
+    /// ```
+    /// # use typed_ident::presets::unicode::lower_snake::*;
+    /// # use typed_ident::presets::unicode::hybrid::*;
+    /// // Compilable Cast:
+    /// let original = LowerSnakeIdent::new_boxed(String::from("apple"))?;
+    /// let converted: Box<HybridIdent> = original.convert();
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    ///
+    /// ```compile_fail
+    /// # use typed_ident::presets::unicode::lower_snake::*;
+    /// # use typed_ident::presets::unicode::hybrid::*;
+    /// // Bad Cast (Fails Compilation):
+    /// let original = HybridIdent::new_boxed(String::from("apple"))?;
+    /// let converted: Box<LowerSnakeIdent> = original.convert();
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use]
+    #[inline(always)]
+    pub fn convert<B2, D2, P2>(self: Box<Self>) -> Box<Ident<B2, D2, P2>>
+    where
+        D: crate::syntax::SubsetOf<D2>,
+        P: crate::syntax::SubsetOf<P2>,
+    {
+        Ident::new_boxed_unchecked(self.into_string())
+    }
+
+    /// Attempts a fallible convert into a different boxed type-configured
+    /// identifier.
+    ///
+    /// You should first attempt to call [`convert`] on a type, if that compiles
+    /// it is preferred to this function (and you will not need to call this
+    /// function), because it is truly zero-cost.
+    ///
+    /// This is equivalent to just calling [`new_boxed`] on the target type with
+    /// the current type's string contents. This function is provided for
+    /// ergonomic convenience.
+    ///
+    /// [`convert`]: Self::convert
+    /// [`new_boxed`]: Self::new_boxed
+    #[inline]
+    pub fn try_convert<B2, D2, P2>(self: Box<Self>) -> Result<Box<Ident<B2, D2, P2>>, Error>
+    where
+        B2: Boundary,
+        D2: Delimiter,
+        P2: CasedProfile,
+    {
+        Ident::new_boxed(self.into_string())
+    }
+
     /// Converts a boxed identifier into a boxed string slice.
     ///
     /// # Examples
@@ -349,6 +452,25 @@ impl<B, D, P> Ident<B, D, P> {
         // transparent over str, so Box<Ident> has the same allocation layout,
         // pointer metadata, alignment, and ownership behavior as Box<str>.
         unsafe { Box::from_raw(Box::into_raw(boxed_str) as *mut Ident<B, D, P>) }
+    }
+
+    /// Converts an identifier into an owned boxed identifier.
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::*;
+    /// # use typed_ident::presets::unicode::lower_snake::*;
+    /// let ident: &LowerSnakeIdent = Ident::new("snake_ident")?;
+    /// let ident: Box<LowerSnakeIdent> = ident.to_boxed_ident();
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use]
+    #[inline]
+    pub fn to_boxed_ident(&self) -> Box<Ident<B, D, P>> {
+        Ident::new_boxed_unchecked(String::from(self.as_str()))
     }
 
     /// Converts an identifier into a fragment buffer.

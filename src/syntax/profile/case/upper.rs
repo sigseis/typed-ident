@@ -34,7 +34,7 @@ pub struct Upper<P>(PhantomData<P>);
 // -----------------------------------------------------------------------------
 impl<P: CharProfile> Profile for Upper<P> {
     const APPEND_CLOSED: AppendClosed = P::APPEND_CLOSED;
-    type BaseProfile = P;
+    type CharProfile = P;
     type Segmentation = P::Segmentation;
 
     #[inline]
@@ -78,24 +78,9 @@ impl<P: CharProfile> CasedProfile for Upper<P> {
     }
 }
 
-/// Proof: If `Super` ⊆ `Subset`, then `Super` ⊆ `Upper<Subset>`.
-///
-/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
-///
-/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
-///
-/// * `Upper<Ascii>: SubsetOf<Unicode>`
-///
-/// # Examples
-///
-/// ```
-/// # use typed_ident::syntax::SubsetOf;
-/// # use typed_ident::syntax::profile::{Ascii, Upper, Unicode};
-/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
-/// left_is_subset_of_right::<Upper<Ascii>, Ascii>();
-/// left_is_subset_of_right::<Upper<Unicode>, Unicode>();
-/// left_is_subset_of_right::<Upper<Ascii>, Unicode>();
-/// ```
+// -----------------------------------------------------------------------------
+/// Proof: If `Subset` ⊆ `Superset`, then `Upper<Subset>` ⊆ `Superset`
+// -----------------------------------------------------------------------------
 impl<Superset, Subset> SubsetOf<Superset> for Upper<Subset>
 where
     Superset: CharProfile,
@@ -103,24 +88,9 @@ where
 {
 }
 
-/// Proof: If `Super` ⊆ `Subset`, then `Super` ⊆ `Upper<Subset>`.
-///
-/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
-///
-/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
-///
-/// * `Upper<Ascii>: SubsetOf<Unicode>`
-///
-/// # Examples
-///
-/// ```
-/// # use typed_ident::syntax::SubsetOf;
-/// # use typed_ident::syntax::profile::{Ascii, Mixed, Upper, Unicode};
-/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
-/// left_is_subset_of_right::<Upper<Ascii>, Mixed<Ascii>>();
-/// left_is_subset_of_right::<Upper<Unicode>, Mixed<Unicode>>();
-/// left_is_subset_of_right::<Upper<Ascii>, Mixed<Unicode>>();
-/// ```
+// -----------------------------------------------------------------------------
+/// Proof: If `Subset` ⊆ `Superset`, then `Upper<Subset>` ⊆ `Mixed<Superset>`
+// -----------------------------------------------------------------------------
 impl<Superset, Subset> SubsetOf<Mixed<Superset>> for Upper<Subset>
 where
     Superset: CharProfile,
@@ -128,24 +98,9 @@ where
 {
 }
 
-/// Proof: if `Super` ⊆ `Subset`, then `Upper<Super>` ⊆ `Upper<Subset>`.
-///
-/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
-///
-/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
-///
-/// * `Upper<Ascii>: SubsetOf<Upper<Unicode>>`
-///
-/// # Examples
-///
-/// ```
-/// # use typed_ident::syntax::SubsetOf;
-/// # use typed_ident::syntax::profile::{Ascii, Upper, Unicode};
-/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
-/// left_is_subset_of_right::<Upper<Ascii>, Upper<Ascii>>();
-/// left_is_subset_of_right::<Upper<Unicode>, Upper<Unicode>>();
-/// left_is_subset_of_right::<Upper<Ascii>, Upper<Unicode>>();
-/// ```
+// -----------------------------------------------------------------------------
+/// Proof: If `Subset` ⊆ `Superset`, then `Upper<Subset>` ⊆ `Upper<Superset>`
+// -----------------------------------------------------------------------------
 impl<Superset, Subset> SubsetOf<Upper<Superset>> for Upper<Subset>
 where
     Superset: CharProfile,
@@ -153,25 +108,9 @@ where
 {
 }
 
-/// Proof: If `Super` ⊆ `Subset`, then `UpperCamel<Super>` ⊆ `Upper<Subset>`
-/// (because `UpperCamel` ⊆ `Upper`).
-///
-/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
-///
-/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
-///
-/// * `Upper<Ascii>: SubsetOf<UpperCamel<Unicode>>`
-///
-/// # Examples
-///
-/// ```
-/// # use typed_ident::syntax::SubsetOf;
-/// # use typed_ident::syntax::profile::{Ascii, Upper, UpperCamel, Unicode};
-/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
-/// left_is_subset_of_right::<Upper<Ascii>, UpperCamel<Ascii>>();
-/// left_is_subset_of_right::<Upper<Unicode>, UpperCamel<Unicode>>();
-/// left_is_subset_of_right::<Upper<Ascii>, UpperCamel<Unicode>>();
-/// ```
+// -----------------------------------------------------------------------------
+/// Proof: If `Subset` ⊆ `Superset`, then `Upper<Subset>` ⊆ `Camel<Superset>`
+// -----------------------------------------------------------------------------
 impl<Superset, Subset> SubsetOf<UpperCamel<Superset>> for Upper<Subset>
 where
     Superset: CharProfile,
@@ -179,25 +118,9 @@ where
 {
 }
 
-/// Proof: If `Super` ⊆ `Subset`, then `Camel<Super>` ⊆ `Upper<Subset>`
-/// (because `Camel` ⊆ `Upper`).
-///
-/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
-///
-/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
-///
-/// * `Upper<Ascii>: SubsetOf<Camel<Unicode>>`
-///
-/// # Examples
-///
-/// ```
-/// # use typed_ident::syntax::SubsetOf;
-/// # use typed_ident::syntax::profile::{Ascii, Upper, Camel, Unicode};
-/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
-/// left_is_subset_of_right::<Upper<Ascii>, Camel<Ascii>>();
-/// left_is_subset_of_right::<Upper<Unicode>, Camel<Unicode>>();
-/// left_is_subset_of_right::<Upper<Ascii>, Camel<Unicode>>();
-/// ```
+// -----------------------------------------------------------------------------
+/// Proof: If `Subset` ⊆ `Superset`, then `Upper<Subset>` ⊆ `UpperCamel<Superset>`
+// -----------------------------------------------------------------------------
 impl<Superset, Subset> SubsetOf<Camel<Superset>> for Upper<Subset>
 where
     Superset: CharProfile,
@@ -205,25 +128,9 @@ where
 {
 }
 
-/// Proof: If `Super` ⊆ `Subset`, then `Uniform<Super>` ⊆ `Upper<Subset>`
-/// (because `Uniform` ⊆ `Upper`).
-///
-/// Let's pretend that `Superset=Unicode`, and `Subset=Ascii`.
-///
-/// If `Ascii: SubsetOf<Unicode>` (true), then this implies the following:
-///
-/// * `Upper<Ascii>: SubsetOf<Uniform<Unicode>>`
-///
-/// # Examples
-///
-/// ```
-/// # use typed_ident::syntax::SubsetOf;
-/// # use typed_ident::syntax::profile::{Ascii, Upper, Uniform, Unicode};
-/// # fn left_is_subset_of_right<Sub, Super>() where Sub: SubsetOf<Super> {}
-/// left_is_subset_of_right::<Upper<Ascii>, Uniform<Ascii>>();
-/// left_is_subset_of_right::<Upper<Unicode>, Uniform<Unicode>>();
-/// left_is_subset_of_right::<Upper<Ascii>, Uniform<Unicode>>();
-/// ```
+// -----------------------------------------------------------------------------
+/// Proof: If `Subset` ⊆ `Superset`, then `Upper<Subset>` ⊆ `Uniform<Superset>`
+// -----------------------------------------------------------------------------
 impl<Superset, Subset> SubsetOf<Uniform<Superset>> for Upper<Subset>
 where
     Superset: CharProfile,

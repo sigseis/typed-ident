@@ -73,9 +73,19 @@ impl_displayable_type! {
 // TRAIT
 // =============================================================================
 
-/// Formats an identifier as a preset lower-camel identifier.
+/// Provides methods for formatting an identifier in lower-camel format, using
+/// plain, canonical, decorated, or delimited forms.
 ///
 /// See the [`fmt`] module for more details.
+///
+/// # Return Values
+///
+/// All of the methods on this trait return types that borrow the source
+/// identifier, and implement the `Display` trait so that they are usable from
+/// a formatting call (or convertible to a `String`, via `ToString`).
+///
+/// Calling these methods is cheap, since the work isn't done until we actually
+/// use it for a formatting operation.
 ///
 /// [`fmt`]: crate::core::fmt
 pub trait AsLowerCamel {
@@ -669,7 +679,7 @@ pub trait AsLowerCamel {
 impl<B: Boundary, D: Delimiter, P: Profile> AsLowerCamel for Ident<B, D, P> {
     #[inline]
     fn as_lower_camel_opts<O: Options>(&self) -> LowerCamel<'_> {
-        LowerCamel(Canonical::new::<B, D, P::BaseProfile, Standard<O>>(
+        LowerCamel(Canonical::new::<B, D, P::CharProfile, Standard<O>>(
             self.as_str(),
             '_',
             false,
@@ -677,7 +687,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsLowerCamel for Ident<B, D, P> {
     }
     #[inline]
     fn as_lower_camel_canonical_opts<O: Options>(&self) -> LowerCamelCanonical<'_> {
-        LowerCamelCanonical(Canonical::new::<B, D, P::BaseProfile, Standard<O>>(
+        LowerCamelCanonical(Canonical::new::<B, D, P::CharProfile, Standard<O>>(
             self.as_str(),
             '_',
             true,
@@ -685,7 +695,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsLowerCamel for Ident<B, D, P> {
     }
     #[inline]
     fn as_lower_camel_decorated_opts<O: Options>(&self) -> LowerCamelDecorated<'_> {
-        LowerCamelDecorated(Decorated::new::<B, D, P::BaseProfile, Standard<O>>(
+        LowerCamelDecorated(Decorated::new::<B, D, P::CharProfile, Standard<O>>(
             self.as_str(),
             '_',
             None,
@@ -693,7 +703,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsLowerCamel for Ident<B, D, P> {
     }
     #[inline]
     fn as_lower_camel_delimited_opts<O: Options>(&self) -> LowerCamelDelimited<'_> {
-        LowerCamelDelimited(Delimited::new::<B, D, P::BaseProfile, Standard<O>>(
+        LowerCamelDelimited(Delimited::new::<B, D, P::CharProfile, Standard<O>>(
             self.as_str(),
             '_',
             None,

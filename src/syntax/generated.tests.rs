@@ -3,6 +3,9 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+// It's possible that this test data could go stale, but the frequency in which
+// new titlecase characters would be added should be quite rare.
+// -----------------------------------------------------------------------------
 const TITLECASE: &[char] = &[
     '\u{01C5}', '\u{01C8}', '\u{01CB}', '\u{01F2}', '\u{1F88}', '\u{1F89}', '\u{1F8A}', '\u{1F8B}',
     '\u{1F8C}', '\u{1F8D}', '\u{1F8E}', '\u{1F8F}', '\u{1F98}', '\u{1F99}', '\u{1F9A}', '\u{1F9B}',
@@ -10,6 +13,9 @@ const TITLECASE: &[char] = &[
     '\u{1FAC}', '\u{1FAD}', '\u{1FAE}', '\u{1FAF}', '\u{1FBC}', '\u{1FCC}', '\u{1FFC}',
 ];
 
+// -----------------------------------------------------------------------------
+// It's possible that this test data could go stale, but the frequency in which
+// new Greek titlecase characters would be added should be quite rare.
 // -----------------------------------------------------------------------------
 const GREEK_TITLECASE: &[char] = &[
     '\u{1F88}', '\u{1F89}', '\u{1F8A}', '\u{1F8B}', '\u{1F8C}', '\u{1F8D}', '\u{1F8E}', '\u{1F8F}',
@@ -43,6 +49,10 @@ fn is_titlecase_greek_variant() {
     }
 }
 
+// -----------------------------------------------------------------------------
+// If the above functions test well, then it's likely the simple, non-merged
+// generated functions are valid. `is_combining_mark` is a merged set of tables,
+// so it's more likely to be wrong - so we will check against non-merged tables.
 // -----------------------------------------------------------------------------
 #[test]
 #[cfg(feature = "unicode")]
