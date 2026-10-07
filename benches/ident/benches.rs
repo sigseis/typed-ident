@@ -232,17 +232,7 @@ pub fn bench<I>(
         },
         /*typed_words=*/
         |s| {
-            let _: Vec<_> = black_box(
-                I::new(s)
-                    .unwrap()
-                    .segments()
-                    .type_erased()
-                    .filter_map(|s| match s {
-                        StrSegment::Chunk(c) => Some(c),
-                        _ => None,
-                    })
-                    .collect(),
-            );
+            let _: Vec<_> = black_box(I::new(s).unwrap().words().type_erased().collect());
         },
     );
 

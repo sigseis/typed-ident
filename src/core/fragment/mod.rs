@@ -14,6 +14,10 @@ mod segment_indices;
 mod segments;
 mod str_segment_indices;
 mod str_segments;
+mod word_indices;
+mod word_str_indices;
+mod word_strs;
+mod words;
 
 // =============================================================================
 // TRIVIAL ITERATORS
@@ -107,3 +111,7 @@ pub use segment_indices::*;
 pub use segments::*;
 pub use str_segment_indices::*;
 pub use str_segments::*;
+pub use word_indices::*;
+pub use word_str_indices::*;
+pub use word_strs::*;
+pub use words::*;

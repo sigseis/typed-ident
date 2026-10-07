@@ -78,6 +78,7 @@ unicode = [
 [[bench]]
 name = "ident"
 harness = false
+required-features = ["alloc", "presets", "unicode"]
 
 # ==============================================================================
 # EXAMPLES
