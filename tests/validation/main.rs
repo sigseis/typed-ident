@@ -1,5 +1,4 @@
 #![cfg(feature = "alloc")]
-#![cfg(feature = "presets")]
 #![cfg(feature = "unicode")]
 // =============================================================================
 // MACROS

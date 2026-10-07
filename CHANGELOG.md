@@ -14,6 +14,10 @@ release during this time, including patch releases.
 
 - Added the ability to iterate over words of a fragment; `Words`, `WordStrs`, `WordIndices`, `WordStrIndices`.
 
+### Breaking Changes
+
+- Removed the `presets` feature flag (presets are now always enabled).
+
 ## [0.0.2] - 2026-09-18
 
 ### Added
