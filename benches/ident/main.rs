@@ -21,10 +21,10 @@ use rand::rngs::SmallRng;
 use rand::{RngExt, SeedableRng};
 use std::hint::black_box;
 use std::time::Duration;
+use typed_ident::Identifier;
 use typed_ident::alloc::convert::*;
 use typed_ident::core::fmt::*;
 use typed_ident::syntax::Profile;
-use typed_ident::{Identifier, StrSegment};
 
 // =============================================================================
 // CONFIGURATION

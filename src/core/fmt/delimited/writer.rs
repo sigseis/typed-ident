@@ -58,7 +58,6 @@ impl<'a, 'b, const UPPER: bool> Writer<'a, 'b, UPPER> {
         }
     }
 
-    #[inline]
     pub fn write_canonical<P: CharProfile>(
         &mut self,
         words: &mut dyn Iterator<Item = &str>,
@@ -95,7 +94,6 @@ impl<'a, 'b, const UPPER: bool> Writer<'a, 'b, UPPER> {
         Ok(())
     }
 
-    #[inline]
     pub fn write_decorated(
         &mut self,
         segments: &mut dyn Iterator<Item = Segment<char, &str>>,

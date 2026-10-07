@@ -15,7 +15,7 @@ mod tests;
 use crate::core::Error;
 use crate::core::fragment::{
     CharIndices, Chars, ChunkedSegmentIndices, ChunkedSegments, MatchIndices, Matches,
-    RMatchIndices, RMatches, SegmentIndices, Segments,
+    RMatchIndices, RMatches, SegmentIndices, Segments, WordIndices, Words,
 };
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
 use core::marker::PhantomData;
@@ -95,8 +95,8 @@ use core::marker::PhantomData;
 ///
 /// | **I Have a...**   | **I Want a...**   | **Method**                | **Validation Cost**  | **Allocation Cost** |
 /// |-------------------|-------------------|---------------------------|----------------------|---------------------|
-/// | `&Fragment<A..>`     | `&Fragment<B..>`     | [`cast`]  / [`as_ref`]    | None                 | None                |
-/// | `&Fragment<A..>`     | `&Fragment<B..>`     | [`try_cast`]              | Same as [`new`]      | None                |
+/// | `&Fragment<A..>`  | `&Fragment<B..>`  | [`cast`]  / [`as_ref`]    | None                 | None                |
+/// | `&Fragment<A..>`  | `&Fragment<B..>`  | [`try_cast`]              | Same as [`new`]      | None                |
 ///
 /// [`as_ref`]: Fragment::as_ref
 /// [`cast`]: Fragment::cast
@@ -319,6 +319,39 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
         ChunkedSegmentIndices::new(self)
     }
 
+    /// Returns `true` if the current fragment is a "word", `false` otherwise.
+    ///
+    /// This is not a word in a linguistic sense, rather this is an *identifier
+    /// word*. An identifier word is a non-empty chunk of an identifier which
+    /// contains no boundaries (no natural split points).
+    ///
+    /// See the [`core`] module documentation for more information.
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::presets::unicode::upper_camel::*;
+    /// assert!(!UpperCamelFragment::new("")?.is_word());
+    /// assert!(UpperCamelFragment::new("Word")?.is_word());
+    /// assert!(!UpperCamelFragment::new("NotWord")?.is_word());
+    ///
+    /// // Delimiters will not count as part of a word.
+    /// assert!(!UpperCamelFragment::new("_Word")?.is_word());
+    /// assert!(!UpperCamelFragment::new("Word_")?.is_word());
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use]
+    #[inline]
+    pub fn is_word(&self) -> bool {
+        let mut segments = self.segments();
+        let Some(segment) = segments.next() else {
+            return false;
+        };
+        segment.is_chunk() && segments.next().is_none()
+    }
+
     /// Produces an iterator over the [`Segment`]s (chunks and delimiters) of a
     /// fragment, with each chunk further sub-divided into words.
     ///
@@ -452,6 +485,74 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     #[inline]
     pub fn segment_indices(&self) -> SegmentIndices<'_, B, D, P> {
         SegmentIndices::new(self)
+    }
+
+    /// Produces an iterator over the words of a fragment.
+    ///
+    /// This is not a word in a linguistic sense, rather this is an *identifier
+    /// word*. An identifier word is a chunk of an identifier which contains no
+    /// boundaries (no natural split points).
+    ///
+    /// This is effectively the same as filter-mapping a [`segments`] iterator
+    /// to only produce the word-delimited chunks of the fragment. As such, this
+    /// will skip any delimiter segments.
+    ///
+    /// See the [`core`] module documentation for more information.
+    ///
+    /// [`segments`]: Self::segments
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::presets::unicode::upper_camel::*;
+    /// let chunk = UpperCamelFragment::new("__Upper_CamelFragment__")?;
+    /// let mut words = chunk.words().type_erased();
+    /// assert_eq!(words.next(), Some("Upper"));
+    /// assert_eq!(words.next(), Some("Camel"));
+    /// assert_eq!(words.next(), Some("Fragment"));
+    /// assert_eq!(words.next(), None);
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use]
+    #[inline(always)]
+    pub fn words(&self) -> Words<'_, B, D, P> {
+        Words::new(self)
+    }
+
+    /// Produces an iterator over the words of a chunk, and their positions.
+    ///
+    /// This is not a word in a linguistic sense, rather this is an *identifier
+    /// word*. An identifier word is a chunk of an identifier which contains no
+    /// boundaries (no natural split points).
+    ///
+    /// This is effectively the same as filter-mapping a [`segment_indices`]
+    /// iterator to only produce the word-delimited chunks of the fragment. As
+    /// such, this will skip any delimiter segments.
+    ///
+    /// See the [`core`] module documentation for more information.
+    ///
+    /// [`segment_indices`]: Self::segment_indices
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::presets::unicode::upper_camel::*;
+    /// let chunk = UpperCamelFragment::new("__Upper_CamelFragment__")?;
+    /// let mut words = chunk.word_indices().type_erased();
+    /// assert_eq!(words.next(), Some((2, "Upper")));
+    /// assert_eq!(words.next(), Some((8, "Camel")));
+    /// assert_eq!(words.next(), Some((13, "Fragment")));
+    /// assert_eq!(words.next(), None);
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use]
+    #[inline(always)]
+    pub fn word_indices(&self) -> WordIndices<'_, B, D, P> {
+        WordIndices::new(self)
     }
 }
 

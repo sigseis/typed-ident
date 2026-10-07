@@ -10,11 +10,15 @@ release during this time, including patch releases.
 
 ## [Unreleased]
 
+### Added
+
+- Added the ability to iterate over words of a fragment; `Words`, `WordStrs`, `WordIndices`, `WordStrIndices`.
+
 ## [0.0.2] - 2026-09-18
 
 ### Added
 
-- Added cased variants of `SnakeIdent`, `KebabIdent`, and `CamelIdent`.
+- Added profile variants of `CasedSnakeIdent`, `CasedKebabIdent`, and `CasedCamelIdent`.
 - Added generated functions for titlecase and combining character mappings.
 - Added plain-form formatter variants.
 

@@ -3,9 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::Segment;
 use crate::core::fmt::bounded::Writer;
-use crate::core::fragment::StrSegments;
+use crate::core::fragment::WordStrs;
 use crate::syntax::{Boundary, Delimiter, Profile, TrivialBoundary};
 
 // =============================================================================
@@ -32,10 +31,7 @@ impl<'a, const UPPER: bool> Canonical<'a, UPPER> {
     ) -> core::fmt::Result {
         let writer = Writer::<UPPER>::new(f);
         writer.write_canonical::<T, P::CharProfile>(
-            &mut StrSegments::<B, D, P::Segmentation>::new(self.ident).filter_map(|s| match s {
-                Segment::Chunk(c) => Some(c),
-                _ => None,
-            }),
+            &mut WordStrs::<B, D, P::Segmentation>::new(self.ident),
             self.default_delim,
             self.validate_start,
         )

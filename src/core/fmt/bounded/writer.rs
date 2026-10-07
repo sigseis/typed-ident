@@ -121,7 +121,6 @@ impl<'a, 'b, const UPPER: bool> Writer<'a, 'b, UPPER> {
         self.write_lowercase_word::<S>(graphemes.as_str())
     }
 
-    #[inline]
     pub fn write_canonical<B: TrivialBoundary, P: CharProfile>(
         mut self,
         words: &mut dyn Iterator<Item = &str>,
@@ -162,7 +161,6 @@ impl<'a, 'b, const UPPER: bool> Writer<'a, 'b, UPPER> {
 
         Ok(())
     }
-    #[inline]
     pub fn write_decorated<B: TrivialBoundary, P: CharProfile>(
         mut self,
         segments: &mut dyn Iterator<Item = Segment<char, &str>>,
@@ -221,7 +219,6 @@ impl<'a, 'b, const UPPER: bool> Writer<'a, 'b, UPPER> {
 
         Ok(())
     }
-    #[inline]
     pub fn write_delimited<B: TrivialBoundary, P: CharProfile>(
         mut self,
         segments: &mut dyn Iterator<Item = Segment<char, &str>>,

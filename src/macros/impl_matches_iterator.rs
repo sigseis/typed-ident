@@ -24,7 +24,6 @@ macro_rules! impl_matches_iterator {
             ///
             /// This will return the internal core iterator that this type is
             /// wrapping. It will not construct a new iterator.
-            #[must_use]
             #[inline]
             pub fn type_erased(self) -> M::$name<'a> {
                 self.iter
