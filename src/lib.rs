@@ -29,7 +29,6 @@ mod macros;
 #[cfg(feature = "alloc")]
 pub mod alloc;
 pub mod core;
-#[cfg(feature = "presets")]
 pub mod presets;
 pub mod syntax;
 

@@ -48,7 +48,6 @@ unicode-general-category = "1"
 # * Since most folks are going to work with Rust code, likely you want unicode.
 # ------------------------------------------------------------------------------
 default = [
-    "presets",
     "unicode",
 ]
 
@@ -56,11 +55,6 @@ default = [
 # Optionally, you can enable modules that contain allocation routines.
 # ------------------------------------------------------------------------------
 alloc = []
-
-# ------------------------------------------------------------------------------
-# Optionally, you can enable the presets that we provide in `presets` module.
-# ------------------------------------------------------------------------------
-presets = []
 
 # ------------------------------------------------------------------------------
 # If Unicode is enabled, we will need to have XID and segmentation support.
@@ -78,7 +72,7 @@ unicode = [
 [[bench]]
 name = "ident"
 harness = false
-required-features = ["alloc", "presets", "unicode"]
+required-features = ["alloc", "unicode"]
 
 # ==============================================================================
 # EXAMPLES
@@ -87,7 +81,7 @@ required-features = ["alloc", "presets", "unicode"]
 # ------------------------------------------------------------------------------
 [[example]]
 name = "api"
-required-features = ["alloc", "presets", "unicode"]
+required-features = ["alloc", "unicode"]
 
 # ==============================================================================
 # COMPARISON EXAMPLES
@@ -107,4 +101,4 @@ path = "examples/comparison/conversion/heck.rs"
 [[example]]
 name = "conversion-typed"
 path = "examples/comparison/conversion/typed.rs"
-required-features = ["alloc", "presets", "unicode"]
+required-features = ["alloc", "unicode"]
