@@ -12,11 +12,12 @@ release during this time, including patch releases.
 
 ### Added
 
-- Added the ability to iterate over words of a fragment; `Words`, `WordStrs`, `WordIndices`, `WordStrIndices`.
+- Added the ability to iterate over words of a fragment; `Words`, `StrWords`, `WordIndices`, `StrWordIndices`.
 
 ### Breaking Changes
 
 - Removed the `presets` feature flag (presets are now always enabled).
+- Renamed `Chunk`'s `WordStrs` and `WordStrIndices` to `StrWords` and `StrWordIndices`.
 
 ## [0.0.2] - 2026-09-18
 

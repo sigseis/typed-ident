@@ -6,9 +6,9 @@
 
 // -----------------------------------------------------------------------------
 mod chunk;
+mod str_word_indices;
+mod str_words;
 mod word_indices;
-mod word_str_indices;
-mod word_strs;
 mod words;
 
 // =============================================================================
@@ -95,7 +95,7 @@ impl_match_indices_iterator! {
 
 // -----------------------------------------------------------------------------
 pub use chunk::*;
+pub use str_word_indices::*;
+pub use str_words::*;
 pub use word_indices::*;
-pub use word_str_indices::*;
-pub use word_strs::*;
 pub use words::*;

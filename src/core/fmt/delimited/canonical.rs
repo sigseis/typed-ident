@@ -4,7 +4,7 @@
 
 // -----------------------------------------------------------------------------
 use crate::core::fmt::delimited::Writer;
-use crate::core::fragment::WordStrs;
+use crate::core::fragment::StrWords;
 use crate::syntax::{Boundary, Delimiter, Profile};
 
 // =============================================================================
@@ -31,7 +31,7 @@ impl<'a, const UPPER: bool> Canonical<'a, UPPER> {
     ) -> core::fmt::Result {
         let mut writer = Writer::<UPPER>::new(f);
         writer.write_canonical::<P::CharProfile>(
-            &mut WordStrs::<B, D, P::Segmentation>::new(self.ident),
+            &mut StrWords::<B, D, P::Segmentation>::new(self.ident),
             self.default_delim,
             self.validate_start,
         )

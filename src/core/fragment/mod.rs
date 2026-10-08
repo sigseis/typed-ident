@@ -14,9 +14,9 @@ mod segment_indices;
 mod segments;
 mod str_segment_indices;
 mod str_segments;
+mod str_word_indices;
+mod str_words;
 mod word_indices;
-mod word_str_indices;
-mod word_strs;
 mod words;
 
 // =============================================================================
@@ -111,7 +111,7 @@ pub use segment_indices::*;
 pub use segments::*;
 pub use str_segment_indices::*;
 pub use str_segments::*;
+pub use str_word_indices::*;
+pub use str_words::*;
 pub use word_indices::*;
-pub use word_str_indices::*;
-pub use word_strs::*;
 pub use words::*;

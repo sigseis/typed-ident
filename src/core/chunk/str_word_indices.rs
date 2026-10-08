@@ -3,23 +3,23 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+use crate::core::chunk::StrWords;
 use crate::syntax::{Boundary, Segmentation};
-use core::marker::PhantomData;
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
-/// An iterator over the word string slices of a chunk.
+/// An iterator over the word string slices of a chunk and their positions.
 ///
-/// This struct is created by calling [`type_erased`] on the [`Words`] iterator.
+/// This struct is created by calling [`type_erased`] on the [`WordIndices`]
+/// iterator.
 ///
-/// [`Words`]: crate::core::chunk::Words
-/// [`type_erased`]: crate::core::chunk::Words::type_erased
-#[repr(transparent)]
-pub struct WordStrs<'a, B, S> {
-    boundary: PhantomData<(B, S)>,
-    inner: &'a str,
+/// [`WordIndices`]: crate::core::chunk::WordIndices
+/// [`type_erased`]: crate::core::chunk::WordIndices::type_erased
+pub struct StrWordIndices<'a, B, S> {
+    front_offset: usize,
+    iter: StrWords<'a, B, S>,
 }
 
 // =============================================================================
@@ -27,7 +27,7 @@ pub struct WordStrs<'a, B, S> {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<'a, B, S> WordStrs<'a, B, S> {
+impl<'a, B, S> StrWordIndices<'a, B, S> {
     /// Views the underlying data as a subslice of the original data.
     ///
     /// This has the same lifetime as the original slice, and so the
@@ -35,16 +35,28 @@ impl<'a, B, S> WordStrs<'a, B, S> {
     #[must_use]
     #[inline]
     pub fn as_str(&self) -> &'a str {
-        self.inner
+        self.iter.as_str()
     }
 
     #[must_use]
     #[inline]
     pub(crate) fn new(chunk: &'a str) -> Self {
         Self {
-            boundary: PhantomData,
-            inner: chunk,
+            front_offset: 0,
+            iter: StrWords::new(chunk),
         }
+    }
+
+    /// Returns the byte position of the next element, or the total number of
+    /// bytes that have been returned via [`next()`](Self::next).
+    ///
+    /// This means that, when the iterator has not been fully consumed, the
+    /// returned value will match the index that will be returned by the next
+    /// call to [`next()`](Self::next).
+    #[must_use]
+    #[inline]
+    pub fn offset(&self) -> usize {
+        self.front_offset
     }
 }
 
@@ -53,40 +65,42 @@ impl<'a, B, S> WordStrs<'a, B, S> {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B, S> core::fmt::Debug for WordStrs<'_, B, S> {
+impl<B, S> core::fmt::Debug for StrWordIndices<'_, B, S> {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("WordStrs").field(&self.as_str()).finish()
+        f.debug_tuple("StrWordIndices")
+            .field(&self.as_str())
+            .finish()
     }
 }
 
 // -----------------------------------------------------------------------------
-impl<B, S> Clone for WordStrs<'_, B, S> {
+impl<B, S> Clone for StrWordIndices<'_, B, S> {
     #[inline]
     fn clone(&self) -> Self {
-        Self::new(self.inner)
+        Self {
+            front_offset: self.front_offset,
+            iter: self.iter.clone(),
+        }
     }
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: Boundary, S: Segmentation> Iterator for WordStrs<'a, B, S> {
-    type Item = &'a str;
+impl<'a, B: Boundary, S: Segmentation> Iterator for StrWordIndices<'a, B, S> {
+    type Item = (usize, &'a str);
 
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        if self.inner.is_empty() {
-            return None;
+        let pre_len = self.iter.as_str().len();
+        match self.iter.next() {
+            None => None,
+            Some(next) => {
+                let index = self.front_offset;
+                let len = self.iter.as_str().len();
+                self.front_offset += pre_len - len;
+                Some((index, next))
+            }
         }
-        let chunk = self.inner;
-
-        if let Some(split) = B::find_boundary::<S>(chunk) {
-            let (left, right) = self.inner.split_at(split.get());
-            self.inner = right;
-            return Some(left);
-        }
-
-        self.inner = "";
-        Some(chunk)
     }
 
     #[inline(always)]
@@ -96,24 +110,15 @@ impl<'a, B: Boundary, S: Segmentation> Iterator for WordStrs<'a, B, S> {
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: Boundary, S: Segmentation> DoubleEndedIterator for WordStrs<'a, B, S> {
+impl<'a, B: Boundary, S: Segmentation> DoubleEndedIterator for StrWordIndices<'a, B, S> {
     #[inline]
     fn next_back(&mut self) -> Option<Self::Item> {
-        if self.inner.is_empty() {
-            return None;
-        }
-        let chunk = self.inner;
-
-        if let Some(split) = B::rfind_boundary::<S>(chunk) {
-            let (left, right) = self.inner.split_at(split.get());
-            self.inner = left;
-            return Some(right);
-        }
-
-        self.inner = "";
-        Some(chunk)
+        self.iter.next_back().map(|next| {
+            let index = self.front_offset + self.iter.as_str().len();
+            (index, next)
+        })
     }
 }
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, S: Segmentation> core::iter::FusedIterator for WordStrs<'_, B, S> {}
+impl<B: Boundary, S: Segmentation> core::iter::FusedIterator for StrWordIndices<'_, B, S> {}
