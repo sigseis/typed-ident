@@ -23,7 +23,7 @@ use crate::syntax::{Boundary, Delimiter, Segmentation};
 ///
 /// [`WordIndices`]: crate::core::fragment::WordIndices
 /// [`type_erased`]: crate::core::fragment::WordIndices::type_erased
-pub struct WordStrIndices<'a, B, D, S> {
+pub struct StrWordIndices<'a, B, D, S> {
     iter: StrSegmentIndices<'a, B, D, S>,
 }
 
@@ -32,7 +32,7 @@ pub struct WordStrIndices<'a, B, D, S> {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<'a, B, D, S> WordStrIndices<'a, B, D, S> {
+impl<'a, B, D, S> StrWordIndices<'a, B, D, S> {
     #[must_use]
     #[inline]
     pub(crate) fn new(fragment: &'a str) -> Self {
@@ -47,15 +47,15 @@ impl<'a, B, D, S> WordStrIndices<'a, B, D, S> {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B, D, S> core::fmt::Debug for WordStrIndices<'_, B, D, S> {
+impl<B, D, S> core::fmt::Debug for StrWordIndices<'_, B, D, S> {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("WordStrIndices").finish()
+        f.debug_tuple("StrWordIndices").finish()
     }
 }
 
 // -----------------------------------------------------------------------------
-impl<B, D, S> Clone for WordStrIndices<'_, B, D, S> {
+impl<B, D, S> Clone for StrWordIndices<'_, B, D, S> {
     #[inline]
     fn clone(&self) -> Self {
         Self {
@@ -65,7 +65,7 @@ impl<B, D, S> Clone for WordStrIndices<'_, B, D, S> {
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: Boundary, D: Delimiter, S: Segmentation> Iterator for WordStrIndices<'a, B, D, S> {
+impl<'a, B: Boundary, D: Delimiter, S: Segmentation> Iterator for StrWordIndices<'a, B, D, S> {
     type Item = (usize, &'a str);
 
     #[inline]
@@ -86,7 +86,7 @@ impl<'a, B: Boundary, D: Delimiter, S: Segmentation> Iterator for WordStrIndices
 
 // -----------------------------------------------------------------------------
 impl<'a, B: Boundary, D: Delimiter, S: Segmentation> DoubleEndedIterator
-    for WordStrIndices<'a, B, D, S>
+    for StrWordIndices<'a, B, D, S>
 {
     #[inline]
     fn next_back(&mut self) -> Option<Self::Item> {
@@ -101,6 +101,6 @@ impl<'a, B: Boundary, D: Delimiter, S: Segmentation> DoubleEndedIterator
 
 // -----------------------------------------------------------------------------
 impl<B: Boundary, D: Delimiter, S: Segmentation> core::iter::FusedIterator
-    for WordStrIndices<'_, B, D, S>
+    for StrWordIndices<'_, B, D, S>
 {
 }

@@ -23,7 +23,7 @@ use crate::syntax::{Boundary, Delimiter, Segmentation};
 /// [`Words`]: crate::core::fragment::Words
 /// [`type_erased`]: crate::core::fragment::Words::type_erased
 #[repr(transparent)]
-pub struct WordStrs<'a, B, D, S> {
+pub struct StrWords<'a, B, D, S> {
     iter: StrSegments<'a, B, D, S>,
 }
 
@@ -32,7 +32,7 @@ pub struct WordStrs<'a, B, D, S> {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<'a, B, D, S> WordStrs<'a, B, D, S> {
+impl<'a, B, D, S> StrWords<'a, B, D, S> {
     #[must_use]
     #[inline]
     pub(crate) fn new(fragment: &'a str) -> Self {
@@ -47,15 +47,15 @@ impl<'a, B, D, S> WordStrs<'a, B, D, S> {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B, D, S> core::fmt::Debug for WordStrs<'_, B, D, S> {
+impl<B, D, S> core::fmt::Debug for StrWords<'_, B, D, S> {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("WordStrs").finish()
+        f.debug_tuple("StrWords").finish()
     }
 }
 
 // -----------------------------------------------------------------------------
-impl<B, D, S> Clone for WordStrs<'_, B, D, S> {
+impl<B, D, S> Clone for StrWords<'_, B, D, S> {
     #[inline]
     fn clone(&self) -> Self {
         Self {
@@ -65,7 +65,7 @@ impl<B, D, S> Clone for WordStrs<'_, B, D, S> {
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: Boundary, D: Delimiter, S: Segmentation> Iterator for WordStrs<'a, B, D, S> {
+impl<'a, B: Boundary, D: Delimiter, S: Segmentation> Iterator for StrWords<'a, B, D, S> {
     type Item = &'a str;
 
     #[inline]
@@ -85,7 +85,7 @@ impl<'a, B: Boundary, D: Delimiter, S: Segmentation> Iterator for WordStrs<'a, B
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: Boundary, D: Delimiter, S: Segmentation> DoubleEndedIterator for WordStrs<'a, B, D, S> {
+impl<'a, B: Boundary, D: Delimiter, S: Segmentation> DoubleEndedIterator for StrWords<'a, B, D, S> {
     #[inline]
     fn next_back(&mut self) -> Option<Self::Item> {
         while let Some(next) = self.iter.next_back() {
@@ -99,6 +99,6 @@ impl<'a, B: Boundary, D: Delimiter, S: Segmentation> DoubleEndedIterator for Wor
 
 // -----------------------------------------------------------------------------
 impl<B: Boundary, D: Delimiter, S: Segmentation> core::iter::FusedIterator
-    for WordStrs<'_, B, D, S>
+    for StrWords<'_, B, D, S>
 {
 }

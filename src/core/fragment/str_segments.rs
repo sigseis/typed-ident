@@ -4,7 +4,7 @@
 
 // -----------------------------------------------------------------------------
 use crate::core::Segment;
-use crate::core::chunk::WordStrs;
+use crate::core::chunk::StrWords;
 use crate::core::fragment::ChunkedStrSegments;
 use crate::syntax::{Boundary, Delimiter, Segmentation};
 use core::marker::PhantomData;
@@ -92,7 +92,7 @@ impl<'a, B: Boundary, D: Delimiter, S: Segmentation> core::iter::Iterator
             }
         };
 
-        let mut bounded = WordStrs::<B, S>::new(chunk);
+        let mut bounded = StrWords::<B, S>::new(chunk);
         let next = bounded.next()?;
         self.inner = &self.inner[next.len()..];
         Some(Segment::Chunk(next))
@@ -119,7 +119,7 @@ impl<'a, B: Boundary, D: Delimiter, S: Segmentation> core::iter::DoubleEndedIter
             }
         };
 
-        let mut bounded = WordStrs::<B, S>::new(chunk);
+        let mut bounded = StrWords::<B, S>::new(chunk);
         let next = bounded.next_back()?;
         self.inner = &self.inner[..self.inner.len() - next.len()];
         Some(Segment::Chunk(next))

@@ -12,7 +12,7 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::fragment::WordStrIndices;
+use crate::core::fragment::StrWordIndices;
 use crate::core::{Chunk, Fragment};
 use crate::syntax::{Boundary, Delimiter, Profile};
 use core::marker::PhantomData;
@@ -35,7 +35,7 @@ use core::marker::PhantomData;
 #[repr(transparent)]
 pub struct WordIndices<'a, B, D, P: Profile> {
     syntax: PhantomData<&'a Chunk<B, D, P>>,
-    iter: WordStrIndices<'a, B, D, P::Segmentation>,
+    iter: StrWordIndices<'a, B, D, P::Segmentation>,
 }
 
 // =============================================================================
@@ -49,7 +49,7 @@ impl<'a, B, D, P: Profile> WordIndices<'a, B, D, P> {
     pub(crate) fn new(fragment: &'a Fragment<B, D, P>) -> Self {
         Self {
             syntax: PhantomData,
-            iter: WordStrIndices::new(fragment.as_str()),
+            iter: StrWordIndices::new(fragment.as_str()),
         }
     }
 
@@ -59,7 +59,7 @@ impl<'a, B, D, P: Profile> WordIndices<'a, B, D, P> {
     /// yielded values that are easier to work with (like `&str`).
     #[must_use]
     #[inline]
-    pub fn type_erased(self) -> WordStrIndices<'a, B, D, P::Segmentation> {
+    pub fn type_erased(self) -> StrWordIndices<'a, B, D, P::Segmentation> {
         self.iter
     }
 }
