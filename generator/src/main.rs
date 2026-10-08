@@ -27,6 +27,7 @@ use common::Command;
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
+        Command::AnalyzeTables => commands::analyze_tables(&cli),
         Command::Generate => commands::generate(&cli),
         Command::ListVersions => commands::list_versions(&cli),
         Command::UpdateTables => commands::update_tables(&cli),

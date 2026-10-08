@@ -132,13 +132,11 @@ pub fn update_tables(cli: &Cli) -> Result<()> {
 
     // Generate tables
     generate_file_from_output(
-        &generator_tables_src.join("script.rs"),
+        &generator_tables_src.join("case_mapping.rs"),
         &unicode.version,
         Command::new("ucd-generate")
-            .arg("script")
+            .arg("case-mapping")
             .arg(&ucd_tempdir)
-            .arg("--include")
-            .arg("Greek")
             .output()?,
     )?;
     generate_file_from_output(
@@ -149,6 +147,26 @@ pub fn update_tables(cli: &Cli) -> Result<()> {
             .arg(&ucd_tempdir)
             .arg("--include")
             .arg("EnclosingMark,NonspacingMark,SpacingMark,Titlecase_Letter")
+            .output()?,
+    )?;
+    generate_file_from_output(
+        &generator_tables_src.join("properties.rs"),
+        &unicode.version,
+        Command::new("ucd-generate")
+            .arg("property-bool")
+            .arg(&ucd_tempdir)
+            .arg("--include")
+            .arg("Lowercase,Uppercase")
+            .output()?,
+    )?;
+    generate_file_from_output(
+        &generator_tables_src.join("script.rs"),
+        &unicode.version,
+        Command::new("ucd-generate")
+            .arg("script")
+            .arg(&ucd_tempdir)
+            .arg("--include")
+            .arg("Greek")
             .output()?,
     )?;
     generate_file_from_content(

@@ -5,6 +5,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+pub mod case_mapping;
 pub mod general_category;
+pub mod properties;
 pub mod script;
 pub mod version;
