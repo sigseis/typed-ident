@@ -12,8 +12,8 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::Error;
-use crate::core::fragment::{
+use crate::Error;
+use crate::fragment::{
     CharIndices, Chars, ChunkedSegmentIndices, ChunkedSegments, MatchIndices, Matches,
     RMatchIndices, RMatches, SegmentIndices, Segments, WordIndices, Words,
 };
@@ -125,7 +125,7 @@ use core::marker::PhantomData;
 /// [`Boundary`]: crate::syntax::boundary::Boundary
 /// [`Delimiter`]: crate::syntax::delimiter::Delimiter
 /// [`HyphenMinus`]: crate::syntax::delimiter::HyphenMinus
-/// [`Ident`]: crate::core::Ident
+/// [`Ident`]: crate::Ident
 /// [`LowLine`]: crate::syntax::delimiter::LowLine
 /// [`Lower`]: crate::syntax::profile::Lower
 /// [`Mixed`]: crate::syntax::profile::Mixed
@@ -200,8 +200,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// If you want chunk boundaries to be broken, you should instead use the
     /// [`segments`] function.
     ///
-    /// [`Segment`]: crate::core::Segment
-    /// [`Chunk<'_, B, D, P>`]: crate::core::Chunk
+    /// [`Segment`]: crate::Segment
+    /// [`Chunk<'_, B, D, P>`]: crate::Chunk
     /// [`segments`]: Self::segments
     ///
     /// # Type Erasure
@@ -215,8 +215,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// mapping to a [`StrSegment`] (you can call this on the returned iterator,
     /// or on an individual segment).
     ///
-    /// [`StrSegment`]: crate::core::StrSegment
-    /// [`type_erased`]: crate::core::fragment::ChunkedSegments::type_erased
+    /// [`StrSegment`]: crate::StrSegment
+    /// [`type_erased`]: crate::fragment::ChunkedSegments::type_erased
     ///
     /// # Examples
     ///
@@ -266,8 +266,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// If you want chunk boundaries to be broken, you should instead use the
     /// [`segment_indices`] function.
     ///
-    /// [`Segment`]: crate::core::Segment
-    /// [`Chunk<'_, B, D, P>`]: crate::core::Chunk
+    /// [`Segment`]: crate::Segment
+    /// [`Chunk<'_, B, D, P>`]: crate::Chunk
     /// [`segment_indices`]: Self::segments
     ///
     /// # Type Erasure
@@ -281,8 +281,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// mapping to a [`StrSegment`] (you can call this on the returned iterator,
     /// or on an individual segment).
     ///
-    /// [`StrSegment`]: crate::core::StrSegment
-    /// [`type_erased`]: crate::core::fragment::ChunkedSegments::type_erased
+    /// [`StrSegment`]: crate::StrSegment
+    /// [`type_erased`]: crate::fragment::ChunkedSegments::type_erased
     ///
     /// # Examples
     ///
@@ -363,8 +363,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     ///
     /// See the [`core`] module documentation for details on what a word is.
     ///
-    /// [`Segment`]: crate::core::Segment
-    /// [`Chunk<'_, B, D, P>`]: crate::core::Chunk
+    /// [`Segment`]: crate::Segment
+    /// [`Chunk<'_, B, D, P>`]: crate::Chunk
     /// [`chunked_segments`]: Self::chunked_segments
     /// [`Boundary`]: crate::syntax::boundary::Boundary
     ///
@@ -379,8 +379,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// mapping to a [`StrSegment`] (you can call this on the returned iterator,
     /// or on an individual segment).
     ///
-    /// [`StrSegment`]: crate::core::StrSegment
-    /// [`type_erased`]: crate::core::fragment::ChunkedSegments::type_erased
+    /// [`StrSegment`]: crate::StrSegment
+    /// [`type_erased`]: crate::fragment::ChunkedSegments::type_erased
     ///
     /// # Examples
     ///
@@ -430,7 +430,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     ///
     /// See the [`core`] module documentation for details on what a word is.
     ///
-    /// [`Segment`]: crate::core::Segment
+    /// [`Segment`]: crate::Segment
     /// [`chunked_segment_indices`]: Self::chunked_segment_indices
     /// [`Boundary`]: crate::syntax::boundary::Boundary
     ///
@@ -445,8 +445,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// mapping to a [`StrSegment`] (you can call this on the returned iterator,
     /// or on an individual segment).
     ///
-    /// [`StrSegment`]: crate::core::StrSegment
-    /// [`type_erased`]: crate::core::fragment::ChunkedSegments::type_erased
+    /// [`StrSegment`]: crate::StrSegment
+    /// [`type_erased`]: crate::fragment::ChunkedSegments::type_erased
     ///
     /// # Examples
     ///
@@ -720,7 +720,7 @@ impl<B, D, P> Fragment<B, D, P> {
     #[inline]
     pub fn contains<M>(&self, pat: M) -> bool
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         pat.contains(self.as_str())
     }
@@ -746,7 +746,7 @@ impl<B, D, P> Fragment<B, D, P> {
     #[inline]
     pub fn ends_with<M>(&self, pat: M) -> bool
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         pat.ends_with(self.as_str())
     }
@@ -788,7 +788,7 @@ impl<B, D, P> Fragment<B, D, P> {
     #[inline]
     pub fn starts_with<M>(&self, pat: M) -> bool
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         pat.starts_with(self.as_str())
     }
@@ -841,7 +841,7 @@ impl<B, D, P> Fragment<B, D, P> {
     #[inline]
     pub fn find<M>(&self, pat: M) -> Option<usize>
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         pat.find(self.as_str())
     }
@@ -894,7 +894,7 @@ impl<B, D, P> Fragment<B, D, P> {
     #[inline]
     pub fn rfind<M>(&self, pat: M) -> Option<usize>
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         pat.rfind(self.as_str())
     }

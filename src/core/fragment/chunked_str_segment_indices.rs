@@ -3,8 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::Segment;
-use crate::core::fragment::ChunkedStrSegments;
+use crate::Segment;
+use crate::fragment::ChunkedStrSegments;
 use crate::syntax::Delimiter;
 
 // =============================================================================
@@ -17,8 +17,8 @@ use crate::syntax::Delimiter;
 /// This struct is created by calling [`type_erased`] on the
 /// [`ChunkedSegmentIndices`] iterator.
 ///
-/// [`ChunkedSegmentIndices`]: crate::core::fragment::ChunkedSegmentIndices
-/// [`type_erased`]: crate::core::fragment::ChunkedSegmentIndices::type_erased
+/// [`ChunkedSegmentIndices`]: crate::fragment::ChunkedSegmentIndices
+/// [`type_erased`]: crate::fragment::ChunkedSegmentIndices::type_erased
 pub struct ChunkedStrSegmentIndices<'a, D> {
     front_offset: usize,
     iter: ChunkedStrSegments<'a, D>,

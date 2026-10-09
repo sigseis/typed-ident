@@ -1,4 +1,4 @@
-# typed-ident
+# Getting Started
 
 A Rust crate for type-safe identifier validation, inspection, and mutation.
 
@@ -13,7 +13,54 @@ Conforming to:
 
 </div>
 
-# Using `typed-ident`
+## Basic Usage
+
+The most common way to use this crate is through its predefined identifier presets. You can choose the preset that matches the syntax you want to enforce.
+
+```rust
+use typed_ident::fmt::AsLowerSnake;
+use typed_ident::presets::unicode::UpperCamelIdent;
+
+// Validate the format of input to see that it matches expectations.
+let identifier = UpperCamelIdent::new("HTTPServer")?;
+
+// Look at all of the segments of the identifier.
+println!("identifier segments:");
+for segment in identifier.segments() {
+    println!("* {segment:?}"); // [Chunk("HTTP"), Chunk("Server")]
+}
+
+// Convert to a different displayable format.
+let lower_snake = identifier.as_lower_snake();
+println!("as lower-snake: {lower_snake}"); // "http_server"
+
+// Create a decorated identifier (requires "alloc" feature).
+let decorated = identifier.with_circumfix("__", "__")?;
+println!("with decoration: {decorated}"); // "__HTTPServer__"
+# Ok::<(), typed_ident::Error>(())
+```
+
+If you know the general shape of the identifier, but not the casing, less-specific presets are also available.
+
+```rust
+use typed_ident::presets::unicode::CamelIdent;
+
+// Examples of camel identifiers:
+assert!(CamelIdent::new("iAm_123").is_ok());     // Delimiters         (allowed)
+assert!(CamelIdent::new("iAm_lower").is_ok());   // Consistent Chunks  (allowed)
+assert!(CamelIdent::new("iAm_Mixed").is_ok());   // Mixed Chunks       (allowed)
+assert!(CamelIdent::new("UpperCamel").is_ok());  // Upper Camel        (allowed)
+
+// Examples of non-camel identifiers:
+assert!(CamelIdent::new("").is_err());           // Empty              (disallowed)
+assert!(CamelIdent::new("2").is_err());          // Invalid Start      (disallowed)
+assert!(CamelIdent::new("kebab-case").is_err()); // Hyphen Delimiter   (disallowed)
+# Ok::<(), typed_ident::Error>(())
+```
+
+See the [`presets`] module documentation for a guided tour of different predefined identifier formats.
+
+See the [`syntax`] module documentation if you want to build your own custom identifier formats.
 
 ## When To Use
 
@@ -39,165 +86,6 @@ For ordinary strings that only need case conversion, use a general-purpose crate
 
 For URLs, REST paths, filesystem paths, or other domain-specific syntax, use a crate that understands that syntax instead.
 
-## Basic Usage
-
-The most common way to use this crate is through its predefined identifier presets. You can choose the preset that matches the syntax you want to enforce.
-
-```rust
-use typed_ident::presets::unicode::*;
-
-// Examples of lower-camel identifiers:
-assert!(LowerCamelIdent::new("iAm_123").is_ok());     // Delimiters         (allowed)
-assert!(LowerCamelIdent::new("iAm_lower").is_ok());   // Consistent Chunks  (allowed)
-
-// Examples of non-lower-camel identifiers:
-assert!(LowerCamelIdent::new("").is_err());           // Empty              (disallowed)
-assert!(LowerCamelIdent::new("2").is_err());          // Invalid Start      (disallowed)
-assert!(LowerCamelIdent::new("UpperCamel").is_err()); // Upper Camel        (disallowed)
-assert!(LowerCamelIdent::new("iAm_Mixed").is_err());  // Mixed Chunks       (disallowed)
-assert!(LowerCamelIdent::new("kebab-case").is_err()); // Hyphen Delimiter   (disallowed)
-# Ok::<(), typed_ident::Error>(())
-```
-
-If you know the general shape of the identifier, but do not want to enforce a specific casing convention, less-specific presets are also available.
-
-```rust
-use typed_ident::presets::unicode::*;
-
-// Examples of camel identifiers:
-assert!(CamelIdent::new("iAm_123").is_ok());     // Delimiters         (allowed)
-assert!(CamelIdent::new("iAm_lower").is_ok());   // Consistent Chunks  (allowed)
-assert!(CamelIdent::new("iAm_Mixed").is_ok());   // Mixed Chunks       (allowed)
-assert!(CamelIdent::new("UpperCamel").is_ok());  // Upper Camel        (allowed)
-
-// Examples of non-camel identifiers:
-assert!(CamelIdent::new("").is_err());           // Empty              (disallowed)
-assert!(CamelIdent::new("2").is_err());          // Invalid Start      (disallowed)
-assert!(CamelIdent::new("kebab-case").is_err()); // Hyphen Delimiter   (disallowed)
-# Ok::<(), typed_ident::Error>(())
-```
-
-## Advanced Usage
-
-If the predefined presets do not match your use case, you can define custom identifiers with customized boundaries, delimiters, and character profiles. Prefer a predefined preset whenever one already matches your requirements.
-
-```rust
-use typed_ident::*;
-use typed_ident::syntax::*;
-
-// Defining your own custom delimiter (the `@` symbol).
-#[derive(Copy, Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-struct AtDelimiter;
-impl UnitDelimiter for AtDelimiter {
-    const CHAR: char = '@';
-    const STR: &'static str = "@";
-}
-impl SubsetOf<AtDelimiter> for AtDelimiter {}
-
-// Defining your own custom type that uses the `@` delimiter.
-// For this example, use a predefined boundary and character profile.
-type CustomIdent = Ident<
-    boundary::Standard,             // Use the standard boundary algorithm
-    AtDelimiter,                    // The delimiter used by this identifier is `@`.
-    profile::Lower<profile::Ascii>, // ASCII-only, disallowing uppercase and titlecase.
->;
-
-// Examples of lower-at identifiers:
-assert!(CustomIdent::new("iam@123").is_ok());     // Delimiters         (allowed)
-assert!(CustomIdent::new("iam@lower").is_ok());   // Consistent Chunks  (allowed)
-assert!(CustomIdent::new("onechunk").is_ok());    // One Chunk          (allowed)
-
-// Examples of non-lower-at identifiers:
-assert!(CustomIdent::new("").is_err());           // Empty              (disallowed)
-assert!(CustomIdent::new("2").is_err());          // Invalid Start      (disallowed)
-assert!(CustomIdent::new("iam@Mixed").is_err());  // Uppercase Char     (disallowed)
-assert!(CustomIdent::new("kebab-case").is_err()); // Hyphen Delimiter   (disallowed)
-assert!(CustomIdent::new("snake_case").is_err()); // Low Line Delimiter (disallowed)
-assert!(CustomIdent::new("CamelCase").is_err());  // Camel Casing       (disallowed)
-assert!(CustomIdent::new("UPPERCASE").is_err());  // Upper Casing       (disallowed)
-assert!(CustomIdent::new("日本語").is_err());      // Non-ASCII          (disallowed)
-# Ok::<(), typed_ident::Error>(())
-```
-
-Creating custom identifiers can be difficult. See the [`syntax`] module documentation for more details.
-
-## Selecting a Preset
-
-There are four predefined formats, each available with different case restrictions.
-
-| **Delimiter**             | **Mixed**       | **Cased**            | **Lower** or **Upper**                      |
-|---------------------------|-----------------|----------------------|---------------------------------------------|
-| **Low Line (`_`)**        | [`CamelIdent`]  | [`CasedCamelIdent`]  | [`LowerCamelIdent`]  / [`UpperCamelIdent`]  |
-| **Flat Line (`_` / `-`)** | [`HybridIdent`] | [`CasedHybridIdent`] | [`LowerHybridIdent`] / [`UpperHybridIdent`] |
-| **Hyphen-Minus (`-`)**    | [`KebabIdent`]  | [`CasedKebabIdent`]  | [`LowerKebabIdent`]  / [`UpperKebabIdent`]  |
-| **Low Line (`_`)**        | [`SnakeIdent`]  | [`CasedSnakeIdent`]  | [`LowerSnakeIdent`]  / [`UpperSnakeIdent`]  |
-
-To break down the selection process, you can first start by considering the general form of the identifier you want.
-
-**Start by selecting one of...**
-
-| **Format**      | **Delimiters**        | **Case restrictions apply to...** |
-|-----------------|-----------------------|-----------------------------------|
-| [`CamelIdent`]  | Low Line (`_`)        | ...only chunk start characters.   |
-| [`HybridIdent`] | Flat Line (`_` / `-`) | ...only chunk start characters.   |
-| [`KebabIdent`]  | Hyphen-Minus (`-`)    | ...all characters.                |
-| [`SnakeIdent`]  | Low Line (`_`)        | ...all characters.                |
-
-Then select a case profile based on the restrictions you want to apply to the in-scope characters.
-
-**Finalize your selection based on your required case restrictions...**
-
-| **Casing**           | **Case Restrictions**                 |
-|----------------------|---------------------------------------|
-| Mixed *(Unprefixed)* | No specific case restrictions.        |
-| Cased                | Either lower or upper, but not mixed. |
-| Lower                | Must be lowercase or uncased.         |
-| Upper                | Must be uppercase or uncased.         |
-
-All predefined presets follow this naming pattern. Select the strictest preset that matches your requirement.
-
-```rust
-# use typed_ident::presets::unicode::*;
-// A basic camel identifier is the most permissive choice.
-assert!(CamelIdent::new("lowerCamel").is_ok());
-assert!(CamelIdent::new("UpperCamel").is_ok());
-assert!(CamelIdent::new("lowerCamel_UpperCamel").is_ok());
-
-// A cased-camel identifier must be consistently either lower- or upper-cased.
-assert!(CasedCamelIdent::new("lowerCamel").is_ok());
-assert!(CasedCamelIdent::new("UpperCamel").is_ok());
-assert!(CasedCamelIdent::new("lowerCamel_UpperCamel").is_err());
-
-// A lower-cased camel identifier requires that it's lowerCamelCase
-assert!(LowerCamelIdent::new("lowerCamel").is_ok());
-assert!(LowerCamelIdent::new("UpperCamel").is_err());
-assert!(LowerCamelIdent::new("lowerCamel_UpperCamel").is_err());
-
-// An upper-cased camel identifier requires that it's UpperCamelCase
-assert!(UpperCamelIdent::new("lowerCamel").is_err());
-assert!(UpperCamelIdent::new("UpperCamel").is_ok());
-assert!(UpperCamelIdent::new("lowerCamel_UpperCamel").is_err());
-```
-
-[`CamelIdent`]: crate::presets::unicode::CamelIdent
-[`HybridIdent`]: crate::presets::unicode::HybridIdent
-[`KebabIdent`]: crate::presets::unicode::KebabIdent
-[`SnakeIdent`]: crate::presets::unicode::SnakeIdent
-[`CasedCamelIdent`]: crate::presets::unicode::CasedCamelIdent
-[`CasedHybridIdent`]: crate::presets::unicode::CasedHybridIdent
-[`CasedKebabIdent`]: crate::presets::unicode::CasedKebabIdent
-[`CasedSnakeIdent`]: crate::presets::unicode::CasedSnakeIdent
-[`LowerCamelIdent`]: crate::presets::unicode::LowerCamelIdent
-[`LowerHybridIdent`]: crate::presets::unicode::LowerHybridIdent
-[`LowerKebabIdent`]: crate::presets::unicode::LowerKebabIdent
-[`LowerSnakeIdent`]: crate::presets::unicode::LowerSnakeIdent
-[`UpperCamelIdent`]: crate::presets::unicode::UpperCamelIdent
-[`UpperHybridIdent`]: crate::presets::unicode::UpperHybridIdent
-[`UpperKebabIdent`]: crate::presets::unicode::UpperKebabIdent
-[`UpperSnakeIdent`]: crate::presets::unicode::UpperSnakeIdent
-
-# Crate Details
-
 ## Core Types
 
 The predefined presets are configurations of more general types provided by this crate.
@@ -210,22 +98,26 @@ The predefined presets are configurations of more general types provided by this
 | [`Chunk`]       | An immutable slice of a [`Fragment`] which contains no delimiters.               |
 | [`Segment`]     | A single chunk or delimiter from an [`Ident`] or [`Fragment`].                   |
 
+> **HINT:** You almost always want to start with an `Ident`, usually through some predefined identifier [`presets`].
+
 There is no `IdentBuf` type. This is because a mutable identifier is able to be made invalid by clearing the buffer, and enforcing the buffer is non-empty makes such a type difficult to use.
 
-For an owned `Ident`, use `Box<Ident>`.
+For an owned `Ident`, use `Box<Ident>` (these require enabling the "alloc" feature).
 
 * [`Ident::to_boxed_ident`] to construct a boxed identifier from an immutable identifier reference
 * [`Ident::new_boxed`] to fallibly construct a boxed identifier from a plain string buffer
 * [`FragmentBuf::into_boxed_ident`] to fallibly construct a boxed identifier from a fragment buffer
 
-[`Chunk`]: crate::core::Chunk
-[`Fragment`]: crate::core::Fragment
-[`FragmentBuf`]: crate::alloc::FragmentBuf
-[`FragmentBuf::into_boxed_ident`]: crate::alloc::FragmentBuf::into_boxed_ident
-[`Ident`]: crate::core::Ident
-[`Ident::new_boxed`]: crate::core::Ident::new_boxed
-[`Ident::to_boxed_ident`]: crate::core::Ident::to_boxed_ident
-[`Segment`]: crate::core::Segment
+[`Chunk`]: crate::Chunk
+[`Fragment`]: crate::Fragment
+[`FragmentBuf`]: crate::FragmentBuf
+[`FragmentBuf::into_boxed_ident`]: crate::FragmentBuf::into_boxed_ident
+[`Ident`]: crate::Ident
+[`Ident::new_boxed`]: crate::Ident::new_boxed
+[`Ident::to_boxed_ident`]: crate::Ident::to_boxed_ident
+[`Segment`]: crate::Segment
+
+# Crate Details
 
 ## Boundary Definition
 
@@ -237,10 +129,10 @@ This means that predefined identifiers will create the following segment boundar
 * A **camel boundary** places a boundary after a lowercase or non-Greek titlecase letter, followed by an uppercase or titlecase letter
 * A **hat boundary** places a boundary before an uppercase or titlecase letter followed by a lowercase letter, or before a non-Greek titlecase letter
 
-**NOTE:** UTS #55 distinguishes Greek and non-Greek titlecase characters when determining identifier chunks. Greek titlecase characters are treated as visually uppercase (`ᾈ`, `ᾨ`, `ῌ`, `ᾚ`, etc), while non-Greek titlecase characters are treated as beginning uppercase and continuing lowercase within the same scalar value (`ǅ`, `ǈ`, `ǋ`, `ǲ`, etc).
+> **NOTE:** UTS #55 distinguishes Greek and non-Greek titlecase characters when determining identifier chunks. Greek titlecase characters are treated as visually uppercase (`ᾈ`, `ᾨ`, `ῌ`, `ᾚ`, etc), while non-Greek titlecase characters are treated as beginning uppercase and continuing lowercase within the same scalar value (`ǅ`, `ǈ`, `ǋ`, `ǲ`, etc).
 
 ```rust
-# use typed_ident::core::*;
+# use typed_ident::*;
 # use typed_ident::presets::unicode::*;
 // A camel boundary splits `Camel` from `Boundary`.
 let segments: Vec<_> = CamelIdent::new("CamelBoundary")?
@@ -291,109 +183,21 @@ A character profile must be combined with a case profile to form a **cased profi
 * A **lower-camel** profile allows only lowercase and uncased for the first character after a delimiter
 * An **upper-camel** profile allows only uppercase, uncased, and titlecase for the first character after a delimiter
 
-**NOTE:** The specific handling of titlecase here comes from how [UTS #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks) defines where boundaries are introduced. For consistency, we either consider a titlecase character entirely visually uppercase (Greek), or that it visually start uppercase but ends lowercase (non-Greek).
-
-```rust
-# use typed_ident::syntax::profile::*;
-// A mixed profile allows any casing of valid characters.
-assert!(Mixed::<Ascii>::is_chunk_start('a'));
-assert!(Mixed::<Ascii>::is_chunk_start('A'));
-assert!(Mixed::<Ascii>::is_chunk_start('0'));
-assert!(Mixed::<Ascii>::is_chunk_continue('a'));
-assert!(Mixed::<Ascii>::is_chunk_continue('A'));
-assert!(Mixed::<Ascii>::is_chunk_continue('0'));
-
-// A lower profile allows only lower or uncased valid characters.
-assert!(Lower::<Ascii>::is_chunk_start('a'));
-assert!(!Lower::<Ascii>::is_chunk_start('A'));
-assert!(Lower::<Ascii>::is_chunk_start('0'));
-assert!(Lower::<Ascii>::is_chunk_continue('a'));
-assert!(!Lower::<Ascii>::is_chunk_continue('A'));
-assert!(Lower::<Ascii>::is_chunk_continue('0'));
-
-// An upper profile allows only upper-like or uncased valid characters.
-assert!(!Upper::<Ascii>::is_chunk_start('a'));
-assert!(Upper::<Ascii>::is_chunk_start('A'));
-assert!(Upper::<Ascii>::is_chunk_start('0'));
-assert!(!Upper::<Ascii>::is_chunk_continue('a'));
-assert!(Upper::<Ascii>::is_chunk_continue('A'));
-assert!(Upper::<Ascii>::is_chunk_continue('0'));
-
-// A lower camel profile restricts only the first character of each chunk.
-assert!(LowerCamel::<Ascii>::is_chunk_start('a'));
-assert!(!LowerCamel::<Ascii>::is_chunk_start('A'));
-assert!(LowerCamel::<Ascii>::is_chunk_start('0'));
-assert!(LowerCamel::<Ascii>::is_chunk_continue('a'));
-assert!(LowerCamel::<Ascii>::is_chunk_continue('A'));
-assert!(LowerCamel::<Ascii>::is_chunk_continue('0'));
-
-// An upper camel profile restricts only the first character of each chunk.
-assert!(!UpperCamel::<Ascii>::is_chunk_start('a'));
-assert!(UpperCamel::<Ascii>::is_chunk_start('A'));
-assert!(UpperCamel::<Ascii>::is_chunk_start('0'));
-assert!(UpperCamel::<Ascii>::is_chunk_continue('a'));
-assert!(UpperCamel::<Ascii>::is_chunk_continue('A'));
-assert!(UpperCamel::<Ascii>::is_chunk_continue('0'));
-```
+> **NOTE:** The specific handling of titlecase here comes from how [UTS #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks) defines where boundaries are introduced. For consistency, we either consider a titlecase character entirely visually uppercase (Greek), or that it visually start uppercase but ends lowercase (non-Greek).
 
 See the [`profile`] module documentation for information on other less-common predefined case profiles, or how to create your own case and character profile implementations.
 
 [`profile`]: crate::syntax::profile
 
-## How Validation Works
+## Identifier "Words"
 
-Validation works on one Unicode scalar value (`char`) at a time, and checks if each character is either a valid delimiter or within the profile selected. Some case checks are interdependent, particularly for the `Cased*` types, but this is a useful high-level explanation.
+Common terminology used in this crate is calling a specific kind of slice of a chunk a "word". This is slightly non-specific terminology, but it's succinct so it is often used regardless.
 
-* There must be one or more characters to form a valid identifier.
-* Every character belonging to the target `Delimiter` is valid.
-* Non-delimiter characters must match based on the following definitions:
-  * [`Profile::is_ident_start_char`] is called if it's the very first character.
-  * [`Profile::is_chunk_start`] is called if it's the first character after a delimiter.
-  * [`Profile::is_chunk_continue`] is called for any remaining non-delimiter characters.
+When we refer to a "word", it's really a non-empty chunk which has been made to contain no boundaries (as defined by the [`Boundary`] definition on the chunk). Commonly this is the largest slice of a chunk that satisfies this requirement, but it doesn't have to be.
 
-[`Profile::is_ident_start_char`]: crate::syntax::profile::Profile::is_ident_start_char
-[`Profile::is_chunk_start`]: crate::syntax::profile::Profile::is_chunk_start
-[`Profile::is_chunk_continue`]: crate::syntax::profile::Profile::is_chunk_continue
+In that sense, this is not a linguistic word, but more like an "identifier word", or an "identifier chunk word". A specific definition of words useful for identifier syntax inspection.
 
-Validation can be described generally with the following pseudo-code:
-
-```rust
-# use typed_ident::syntax::*;
-# use typed_ident::syntax::delimiter::*;
-# use typed_ident::syntax::profile::*;
-// First, we must define some target syntax definitions.
-type TargetDelimiter = LowLine;
-type TargetProfile = Mixed<Unicode>;
-
-// Then we can validate some target string.
-let mut chars = "targetString".char_indices();
-
-// The first character is handled specially.
-let Some((_, first)) = chars.next() else {
-    return Err(SyntaxError::Format(0));
-};
-let first_is_delim = TargetDelimiter::is_ident_start_delim(first);
-if !first_is_delim && !TargetProfile::is_ident_start_char(first) {
-    return Err(SyntaxError::Format(0));
-}
-
-// Remaining characters are handled generally.
-let mut last_was_delim = first_is_delim;
-for (idx, c) in chars {
-    let profile_check = match last_was_delim {
-        true => TargetProfile::is_chunk_start,
-        false => TargetProfile::is_chunk_continue,
-    };
-    last_was_delim = TargetDelimiter::is_chunk_delim(c);
-    if last_was_delim {
-        continue;
-    }
-    if !profile_check(c) {
-        return Err(SyntaxError::Format(idx));
-    }
-}
-# Ok::<(), typed_ident::syntax::SyntaxError>(())
-```
+[`Boundary`]: crate::syntax::boundary::Boundary
 
 ## Normalization
 

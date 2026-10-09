@@ -3,12 +3,12 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::fragment::{
+use crate::fragment::{
     CharIndices, Chars, ChunkedSegmentIndices, ChunkedSegments, MatchIndices, Matches,
     RMatchIndices, RMatches, SegmentIndices, Segments,
 };
-use crate::core::{Chunk, Error, Fragment, Ident, Segment};
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
+use crate::{Chunk, Error, Fragment, Ident, Segment};
 
 // =============================================================================
 // TRAITS
@@ -93,12 +93,11 @@ pub trait Identifier {
     ///
     /// See the [`FragmentBuf`] documentation for details.
     ///
-    /// [`FragmentBuf`]: crate::alloc::FragmentBuf
+    /// [`FragmentBuf`]: crate::FragmentBuf
     #[cfg(feature = "alloc")]
     #[inline]
-    fn new_fragment_buffer()
-    -> crate::alloc::FragmentBuf<Self::Boundary, Self::Delimiter, Self::Profile> {
-        crate::alloc::FragmentBuf::new()
+    fn new_fragment_buffer() -> crate::FragmentBuf<Self::Boundary, Self::Delimiter, Self::Profile> {
+        crate::FragmentBuf::new()
     }
 
     /// Casts the identifier to a fragment.
@@ -300,7 +299,7 @@ pub trait Identifier {
     #[inline]
     fn contains<M>(&self, pat: M) -> bool
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         self.as_fragment().contains(pat)
     }
@@ -312,7 +311,7 @@ pub trait Identifier {
     #[inline]
     fn ends_with<M>(&self, pat: M) -> bool
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         self.as_fragment().ends_with(pat)
     }
@@ -324,7 +323,7 @@ pub trait Identifier {
     #[inline]
     fn starts_with<M>(&self, pat: M) -> bool
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         self.as_fragment().starts_with(pat)
     }
@@ -336,7 +335,7 @@ pub trait Identifier {
     #[inline]
     fn find<M>(&self, pat: M) -> Option<usize>
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         self.as_fragment().find(pat)
     }
@@ -348,7 +347,7 @@ pub trait Identifier {
     #[inline]
     fn rfind<M>(&self, pat: M) -> Option<usize>
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         self.as_fragment().rfind(pat)
     }
@@ -451,7 +450,7 @@ pub trait Identifier {
         pat: M,
     ) -> MatchIndices<'_, Self::Boundary, Self::Delimiter, Self::Profile, M>
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         self.as_fragment().match_indices(pat)
     }
@@ -463,7 +462,7 @@ pub trait Identifier {
     #[inline]
     fn matches<M>(&self, pat: M) -> Matches<'_, Self::Boundary, Self::Delimiter, Self::Profile, M>
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         self.as_fragment().matches(pat)
     }
@@ -479,7 +478,7 @@ pub trait Identifier {
         pat: M,
     ) -> RMatchIndices<'_, Self::Boundary, Self::Delimiter, Self::Profile, M>
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         self.as_fragment().rmatch_indices(pat)
     }
@@ -491,7 +490,7 @@ pub trait Identifier {
     #[inline]
     fn rmatches<M>(&self, pat: M) -> RMatches<'_, Self::Boundary, Self::Delimiter, Self::Profile, M>
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         self.as_fragment().rmatches(pat)
     }
@@ -506,7 +505,7 @@ pub trait Identifier {
         pat: M,
     ) -> &Fragment<Self::Boundary, Self::Delimiter, Self::Profile>
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         self.as_fragment().trim_start_matches(pat)
     }
@@ -521,7 +520,7 @@ pub trait Identifier {
         pat: M,
     ) -> &Fragment<Self::Boundary, Self::Delimiter, Self::Profile>
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         self.as_fragment().trim_end_matches(pat)
     }
@@ -535,7 +534,9 @@ pub trait Identifier {
     /// See the [`Fragment::get`] documentation for details.
     #[must_use]
     #[inline]
-    fn get<I: crate::core::SliceIndex<Fragment<Self::Boundary, Self::Delimiter, Self::Profile>>>(
+    fn get<
+        I: crate::slice_index::SliceIndex<Fragment<Self::Boundary, Self::Delimiter, Self::Profile>>,
+    >(
         &self,
         i: I,
     ) -> Option<&Fragment<Self::Boundary, Self::Delimiter, Self::Profile>> {
@@ -557,7 +558,7 @@ pub trait Identifier {
     #[must_use]
     #[inline]
     unsafe fn get_unchecked<
-        I: crate::core::SliceIndex<Fragment<Self::Boundary, Self::Delimiter, Self::Profile>>,
+        I: crate::slice_index::SliceIndex<Fragment<Self::Boundary, Self::Delimiter, Self::Profile>>,
     >(
         &self,
         i: I,
@@ -585,8 +586,8 @@ pub trait Identifier {
         suffix: Suffix,
     ) -> Option<&Fragment<Self::Boundary, Self::Delimiter, Self::Profile>>
     where
-        Prefix: crate::core::pattern::Pattern,
-        Suffix: crate::core::pattern::Pattern,
+        Prefix: crate::pattern::Pattern,
+        Suffix: crate::pattern::Pattern,
     {
         self.as_fragment().strip_circumfix(prefix, suffix)
     }
@@ -601,7 +602,7 @@ pub trait Identifier {
         prefix: M,
     ) -> Option<&Fragment<Self::Boundary, Self::Delimiter, Self::Profile>>
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         self.as_fragment().strip_prefix(prefix)
     }
@@ -616,7 +617,7 @@ pub trait Identifier {
         suffix: M,
     ) -> Option<&Fragment<Self::Boundary, Self::Delimiter, Self::Profile>>
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
     {
         self.as_fragment().strip_suffix(suffix)
     }

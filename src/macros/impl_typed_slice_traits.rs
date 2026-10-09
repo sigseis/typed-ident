@@ -4,14 +4,13 @@ macro_rules! impl_typed_slice_traits {
         index_target=$index_target:ident,
     ) => {
         // ---------------------------------------------------------------------
-        impl<'a, B1, B2, D1, D2, P1, P2> AsRef<crate::core::Fragment<B2, D2, P2>>
-            for $name<B1, D1, P1>
+        impl<'a, B1, B2, D1, D2, P1, P2> AsRef<crate::Fragment<B2, D2, P2>> for $name<B1, D1, P1>
         where
             D1: crate::syntax::Delimiter + crate::syntax::SubsetOf<D2>,
             P1: crate::syntax::CasedProfile + crate::syntax::SubsetOf<P2>,
         {
             #[inline(always)]
-            fn as_ref(&self) -> &crate::core::Fragment<B2, D2, P2> {
+            fn as_ref(&self) -> &crate::Fragment<B2, D2, P2> {
                 self.cast()
             }
         }
@@ -133,9 +132,9 @@ macro_rules! impl_typed_slice_traits {
         // ---------------------------------------------------------------------
         impl<I, B, D, P> core::ops::Index<I> for $name<B, D, P>
         where
-            I: crate::core::SliceIndex<crate::core::$index_target<B, D, P>>,
+            I: crate::slice_index::SliceIndex<crate::$index_target<B, D, P>>,
         {
-            type Output = crate::core::$index_target<B, D, P>;
+            type Output = crate::$index_target<B, D, P>;
 
             #[inline(always)]
             fn index(&self, index: I) -> &Self::Output {

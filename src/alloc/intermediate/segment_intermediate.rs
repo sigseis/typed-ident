@@ -3,8 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::alloc::intermediate::IntoIntermediate;
-use crate::core::{Error, Fragment, Segment};
+use crate::intermediate::IntoIntermediate;
+use crate::{Error, Fragment, Segment};
 
 // =============================================================================
 // TYPES

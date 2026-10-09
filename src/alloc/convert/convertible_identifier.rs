@@ -3,11 +3,11 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::alloc::convert::{
+use crate::convert::{
     ToLowerCamel, ToLowerHybrid, ToLowerKebab, ToLowerSnake, ToUpperCamel, ToUpperHybrid,
     ToUpperKebab, ToUpperSnake,
 };
-use crate::core::fmt::FormattableIdentifier;
+use crate::fmt::FormattableIdentifier;
 
 // =============================================================================
 // TRAITS
@@ -23,7 +23,7 @@ use crate::core::fmt::FormattableIdentifier;
 /// Basic Usage:
 ///
 /// ```
-/// # use typed_ident::alloc::*;
+/// # use typed_ident::*;
 /// fn convert_to_snake<I>(ident: &I) -> String
 /// where
 ///     I: ConvertibleIdentifier + ?Sized,

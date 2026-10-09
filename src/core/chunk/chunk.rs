@@ -12,12 +12,11 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::Fragment;
-use crate::core::chunk::{
+use crate::chunk::{
     CharIndices, Chars, MatchIndices, Matches, RMatchIndices, RMatches, WordIndices, Words,
 };
-use crate::core::error::{Error, ErrorKind};
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
+use crate::{Error, ErrorKind, Fragment};
 
 // =============================================================================
 // TYPES
@@ -120,7 +119,7 @@ use crate::syntax::{Boundary, CasedProfile, Delimiter};
 /// [`Boundary`]: crate::syntax::boundary::Boundary
 /// [`Delimiter`]: crate::syntax::delimiter::Delimiter
 /// [`HyphenMinus`]: crate::syntax::delimiter::HyphenMinus
-/// [`Ident`]: crate::core::Ident
+/// [`Ident`]: crate::Ident
 /// [`LowLine`]: crate::syntax::delimiter::LowLine
 /// [`Lower`]: crate::syntax::profile::Lower
 /// [`Mixed`]: crate::syntax::profile::Mixed

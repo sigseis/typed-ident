@@ -17,9 +17,9 @@ Take for instance the [`Uniform`] and [`Camel`] profiles.
 
 These profiles have special implementations for checking `is_fragment`, `is_ident`, and `is_ident_fragment`. Not calling those functions is incorrect for those cased profiles if you are attempting to validate an identifier or fragment.
 
-[`Chunk`]: crate::core::Chunk
-[`Fragment`]: crate::core::Fragment
-[`Ident`]: crate::core::Ident
+[`Chunk`]: crate::Chunk
+[`Fragment`]: crate::Fragment
+[`Ident`]: crate::Ident
 
 ## Customizing Profiles
 

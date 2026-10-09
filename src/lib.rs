@@ -27,8 +27,10 @@ mod macros;
 
 // -----------------------------------------------------------------------------
 #[cfg(feature = "alloc")]
-pub mod alloc;
-pub mod core;
+mod alloc;
+mod core;
+
+// -----------------------------------------------------------------------------
 pub mod presets;
 pub mod syntax;
 
@@ -46,10 +48,6 @@ pub use syntax::profile::UNICODE_VERSION;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-#[doc(inline)]
 #[cfg(feature = "alloc")]
-pub use alloc::{ConvertibleIdentifier, FragmentBuf, StringSegment};
-#[doc(inline)]
-pub use core::{
-    Chunk, Error, FormattableIdentifier, Fragment, Ident, Identifier, Segment, StrSegment,
-};
+pub use alloc::*;
+pub use core::*;

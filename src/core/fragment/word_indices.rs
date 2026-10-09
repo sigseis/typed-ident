@@ -12,9 +12,9 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::fragment::StrWordIndices;
-use crate::core::{Chunk, Fragment};
+use crate::fragment::StrWordIndices;
 use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::{Chunk, Fragment};
 use core::marker::PhantomData;
 
 // =============================================================================

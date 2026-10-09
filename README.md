@@ -21,8 +21,8 @@ The most common way to use this crate is through its
 You can choose the preset that matches the syntax you want to enforce.
 
 ```rust
-use typed_ident::core::fmt::*;
-use typed_ident::presets::unicode::*;
+use typed_ident::fmt::AsLowerSnake;
+use typed_ident::presets::unicode::UpperCamelIdent;
 
 // Validate the format of input to see that it matches expectations.
 let identifier = UpperCamelIdent::new("HTTPServer")?;
@@ -37,7 +37,7 @@ for segment in identifier.segments() {
 let lower_snake = identifier.as_lower_snake();
 println!("as lower-snake: {lower_snake}"); // "http_server"
 
-// Create a decorated identifier.
+// Create a decorated identifier (requires "alloc" feature).
 let decorated = identifier.with_circumfix("__", "__")?;
 println!("with decoration: {decorated}"); // "__HTTPServer__"
 ```

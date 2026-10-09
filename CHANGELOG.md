@@ -18,12 +18,13 @@ release during this time, including patch releases.
 
 - Removed the `presets` feature flag (presets are now always enabled).
 - Renamed `Chunk`'s `WordStrs` and `WordStrIndices` to `StrWords` and `StrWordIndices`.
+- The `alloc`, `core`, and `error` modules are now private, re-exporting their contents into their parents.
 
 ## [0.0.2] - 2026-09-18
 
 ### Added
 
-- Added profile variants of `CasedSnakeIdent`, `CasedKebabIdent`, and `CasedCamelIdent`.
+- Added profile variants of `CasedCamelIdent`, `CasedHybridIdent`, `CasedKebabIdent`, `CasedSnakeIdent`.
 - Added generated functions for titlecase and combining character mappings.
 - Added plain-form formatter variants.
 

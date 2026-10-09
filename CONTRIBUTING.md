@@ -62,8 +62,11 @@ cargo fmt &&
     cargo clippy --all-targets --all-features -- -D warnings &&
     cargo hack check --feature-powerset &&
     cargo hack build --feature-powerset &&
+    cargo doc --all-features &&
     cargo hack test --feature-powerset --lib &&
-    cargo test --all-targets --all-features &&
+    cargo test --lib --all-features &&
+    cargo test --doc --all-features &&
+    cargo test --all-features --test '*' &&
     cargo +nightly miri test --all-features --lib &&
     cargo +nightly miri test --all-features --doc &&
     # We exclude integration tests because they take forever to run under Miri.

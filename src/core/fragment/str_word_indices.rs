@@ -4,7 +4,7 @@
 
 // -----------------------------------------------------------------------------
 use crate::StrSegment;
-use crate::core::fragment::StrSegmentIndices;
+use crate::fragment::StrSegmentIndices;
 use crate::syntax::{Boundary, Delimiter, Segmentation};
 
 // =============================================================================
@@ -21,8 +21,8 @@ use crate::syntax::{Boundary, Delimiter, Segmentation};
 /// not possible, but since the iterator skips sections of the underlying string
 /// it can be hard to reason about these values.
 ///
-/// [`WordIndices`]: crate::core::fragment::WordIndices
-/// [`type_erased`]: crate::core::fragment::WordIndices::type_erased
+/// [`WordIndices`]: crate::fragment::WordIndices
+/// [`type_erased`]: crate::fragment::WordIndices::type_erased
 pub struct StrWordIndices<'a, B, D, S> {
     iter: StrSegmentIndices<'a, B, D, S>,
 }

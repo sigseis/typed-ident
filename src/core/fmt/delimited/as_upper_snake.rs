@@ -3,8 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::Ident;
-use crate::core::fmt::delimited::{Canonical, Decorated};
+use crate::Ident;
+use crate::fmt::delimited::{Canonical, Decorated};
 use crate::syntax::{Boundary, Delimiter, Profile};
 
 // =============================================================================
@@ -75,21 +75,21 @@ impl_displayable_type! {
 /// Calling these methods is cheap, since the work isn't done until we actually
 /// use it for a formatting operation.
 ///
-/// [`fmt`]: crate::core::fmt
+/// [`fmt`]: crate::fmt
 pub trait AsUpperSnake {
     /// Returns a displayable type that converts the provided input to upper
     /// snake in plain form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
@@ -149,7 +149,7 @@ pub trait AsUpperSnake {
     /// [`as_upper_snake_canonical`]: Self::as_upper_snake_canonical
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("_____")?
@@ -173,14 +173,14 @@ pub trait AsUpperSnake {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
@@ -240,7 +240,7 @@ pub trait AsUpperSnake {
     /// [`as_upper_snake`]: Self::as_upper_snake
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("_____")?
@@ -264,14 +264,14 @@ pub trait AsUpperSnake {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?

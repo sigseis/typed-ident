@@ -3,9 +3,9 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::Segment;
-use crate::core::chunk::StrWords;
-use crate::core::fragment::ChunkedStrSegments;
+use crate::Segment;
+use crate::chunk::StrWords;
+use crate::fragment::ChunkedStrSegments;
 use crate::syntax::{Boundary, Delimiter, Segmentation};
 use core::marker::PhantomData;
 
@@ -18,11 +18,8 @@ use core::marker::PhantomData;
 /// This struct is created by calling [`type_erased`] on the [`Segments`]
 /// iterator.
 ///
-/// See the [`core`] module documentation for an explanation of a "word".
-///
-/// [`Segments`]: crate::core::fragment::Segments
-/// [`core`]: crate::core
-/// [`type_erased`]: crate::core::fragment::Segments::type_erased
+/// [`Segments`]: crate::fragment::Segments
+/// [`type_erased`]: crate::fragment::Segments::type_erased
 #[repr(transparent)]
 pub struct StrSegments<'a, B, D, S> {
     bounds: PhantomData<(&'a B, &'a D, &'a S)>,

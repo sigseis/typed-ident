@@ -4,7 +4,7 @@
 
 // -----------------------------------------------------------------------------
 use crate::helpers::{Boundaries, Boundary, Format, SegmentRule};
-use typed_ident::alloc::StringSegment;
+use typed_ident::StringSegment;
 use unicode_general_category::{GeneralCategory, get_general_category};
 
 // =============================================================================

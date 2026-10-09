@@ -47,7 +47,7 @@ There's four kinds of formats you can apply over your formatting operations:
 This library allows you to choose, so it's up to you.
 
 ```rust
-# use typed_ident::core::fmt::*;
+# use typed_ident::fmt::*;
 # use typed_ident::presets::unicode::*;
 assert_eq!(
     SnakeIdent::new("__2foo_bar__baz__")?.as_upper_camel().to_string(),
@@ -83,7 +83,7 @@ Some letters can expand into multiple characters when made uppercase or lowercas
 For situations involving `CamelCase`, where the intent is to have exactly one uppercase character start a word, the string of uppercase characters will be itself made into `Camel` casing. That is to say, the first cased character will be transformed uppercase, but any additional characters will be forced lowercase.
 
 ```rust
-# use typed_ident::core::fmt::*;
+# use typed_ident::fmt::*;
 # use typed_ident::presets::unicode::*;
 // If at chunk-start...
 assert_eq!(
@@ -115,7 +115,7 @@ The only other kind-of locale thing we do is handle greek/non-greek titlecase fo
 So, TL;DR, as far as formatting is concerned, `Σ` maps to `σ` *always*.
 
 ```rust
-# use typed_ident::core::fmt::*;
+# use typed_ident::fmt::*;
 # use typed_ident::presets::unicode::*;
 assert_eq!(
     CamelIdent::new("Σ")?.as_lower_camel_canonical().to_string(),

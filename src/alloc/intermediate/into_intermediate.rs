@@ -3,8 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::{Chunk, Error, Fragment, Ident};
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
+use crate::{Chunk, Error, Fragment, Ident};
 use core::fmt::Display;
 use std_alloc::string::String;
 

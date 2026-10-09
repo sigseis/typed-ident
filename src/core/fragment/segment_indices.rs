@@ -3,9 +3,9 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::fragment::StrSegmentIndices;
-use crate::core::{Chunk, Fragment, Segment};
+use crate::fragment::StrSegmentIndices;
 use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::{Chunk, Fragment, Segment};
 use core::marker::PhantomData;
 
 // =============================================================================
@@ -17,10 +17,7 @@ use core::marker::PhantomData;
 /// This struct is created by calling [`segment_indices`] on the [`Fragment`]
 /// type.
 ///
-/// See the [`core`] module documentation for an explanation of a "word".
-///
 /// [`Fragment`]: Fragment
-/// [`core`]: crate::core
 /// [`segment_indices`]: Fragment::segment_indices
 #[repr(transparent)]
 pub struct SegmentIndices<'a, B, D, P: Profile> {

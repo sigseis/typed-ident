@@ -3,9 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::alloc::FragmentBuf;
-use crate::core::error::{Error, ErrorKind};
 use crate::syntax::{Boundary, CasedProfile, Delimiter, SyntaxError};
+use crate::{Error, ErrorKind, FragmentBuf};
 use core::marker::PhantomData;
 use core::ops::RangeBounds;
 use std_alloc::string::String;

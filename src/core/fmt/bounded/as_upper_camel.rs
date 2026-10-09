@@ -3,8 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::Ident;
-use crate::core::fmt::bounded::{Canonical, Decorated, Delimited};
+use crate::Ident;
+use crate::fmt::bounded::{Canonical, Decorated, Delimited};
 use crate::syntax::boundary::Standard;
 use crate::syntax::boundary::options::{Default, Options};
 use crate::syntax::{Boundary, Delimiter, Profile};
@@ -87,7 +87,7 @@ impl_displayable_type! {
 /// Calling these methods is cheap, since the work isn't done until we actually
 /// use it for a formatting operation.
 ///
-/// [`fmt`]: crate::core::fmt
+/// [`fmt`]: crate::fmt
 pub trait AsUpperCamel {
     /// Returns a displayable type that converts the provided input to upper
     /// camel in plain form.
@@ -99,14 +99,14 @@ pub trait AsUpperCamel {
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`as_upper_camel_opts`]: Self::as_upper_camel_opts
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
@@ -166,7 +166,7 @@ pub trait AsUpperCamel {
     /// [`as_upper_camel_canonical`]: Self::as_upper_camel_canonical
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("_____")?
@@ -197,14 +197,14 @@ pub trait AsUpperCamel {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Transforming to a more-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(
@@ -226,7 +226,7 @@ pub trait AsUpperCamel {
     /// Transforming to a less-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(
@@ -257,14 +257,14 @@ pub trait AsUpperCamel {
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`as_upper_camel_canonical_opts`]: Self::as_upper_camel_canonical_opts
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
@@ -324,7 +324,7 @@ pub trait AsUpperCamel {
     /// [`as_upper_camel`]: Self::as_upper_camel
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("_____")?
@@ -355,14 +355,14 @@ pub trait AsUpperCamel {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Transforming to a more-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(
@@ -384,7 +384,7 @@ pub trait AsUpperCamel {
     /// Transforming to a less-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(
@@ -415,12 +415,12 @@ pub trait AsUpperCamel {
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`as_upper_camel_decorated_opts`]: Self::as_upper_camel_decorated_opts
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
@@ -487,14 +487,14 @@ pub trait AsUpperCamel {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Transforming to a more-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(
@@ -516,7 +516,7 @@ pub trait AsUpperCamel {
     /// Transforming to a less-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(
@@ -547,12 +547,12 @@ pub trait AsUpperCamel {
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`as_upper_camel_delimited_opts`]: Self::as_upper_camel_delimited_opts
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
@@ -618,14 +618,14 @@ pub trait AsUpperCamel {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Transforming to a more-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(
@@ -647,7 +647,7 @@ pub trait AsUpperCamel {
     /// Transforming to a less-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(

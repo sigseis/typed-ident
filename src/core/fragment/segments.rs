@@ -3,9 +3,9 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::fragment::StrSegments;
-use crate::core::{Chunk, Fragment, Segment};
+use crate::fragment::StrSegments;
 use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::{Chunk, Fragment, Segment};
 use core::marker::PhantomData;
 
 // =============================================================================
@@ -16,10 +16,7 @@ use core::marker::PhantomData;
 ///
 /// This struct is created by calling [`segments`] on the [`Fragment`] type.
 ///
-/// See the [`core`] module documentation for an explanation of a "word".
-///
 /// [`Fragment`]: Fragment
-/// [`core`]: crate::core
 /// [`segments`]: Fragment::segments
 #[repr(transparent)]
 pub struct Segments<'a, B, D, P: Profile> {

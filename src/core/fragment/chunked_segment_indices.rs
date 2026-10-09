@@ -3,9 +3,9 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::fragment::ChunkedStrSegmentIndices;
-use crate::core::{Chunk, Fragment, Segment};
+use crate::fragment::ChunkedStrSegmentIndices;
 use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::{Chunk, Fragment, Segment};
 use core::marker::PhantomData;
 
 // =============================================================================

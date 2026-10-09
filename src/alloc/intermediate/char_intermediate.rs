@@ -3,7 +3,7 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::alloc::IntoIntermediate;
+use crate::intermediate::IntoIntermediate;
 use crate::syntax::{CasedProfile, Delimiter};
 use crate::{Error, Fragment};
 

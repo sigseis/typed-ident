@@ -3,10 +3,9 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::alloc::IntoIntermediate;
-use crate::core::error::{Error, ErrorKind};
+use crate::intermediate::IntoIntermediate;
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
-use crate::{Fragment, FragmentBuf};
+use crate::{Error, ErrorKind, Fragment, FragmentBuf};
 use std_alloc::boxed::Box;
 use std_alloc::format;
 use std_alloc::string::String;
@@ -193,7 +192,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     #[inline]
     pub fn replace<M, F>(&self, from: M, to: F) -> Result<FragmentBuf<B, D, P>, Error>
     where
-        M: crate::core::pattern::Pattern,
+        M: crate::pattern::Pattern,
         F: IntoIntermediate<B, D, P>,
     {
         let to = to.into_intermediate()?;
