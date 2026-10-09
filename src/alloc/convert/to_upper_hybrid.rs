@@ -4,7 +4,7 @@
 
 // -----------------------------------------------------------------------------
 use crate::Ident;
-use crate::core::fmt::AsUpperHybrid;
+use crate::fmt::AsUpperHybrid;
 use crate::syntax::boundary::Boundary;
 use crate::syntax::boundary::options::{Default, Options};
 use crate::syntax::delimiter::{AsciiFlatLine, Delimiter};
@@ -39,7 +39,7 @@ use std_alloc::string::String;
 /// a valid hybrid-ident delimiter, then it will be mapped to the provided
 /// `default_delim`.
 ///
-/// [`convert`]: crate::alloc::convert
+/// [`convert`]: crate::convert
 pub trait ToUpperHybrid {
     /// Returns a string of the provided input converted to upper hybrid plain
     /// form.
@@ -51,14 +51,14 @@ pub trait ToUpperHybrid {
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`to_upper_hybrid_opts`]: Self::to_upper_hybrid_opts
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
@@ -111,7 +111,7 @@ pub trait ToUpperHybrid {
     /// [`to_upper_hybrid_canonical`]: Self::to_upper_hybrid_canonical
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
@@ -141,14 +141,14 @@ pub trait ToUpperHybrid {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Transforming to a more-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -169,7 +169,7 @@ pub trait ToUpperHybrid {
     /// Transforming to a less-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -199,14 +199,14 @@ pub trait ToUpperHybrid {
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`to_upper_hybrid_canonical_opts`]: Self::to_upper_hybrid_canonical_opts
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
@@ -259,7 +259,7 @@ pub trait ToUpperHybrid {
     /// [`to_upper_hybrid`]: Self::to_upper_hybrid
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
@@ -289,14 +289,14 @@ pub trait ToUpperHybrid {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Transforming to a more-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -317,7 +317,7 @@ pub trait ToUpperHybrid {
     /// Transforming to a less-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -347,12 +347,12 @@ pub trait ToUpperHybrid {
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`to_upper_hybrid_decorated_opts`]: Self::to_upper_hybrid_decorated_opts
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
@@ -412,14 +412,14 @@ pub trait ToUpperHybrid {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Transforming to a more-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -440,7 +440,7 @@ pub trait ToUpperHybrid {
     /// Transforming to a less-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -470,12 +470,12 @@ pub trait ToUpperHybrid {
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`to_upper_hybrid_delimited_opts`]: Self::to_upper_hybrid_delimited_opts
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
@@ -534,14 +534,14 @@ pub trait ToUpperHybrid {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Transforming to a more-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -562,7 +562,7 @@ pub trait ToUpperHybrid {
     /// Transforming to a less-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;

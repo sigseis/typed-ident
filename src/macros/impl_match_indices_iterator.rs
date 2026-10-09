@@ -6,13 +6,13 @@ macro_rules! impl_match_indices_iterator {
         docs=$docs:expr,
     ) => {
         #[doc = $docs]
-        pub struct $name<'a, B, D, P, M: crate::core::pattern::Pattern> {
+        pub struct $name<'a, B, D, P, M: crate::pattern::Pattern> {
             config: core::marker::PhantomData<&'a $over<B, D, P>>,
             iter: M::$name<'a>,
         }
 
         // ---------------------------------------------------------------------
-        impl<'a, B, D, P, M: crate::core::pattern::Pattern> $name<'a, B, D, P, M> {
+        impl<'a, B, D, P, M: crate::pattern::Pattern> $name<'a, B, D, P, M> {
             fn new(orig: &'a $over<B, D, P>, pat: M) -> Self {
                 Self {
                     config: core::marker::PhantomData,
@@ -31,7 +31,7 @@ macro_rules! impl_match_indices_iterator {
         }
 
         // ---------------------------------------------------------------------
-        impl<B, D, P, M: crate::core::pattern::Pattern> core::fmt::Debug for $name<'_, B, D, P, M> {
+        impl<B, D, P, M: crate::pattern::Pattern> core::fmt::Debug for $name<'_, B, D, P, M> {
             #[inline]
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 f.debug_tuple(stringify!($name)).field(&self.iter).finish()
@@ -39,7 +39,7 @@ macro_rules! impl_match_indices_iterator {
         }
 
         // ---------------------------------------------------------------------
-        impl<'a, B, D, P, M: crate::core::pattern::Pattern> Clone for $name<'a, B, D, P, M>
+        impl<'a, B, D, P, M: crate::pattern::Pattern> Clone for $name<'a, B, D, P, M>
         where
             M::$name<'a>: Clone,
         {
@@ -53,7 +53,7 @@ macro_rules! impl_match_indices_iterator {
         }
 
         // -----------------------------------------------------------------------------
-        impl<'a, B, D, P, M: crate::core::pattern::Pattern> core::iter::Iterator
+        impl<'a, B, D, P, M: crate::pattern::Pattern> core::iter::Iterator
             for $name<'a, B, D, P, M>
         {
             type Item = (usize, &'a $over<B, D, P>);
@@ -65,7 +65,7 @@ macro_rules! impl_match_indices_iterator {
         }
 
         // -----------------------------------------------------------------------------
-        impl<'a, B, D, P, M: crate::core::pattern::Pattern> core::iter::DoubleEndedIterator
+        impl<'a, B, D, P, M: crate::pattern::Pattern> core::iter::DoubleEndedIterator
             for $name<'a, B, D, P, M>
         where
             M::$name<'a>: core::iter::DoubleEndedIterator,
@@ -79,7 +79,7 @@ macro_rules! impl_match_indices_iterator {
         }
 
         // -----------------------------------------------------------------------------
-        impl<'a, B, D, P, M: crate::core::pattern::Pattern> core::iter::FusedIterator
+        impl<'a, B, D, P, M: crate::pattern::Pattern> core::iter::FusedIterator
             for $name<'a, B, D, P, M>
         {
         }

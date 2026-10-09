@@ -4,7 +4,7 @@
 
 // -----------------------------------------------------------------------------
 use std::process::ExitCode;
-use typed_ident::alloc::convert::*;
+use typed_ident::convert::*;
 use typed_ident::presets::ascii::*;
 
 // =============================================================================

@@ -8,7 +8,7 @@ use crate::common::{CasedFormat, Format};
 use convert_case::ccase;
 use heck::*;
 use std::process::ExitCode;
-use typed_ident::alloc::convert::*;
+use typed_ident::convert::*;
 use typed_ident::presets::unicode::*;
 use typed_ident::syntax::delimiter::*;
 use typed_ident::{ConvertibleIdentifier, Error};

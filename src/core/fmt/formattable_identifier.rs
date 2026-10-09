@@ -3,8 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::Identifier;
-use crate::core::fmt::{
+use crate::Identifier;
+use crate::fmt::{
     AsLowerCamel, AsLowerHybrid, AsLowerKebab, AsLowerSnake, AsUpperCamel, AsUpperHybrid,
     AsUpperKebab, AsUpperSnake,
 };
@@ -23,7 +23,7 @@ use crate::core::fmt::{
 /// Basic Usage:
 ///
 /// ```
-/// # use typed_ident::core::*;
+/// # use typed_ident::*;
 /// fn convert_to_snake<I>(ident: &I) -> String
 /// where
 ///     I: FormattableIdentifier + ?Sized,

@@ -10,7 +10,7 @@ macro_rules! impl_chars_iterator {
         #[doc = concat!("You can construct this by calling [`", stringify!($function), "`](", stringify!($over), "::", stringify!($function) ,").")]
         #[repr(transparent)]
         pub struct $name<'a, B, D, P> {
-            config: core::marker::PhantomData<&'a crate::core::$over<B, D, P>>,
+            config: core::marker::PhantomData<&'a crate::$over<B, D, P>>,
             iter: core::str::$name<'a>,
         }
 
@@ -21,8 +21,8 @@ macro_rules! impl_chars_iterator {
             /// This has the same lifetime as the original slice, and so the
             /// iterator can continue to be used while this exists.
             #[inline(always)]
-            pub fn as_fragment(&self) -> &'a crate::core::Fragment<B, D, P> {
-                crate::core::Fragment::new_unchecked(self.iter.as_str())
+            pub fn as_fragment(&self) -> &'a crate::Fragment<B, D, P> {
+                crate::Fragment::new_unchecked(self.iter.as_str())
             }
 
             /// Views the underlying data as a subslice of the original data.
@@ -35,7 +35,7 @@ macro_rules! impl_chars_iterator {
             }
 
             #[inline(always)]
-            fn new(slice: &'a crate::core::$over<B, D, P>) -> Self {
+            fn new(slice: &'a crate::$over<B, D, P>) -> Self {
                 Self {
                     config: core::marker::PhantomData,
                     iter: slice.as_str().$function(),
@@ -124,8 +124,8 @@ macro_rules! impl_chars_iterator {
             /// iterator can continue to be used while this exists.
             #[must_use]
             #[inline]
-            pub fn as_chunk(&self) -> &'a crate::core::Chunk<B, D, P> {
-                crate::core::Chunk::new_unchecked(self.iter.as_str())
+            pub fn as_chunk(&self) -> &'a crate::Chunk<B, D, P> {
+                crate::Chunk::new_unchecked(self.iter.as_str())
             }
         }
 

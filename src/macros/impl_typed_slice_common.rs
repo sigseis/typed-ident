@@ -239,7 +239,7 @@ macro_rules! impl_typed_slice_common {
             /// ```
             #[must_use]
             #[inline]
-            pub fn get<I: crate::core::SliceIndex<Self>>(&self, i: I) -> Option<&Self> {
+            pub fn get<I: crate::slice_index::SliceIndex<Self>>(&self, i: I) -> Option<&Self> {
                 i.get(self)
             }
 
@@ -272,7 +272,7 @@ macro_rules! impl_typed_slice_common {
             /// ```
             #[must_use]
             #[inline]
-            pub unsafe fn get_unchecked<I: crate::core::SliceIndex<Self>>(&self, i: I) -> &Self {
+            pub unsafe fn get_unchecked<I: crate::slice_index::SliceIndex<Self>>(&self, i: I) -> &Self {
                 // SAFETY: the caller must uphold the safety contract for `get_unchecked`.
                 // the slice is dereferenceable because `self` is a safe reference.
                 // The returned pointer is safe because impls of `SliceIndex` operates over string slices.
@@ -392,7 +392,7 @@ macro_rules! impl_typed_slice_common {
             #[inline]
             pub fn match_indices<M>(&self, pat: M) -> MatchIndices<'_, B, D, P, M>
             where
-                M: crate::core::pattern::Pattern,
+                M: crate::pattern::Pattern,
             {
                 MatchIndices::new(self, pat)
             }
@@ -465,7 +465,7 @@ macro_rules! impl_typed_slice_common {
             #[inline]
             pub fn matches<M>(&self, pat: M) -> Matches<'_, B, D, P, M>
             where
-                M: crate::core::pattern::Pattern,
+                M: crate::pattern::Pattern,
             {
                 Matches::new(self, pat)
             }
@@ -571,7 +571,7 @@ macro_rules! impl_typed_slice_common {
             #[inline]
             pub fn rmatch_indices<M>(&self, pat: M) -> RMatchIndices<'_, B, D, P, M>
             where
-                M: crate::core::pattern::Pattern,
+                M: crate::pattern::Pattern,
             {
                 RMatchIndices::new(self, pat)
             }
@@ -645,7 +645,7 @@ macro_rules! impl_typed_slice_common {
             #[inline]
             pub fn rmatches<M>(&self, pat: M) -> RMatches<'_, B, D, P, M>
             where
-                M: crate::core::pattern::Pattern,
+                M: crate::pattern::Pattern,
             {
                 RMatches::new(self, pat)
             }
@@ -767,8 +767,8 @@ macro_rules! impl_typed_slice_common {
                 suffix: Suffix,
             ) -> Option<&Self>
             where
-                Prefix: crate::core::pattern::Pattern,
-                Suffix: crate::core::pattern::Pattern,
+                Prefix: crate::pattern::Pattern,
+                Suffix: crate::pattern::Pattern,
             {
                 self.strip_prefix(prefix)?.strip_suffix(suffix)
             }
@@ -806,7 +806,7 @@ macro_rules! impl_typed_slice_common {
             #[inline]
             pub fn strip_prefix<M>(&self, prefix: M) -> Option<&Self>
             where
-                M: crate::core::pattern::Pattern,
+                M: crate::pattern::Pattern,
             {
                 prefix
                     .strip_prefix(self.as_str())
@@ -846,7 +846,7 @@ macro_rules! impl_typed_slice_common {
             #[inline]
             pub fn strip_suffix<M>(&self, suffix: M) -> Option<&Self>
             where
-                M: crate::core::pattern::Pattern,
+                M: crate::pattern::Pattern,
             {
                 suffix
                     .strip_suffix(self.as_str())
@@ -901,7 +901,7 @@ macro_rules! impl_typed_slice_common {
             #[inline]
             pub fn trim_start_matches<M>(&self, pat: M) -> &Self
             where
-                M: crate::core::pattern::Pattern,
+                M: crate::pattern::Pattern,
             {
                 Self::new_unchecked(pat.trim_start_matches(self.as_str()))
             }
@@ -954,7 +954,7 @@ macro_rules! impl_typed_slice_common {
             #[inline]
             pub fn trim_end_matches<M>(&self, pat: M) -> &Self
             where
-                M: crate::core::pattern::Pattern,
+                M: crate::pattern::Pattern,
             {
                 Self::new_unchecked(pat.trim_end_matches(self.as_str()))
             }

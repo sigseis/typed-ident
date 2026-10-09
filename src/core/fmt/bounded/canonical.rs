@@ -3,8 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::fmt::bounded::Writer;
-use crate::core::fragment::StrWords;
+use crate::fmt::bounded::Writer;
+use crate::fragment::StrWords;
 use crate::syntax::{Boundary, Delimiter, Profile, TrivialBoundary};
 
 // =============================================================================

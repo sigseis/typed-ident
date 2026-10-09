@@ -4,7 +4,7 @@
 
 // -----------------------------------------------------------------------------
 use crate::Ident;
-use crate::core::fmt::AsUpperSnake;
+use crate::fmt::AsUpperSnake;
 use crate::syntax::boundary::Boundary;
 use crate::syntax::delimiter::Delimiter;
 use crate::syntax::profile::Profile;
@@ -30,21 +30,21 @@ use std_alloc::string::String;
 ///
 /// </div>
 ///
-/// [`convert`]: crate::alloc::convert
+/// [`convert`]: crate::convert
 pub trait ToUpperSnake {
     /// Returns a string of the provided input converted to upper snake plain
     /// form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
@@ -96,7 +96,7 @@ pub trait ToUpperSnake {
     /// [`to_upper_snake_canonical`]: Self::to_upper_snake_canonical
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("_____")?
@@ -118,14 +118,14 @@ pub trait ToUpperSnake {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
@@ -177,7 +177,7 @@ pub trait ToUpperSnake {
     /// [`to_upper_snake`]: Self::to_upper_snake
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("_____")?
@@ -199,14 +199,14 @@ pub trait ToUpperSnake {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?

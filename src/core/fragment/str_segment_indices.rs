@@ -3,8 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::Segment;
-use crate::core::fragment::StrSegments;
+use crate::Segment;
+use crate::fragment::StrSegments;
 use crate::syntax::{Boundary, Delimiter, Segmentation};
 
 // =============================================================================
@@ -17,11 +17,8 @@ use crate::syntax::{Boundary, Delimiter, Segmentation};
 /// This struct is created by calling [`type_erased`] on the [`SegmentIndices`]
 /// iterator.
 ///
-/// See the [`core`] module documentation for an explanation of a "word".
-///
-/// [`SegmentIndices`]: crate::core::fragment::SegmentIndices
-/// [`core`]: crate::core
-/// [`type_erased`]: crate::core::fragment::SegmentIndices::type_erased
+/// [`SegmentIndices`]: crate::fragment::SegmentIndices
+/// [`type_erased`]: crate::fragment::SegmentIndices::type_erased
 pub struct StrSegmentIndices<'a, B, D, S> {
     front_offset: usize,
     iter: StrSegments<'a, B, D, S>,

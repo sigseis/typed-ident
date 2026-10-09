@@ -149,7 +149,7 @@ pub trait Profile: SubsetOf<Self> + Sized {
     /// [`Ascii`]: crate::syntax::profile::Ascii
     /// [`Char`]: crate::syntax::segmentation::Char
     /// [`Grapheme`]: crate::syntax::segmentation::Grapheme
-    /// [`segments`]: crate::core::fragment::Fragment::segments
+    /// [`segments`]: crate::fragment::Fragment::segments
     type Segmentation: Segmentation;
 
     /// Whether or not the provided character can appear at any point in a

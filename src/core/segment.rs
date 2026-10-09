@@ -12,9 +12,8 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::error::{Error, ErrorKind};
-use crate::core::{Chunk, StrSegment};
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
+use crate::{Chunk, Error, ErrorKind, StrSegment};
 
 // =============================================================================
 // TYPES
@@ -59,11 +58,11 @@ use crate::syntax::{Boundary, CasedProfile, Delimiter};
 /// | [`type_erased_delim`] | `char`                   | `C` *(Unchanged)*    |
 ///
 /// [`Boundary`]: crate::syntax::boundary::Boundary
-/// [`&Chunk<B, D, P>`]: crate::core::Chunk
-/// [`chunked_segment_indices`]: crate::core::fragment::Fragment::chunked_segment_indices
-/// [`chunked_segments`]: crate::core::fragment::Fragment::chunked_segments
-/// [`segment_indices`]: crate::core::fragment::Fragment::segment_indices
-/// [`segments`]: crate::core::fragment::Fragment::segments
+/// [`&Chunk<B, D, P>`]: crate::Chunk
+/// [`chunked_segment_indices`]: crate::fragment::Fragment::chunked_segment_indices
+/// [`chunked_segments`]: crate::fragment::Fragment::chunked_segments
+/// [`segment_indices`]: crate::fragment::Fragment::segment_indices
+/// [`segments`]: crate::fragment::Fragment::segments
 /// [`type_erased`]: Self::type_erased
 /// [`type_erased_chunk`]: Self::type_erased_chunk
 /// [`type_erased_delim`]: Self::type_erased_delim
@@ -159,7 +158,7 @@ impl<'a, B, D: Delimiter, P> Segment<D, &'a Chunk<B, D, P>> {
     ///
     /// ```
     /// # use std::assert_matches;
-    /// # use typed_ident::core::*;
+    /// # use typed_ident::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// # use typed_ident::presets::unicode::camel::*;
     /// let segment = CamelSegment::Delim(LowLine).type_erased();
@@ -186,7 +185,7 @@ impl<'a, B, D: Delimiter, P> Segment<D, &'a Chunk<B, D, P>> {
     ///
     /// ```
     /// # use std::assert_matches;
-    /// # use typed_ident::core::*;
+    /// # use typed_ident::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// # use typed_ident::presets::unicode::camel::*;
     /// let segment = CamelSegment::Delim(LowLine).type_erased_delim();
@@ -213,7 +212,7 @@ impl<'a, B, D: Delimiter, P> Segment<D, &'a Chunk<B, D, P>> {
     ///
     /// ```
     /// # use std::assert_matches;
-    /// # use typed_ident::core::*;
+    /// # use typed_ident::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// # use typed_ident::presets::unicode::camel::*;
     /// let segment = CamelSegment::Delim(LowLine).type_erased_chunk();
@@ -299,7 +298,7 @@ impl<'a, D: Delimiter> Segment<D, &'a str> {
     ///
     /// ```
     /// # use std::assert_matches;
-    /// # use typed_ident::core::*;
+    /// # use typed_ident::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// # use typed_ident::presets::unicode::camel::*;
     /// let segment = CamelSegment::Delim(LowLine)
@@ -385,7 +384,7 @@ impl<'a, B, D, P> Segment<char, &'a Chunk<B, D, P>> {
     ///
     /// ```
     /// # use std::assert_matches;
-    /// # use typed_ident::core::*;
+    /// # use typed_ident::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// # use typed_ident::presets::unicode::camel::*;
     /// let segment = CamelSegment::Delim(LowLine)

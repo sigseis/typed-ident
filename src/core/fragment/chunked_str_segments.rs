@@ -3,7 +3,7 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::Segment;
+use crate::Segment;
 use crate::syntax::Delimiter;
 use core::marker::PhantomData;
 
@@ -16,8 +16,8 @@ use core::marker::PhantomData;
 /// This struct is created by calling [`type_erased`] on the [`ChunkedSegments`]
 /// iterator.
 ///
-/// [`ChunkedSegments`]: crate::core::fragment::ChunkedSegments
-/// [`type_erased`]: crate::core::fragment::ChunkedSegments::type_erased
+/// [`ChunkedSegments`]: crate::fragment::ChunkedSegments
+/// [`type_erased`]: crate::fragment::ChunkedSegments::type_erased
 #[repr(transparent)]
 pub struct ChunkedStrSegments<'a, D> {
     delimiter: PhantomData<D>,

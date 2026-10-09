@@ -3,10 +3,10 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::alloc::IntoIntermediate;
-use crate::alloc::buffer::FragmentBufOp;
-use crate::core::{Chunk, Error, ErrorKind, Fragment, Ident};
+use crate::fragment_buf::FragmentBufOp;
+use crate::intermediate::IntoIntermediate;
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
+use crate::{Chunk, Error, ErrorKind, Fragment, Ident};
 use core::marker::PhantomData;
 use core::ops::RangeBounds;
 use std_alloc::boxed::Box;
@@ -33,7 +33,7 @@ use std_alloc::string::String;
 /// Start with a `FragmentBuf`, make the modifications you want to make, then
 /// attempt to convert it into either an `&Ident` or `Box<Ident>`.
 ///
-/// [`Fragment`]: crate::core::Fragment
+/// [`Fragment`]: crate::Fragment
 ///
 /// # Construction
 ///
@@ -102,7 +102,7 @@ use std_alloc::string::String;
 /// [`Boundary`]: crate::syntax::boundary::Boundary
 /// [`Delimiter`]: crate::syntax::delimiter::Delimiter
 /// [`HyphenMinus`]: crate::syntax::delimiter::HyphenMinus
-/// [`Ident`]: crate::core::Ident
+/// [`Ident`]: crate::Ident
 /// [`LowLine`]: crate::syntax::delimiter::LowLine
 /// [`Lower`]: crate::syntax::profile::Lower
 /// [`Mixed`]: crate::syntax::profile::Mixed
@@ -1229,7 +1229,7 @@ impl<B, D, P> FragmentBuf<B, D, P> {
     /// of an existing fragment/ident/etc, or if you are testing this at compile
     /// time.
     ///
-    /// [`Fragment`]: crate::core::Fragment
+    /// [`Fragment`]: crate::Fragment
     #[must_use]
     #[inline]
     pub(crate) fn from_string_unchecked(orig: String) -> Self {

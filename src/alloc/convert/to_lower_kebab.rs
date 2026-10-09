@@ -4,7 +4,7 @@
 
 // -----------------------------------------------------------------------------
 use crate::Ident;
-use crate::core::fmt::AsLowerKebab;
+use crate::fmt::AsLowerKebab;
 use crate::syntax::boundary::Boundary;
 use crate::syntax::delimiter::Delimiter;
 use crate::syntax::profile::Profile;
@@ -30,21 +30,21 @@ use std_alloc::string::String;
 ///
 /// See the [`convert`] module for more details.
 ///
-/// [`convert`]: crate::alloc::convert
+/// [`convert`]: crate::convert
 pub trait ToLowerKebab {
     /// Returns a string of the provided input converted to lower kebab plain
     /// form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
@@ -96,7 +96,7 @@ pub trait ToLowerKebab {
     /// [`to_lower_kebab_canonical`]: Self::to_lower_kebab_canonical
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("_____")?
@@ -118,14 +118,14 @@ pub trait ToLowerKebab {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
@@ -177,7 +177,7 @@ pub trait ToLowerKebab {
     /// [`to_lower_kebab`]: Self::to_lower_kebab
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("_____")?
@@ -199,12 +199,12 @@ pub trait ToLowerKebab {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// ```
-    /// # use typed_ident::alloc::convert::*;
+    /// # use typed_ident::convert::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?

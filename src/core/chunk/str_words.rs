@@ -14,8 +14,8 @@ use core::marker::PhantomData;
 ///
 /// This struct is created by calling [`type_erased`] on the [`Words`] iterator.
 ///
-/// [`Words`]: crate::core::chunk::Words
-/// [`type_erased`]: crate::core::chunk::Words::type_erased
+/// [`Words`]: crate::chunk::Words
+/// [`type_erased`]: crate::chunk::Words::type_erased
 #[repr(transparent)]
 pub struct StrWords<'a, B, S> {
     boundary: PhantomData<(B, S)>,

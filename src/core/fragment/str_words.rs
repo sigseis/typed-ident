@@ -4,7 +4,7 @@
 
 // -----------------------------------------------------------------------------
 use crate::StrSegment;
-use crate::core::fragment::StrSegments;
+use crate::fragment::StrSegments;
 use crate::syntax::{Boundary, Delimiter, Segmentation};
 
 // =============================================================================
@@ -20,8 +20,8 @@ use crate::syntax::{Boundary, Delimiter, Segmentation};
 /// since the iterator skips sections of the underlying string it can be hard to
 /// reason about these values.
 ///
-/// [`Words`]: crate::core::fragment::Words
-/// [`type_erased`]: crate::core::fragment::Words::type_erased
+/// [`Words`]: crate::fragment::Words
+/// [`type_erased`]: crate::fragment::Words::type_erased
 #[repr(transparent)]
 pub struct StrWords<'a, B, D, S> {
     iter: StrSegments<'a, B, D, S>,

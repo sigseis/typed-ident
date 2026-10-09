@@ -3,10 +3,9 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::alloc::IntoIntermediate;
-use crate::core::error::{Error, ErrorKind};
+use crate::intermediate::IntoIntermediate;
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
-use crate::{Fragment, FragmentBuf, Ident};
+use crate::{Error, ErrorKind, Fragment, FragmentBuf, Ident};
 use std_alloc::boxed::Box;
 use std_alloc::format;
 use std_alloc::string::String;

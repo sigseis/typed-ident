@@ -3,8 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::Ident;
-use crate::core::fmt::bounded::{Canonical, Decorated, Delimited};
+use crate::Ident;
+use crate::fmt::bounded::{Canonical, Decorated, Delimited};
 use crate::syntax::boundary::Standard;
 use crate::syntax::boundary::options::{Default, Options};
 use crate::syntax::delimiter::AsciiFlatLine;
@@ -100,7 +100,7 @@ impl_displayable_type! {
 /// Calling these methods is cheap, since the work isn't done until we actually
 /// use it for a formatting operation.
 ///
-/// [`fmt`]: crate::core::fmt
+/// [`fmt`]: crate::fmt
 pub trait AsLowerHybrid {
     /// Returns a displayable type that converts the provided input to lower
     /// hybrid in plain form.
@@ -112,14 +112,14 @@ pub trait AsLowerHybrid {
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`as_lower_hybrid_opts`]: Self::as_lower_hybrid_opts
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
@@ -180,7 +180,7 @@ pub trait AsLowerHybrid {
     /// [`as_lower_hybrid_canonical`]: Self::as_lower_hybrid_canonical
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
@@ -212,14 +212,14 @@ pub trait AsLowerHybrid {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Transforming to a more-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -242,7 +242,7 @@ pub trait AsLowerHybrid {
     /// Transforming to a less-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -270,14 +270,14 @@ pub trait AsLowerHybrid {
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`as_lower_hybrid_canonical_opts`]: Self::as_lower_hybrid_canonical_opts
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Basic Usage:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
@@ -338,7 +338,7 @@ pub trait AsLowerHybrid {
     /// [`as_lower_hybrid`]: Self::as_lower_hybrid
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
@@ -370,14 +370,14 @@ pub trait AsLowerHybrid {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Transforming to a more-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -400,7 +400,7 @@ pub trait AsLowerHybrid {
     /// Transforming to a less-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -435,12 +435,12 @@ pub trait AsLowerHybrid {
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`as_lower_hybrid_decorated_opts`]: Self::as_lower_hybrid_decorated_opts
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
@@ -508,12 +508,12 @@ pub trait AsLowerHybrid {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// Transforming to a more-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -536,7 +536,7 @@ pub trait AsLowerHybrid {
     /// Transforming to a less-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -571,12 +571,12 @@ pub trait AsLowerHybrid {
     /// See the [`fmt`] module documentation for details on different forms.
     ///
     /// [`as_lower_hybrid_delimited_opts`]: Self::as_lower_hybrid_delimited_opts
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
@@ -643,14 +643,14 @@ pub trait AsLowerHybrid {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`fmt`]: crate::core::fmt
+    /// [`fmt`]: crate::fmt
     ///
     /// # Examples
     ///
     /// Transforming to a more-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;
@@ -673,7 +673,7 @@ pub trait AsLowerHybrid {
     /// Transforming to a less-bounded policy:
     ///
     /// ```
-    /// # use typed_ident::core::fmt::*;
+    /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// # use typed_ident::syntax::boundary::options::*;
     /// # use typed_ident::syntax::delimiter::*;

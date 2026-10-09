@@ -3,7 +3,7 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::chunk::StrWords;
+use crate::chunk::StrWords;
 use crate::syntax::{Boundary, Segmentation};
 
 // =============================================================================
@@ -15,8 +15,8 @@ use crate::syntax::{Boundary, Segmentation};
 /// This struct is created by calling [`type_erased`] on the [`WordIndices`]
 /// iterator.
 ///
-/// [`WordIndices`]: crate::core::chunk::WordIndices
-/// [`type_erased`]: crate::core::chunk::WordIndices::type_erased
+/// [`WordIndices`]: crate::chunk::WordIndices
+/// [`type_erased`]: crate::chunk::WordIndices::type_erased
 pub struct StrWordIndices<'a, B, S> {
     front_offset: usize,
     iter: StrWords<'a, B, S>,

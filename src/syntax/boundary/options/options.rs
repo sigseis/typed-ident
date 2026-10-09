@@ -124,8 +124,8 @@ pub trait Options {
     /// Introduces a boundary on transition from a lowercase or non-Greek
     /// titlecase letter to an ASCII digit.
     ///
-    /// **NOTE:** The non-Greek distinction comes from [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)
-    /// which defines that non-Greek characters all end visually lowercase.
+    /// > **NOTE:** The non-Greek distinction comes from [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)
+    /// > which defines that non-Greek characters all end visually lowercase.
     ///
     /// # Example
     ///
@@ -153,8 +153,8 @@ pub trait Options {
     /// Introduces a boundary on transition from an uppercase or Greek titlecase
     /// letter to an ASCII digit.
     ///
-    /// **NOTE:** The Greek distinction comes from [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)
-    /// which defines that Greek characters all are entirely visually uppercase.
+    /// > **NOTE:** The Greek distinction comes from [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)
+    /// > which defines that Greek characters all are entirely visually uppercase.
     ///
     /// # Example
     ///

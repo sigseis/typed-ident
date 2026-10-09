@@ -12,9 +12,9 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::chunk::StrWords;
-use crate::core::{Chunk, Fragment};
+use crate::chunk::StrWords;
 use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::{Chunk, Fragment};
 use core::marker::PhantomData;
 
 // =============================================================================

@@ -1,18 +1,17 @@
-#![doc = include_str!("README.md")]
 // =============================================================================
 // MODULES
 // =============================================================================
 
 // -----------------------------------------------------------------------------
 pub mod chunk;
-pub mod error;
+mod error;
 pub mod fmt;
 pub mod fragment;
 mod ident;
 mod identifier;
 pub(crate) mod pattern;
 mod segment;
-mod slice_index;
+pub(crate) mod slice_index;
 
 // =============================================================================
 // Common Helper Definition
@@ -28,7 +27,6 @@ pub type StrSegment<'a> = Segment<char, &'a str>;
 // -----------------------------------------------------------------------------
 #[doc(inline)]
 pub use chunk::Chunk;
-#[doc(inline)]
 pub use error::*;
 #[doc(inline)]
 pub use fmt::FormattableIdentifier;
@@ -37,4 +35,3 @@ pub use fragment::Fragment;
 pub use ident::*;
 pub use identifier::*;
 pub use segment::*;
-pub use slice_index::*;

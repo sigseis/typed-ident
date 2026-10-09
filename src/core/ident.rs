@@ -12,9 +12,8 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::error::Error;
-use crate::core::{Chunk, Fragment, Identifier, Segment};
 use crate::syntax::{Boundary, CasedProfile, Delimiter, UnitDelimiter};
+use crate::{Chunk, Error, Fragment, Identifier, Segment};
 
 // =============================================================================
 // TYPES
@@ -64,11 +63,11 @@ use crate::syntax::{Boundary, CasedProfile, Delimiter, UnitDelimiter};
 /// # Ok::<(), typed_ident::Error>(())
 /// ```
 ///
-/// See the [`core`] module definition to understand how this type relates to
+/// See this [root documentation] to understand how this type relates to
 /// other types (such as [`Fragment`] and [`Chunk`]), as well as additional
 /// information for how to use these types effectively.
 ///
-/// [`core`]: crate::core
+/// [root documentation]: crate
 ///
 /// # Type Conversion
 ///

@@ -19,7 +19,7 @@ It's basically a shortcut for calling the equivalent formatting traits from the 
 
 You should see the [`fmt`] modules for more information (especially regarding the different forms; canonical, decorated, and delimited).
 
-[`fmt`]: crate::core::fmt
+[`fmt`]: crate::fmt
 
 # Why Aren't Results Typed?
 
@@ -43,7 +43,7 @@ For instance, consider the character `ᴨ` (GREEK LETTER SMALL CAPITAL PI). This
 So, you can get some really tricky failures, like this:
 
 ```rust
-# use typed_ident::alloc::convert::*;
+# use typed_ident::convert::*;
 # use typed_ident::presets::unicode::*;
 let ident = LowerSnakeIdent::new("ident_ᴨ")?;
 let upper_camel_ish = ident.to_upper_camel_canonical();

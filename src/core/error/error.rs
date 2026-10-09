@@ -3,7 +3,7 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::ErrorKind;
+use crate::ErrorKind;
 use crate::syntax::SyntaxError;
 use core::fmt::{Display, Formatter};
 

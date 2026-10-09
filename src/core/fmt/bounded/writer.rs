@@ -3,7 +3,7 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::Segment;
+use crate::Segment;
 use crate::syntax::segmentation::GraphemesIterator;
 use crate::syntax::{CharCase, CharProfile, GraphemeCase, Segmentation, TrivialBoundary};
 use core::fmt::{Display, Result, Write};

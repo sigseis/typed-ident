@@ -3,7 +3,7 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::core::Segment;
+use crate::Segment;
 use crate::syntax::CharProfile;
 use core::fmt::{Display, Result, Write};
 

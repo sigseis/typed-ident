@@ -1,15 +1,13 @@
-#![doc = include_str!("README.md")]
-
 // =============================================================================
 // MODULES
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-mod buffer;
 pub mod convert;
 mod fragment;
+pub(crate) mod fragment_buf;
 mod ident;
-mod intermediate;
+pub(crate) mod intermediate;
 mod segment;
 
 // =============================================================================
@@ -18,14 +16,13 @@ mod segment;
 
 /// An owned, type-erased representation of a [`Segment`].
 ///
-/// [`Segment`]: crate::core::Segment
-pub type StringSegment = crate::core::Segment<char, std_alloc::string::String>;
+/// [`Segment`]: crate::Segment
+pub type StringSegment = crate::Segment<char, std_alloc::string::String>;
 
 // =============================================================================
 // RE-EXPORT
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-pub use buffer::*;
 pub use convert::ConvertibleIdentifier;
-use intermediate::*;
+pub use fragment_buf::*;

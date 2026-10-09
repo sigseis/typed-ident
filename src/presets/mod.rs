@@ -3,14 +3,17 @@
 //! This module contains multiple submodules, which allows you to narrow-in on a
 //! desired configuration.
 //!
-//! * [`ascii`] - Identifier which use the [`Ascii`](crate::syntax::profile::Ascii)
-//!   profile and the [`Standard`] boundary implementation with [`Default`] options
-//! * [`strict`] - Identifier which use the [`Strict`](crate::syntax::profile::Strict)
-//!   profile and the [`Standard`] boundary implementation with [`Default`] options
-//! * [`unicode`] - Identifier which use the [`Unicode`](crate::syntax::profile::Unicode)
-//!   profile and the [`Standard`] boundary implementation with [`Default`] options
-//! * [`generic`] - Configurations which are generic over their boundary and character
-//!   profile (but have predefined delimiters and case profiles)
+//! * [`ascii`] - Identifier which use the [`Ascii`](crate::syntax::profile::Ascii) character profile
+//! * [`strict`] - Identifier which use the [`Strict`](crate::syntax::profile::Strict) character profile
+//! * [`unicode`] - Identifier which use the [`Unicode`](crate::syntax::profile::Unicode) character profile
+//! * [`generic`] - Configurations which are generic over their boundary and character profile
+//!
+//! > **NOTE:**
+//! > Since Unicode is the often sought-after character profile, the reference documentation on this page will
+//! > point to the [`unicode`] variation of identifiers.
+//! >
+//! > If you click another character profile above, you can get similar documentation to this one, except it
+//! > will direct you to identifiers featuring that specific character profile.
 //!
 //! [`Options`]: crate::syntax::boundary::Options
 //! [`Default`]: crate::syntax::boundary::options::Default
@@ -18,22 +21,22 @@
 //!
 #![doc = include_str!("README.md")]
 //!
-//! [`CamelIdent`]: generic::CamelIdent
-//! [`CasedCamelIdent`]: generic::CasedCamelIdent
-//! [`LowerCamelIdent`]: generic::LowerCamelIdent
-//! [`UpperCamelIdent`]: generic::UpperCamelIdent
-//! [`HybridIdent`]: generic::HybridIdent
-//! [`CasedHybridIdent`]: generic::CasedHybridIdent
-//! [`LowerHybridIdent`]: generic::LowerHybridIdent
-//! [`UpperHybridIdent`]: generic::UpperHybridIdent
-//! [`KebabIdent`]: generic::KebabIdent
-//! [`CasedKebabIdent`]: generic::CasedKebabIdent
-//! [`LowerKebabIdent`]: generic::LowerKebabIdent
-//! [`UpperKebabIdent`]: generic::UpperKebabIdent
-//! [`SnakeIdent`]: generic::SnakeIdent
-//! [`CasedSnakeIdent`]: generic::CasedSnakeIdent
-//! [`LowerSnakeIdent`]: generic::LowerSnakeIdent
-//! [`UpperSnakeIdent`]: generic::UpperSnakeIdent
+//! [`CamelIdent`]: unicode::CamelIdent
+//! [`CasedCamelIdent`]: unicode::CasedCamelIdent
+//! [`LowerCamelIdent`]: unicode::LowerCamelIdent
+//! [`UpperCamelIdent`]: unicode::UpperCamelIdent
+//! [`HybridIdent`]: unicode::HybridIdent
+//! [`CasedHybridIdent`]: unicode::CasedHybridIdent
+//! [`LowerHybridIdent`]: unicode::LowerHybridIdent
+//! [`UpperHybridIdent`]: unicode::UpperHybridIdent
+//! [`KebabIdent`]: unicode::KebabIdent
+//! [`CasedKebabIdent`]: unicode::CasedKebabIdent
+//! [`LowerKebabIdent`]: unicode::LowerKebabIdent
+//! [`UpperKebabIdent`]: unicode::UpperKebabIdent
+//! [`SnakeIdent`]: unicode::SnakeIdent
+//! [`CasedSnakeIdent`]: unicode::CasedSnakeIdent
+//! [`LowerSnakeIdent`]: unicode::LowerSnakeIdent
+//! [`UpperSnakeIdent`]: unicode::UpperSnakeIdent
 
 // =============================================================================
 // MACRO
@@ -59,14 +62,14 @@ macro_rules! impl_type_aliases {
         #[doc = concat!("Types relating to [`", stringify!($ident) ,"`].")]
         pub mod $module {
             #[doc = concat!("The chunk type for [`", stringify!($ident) ,"`].")]
-            pub type $chunk<P, O = crate::syntax::boundary::options::$options> = crate::core::Chunk<
+            pub type $chunk<P, O = crate::syntax::boundary::options::$options> = crate::Chunk<
                 crate::syntax::boundary::Standard<O>,
                 crate::syntax::delimiter::$delimiter,
                 crate::syntax::profile::case::$case<P>,
             >;
 
             #[doc = concat!("The fragment type for [`", stringify!($ident) ,"`].")]
-            pub type $fragment<P, O = crate::syntax::boundary::options::$options> = crate::core::Fragment<
+            pub type $fragment<P, O = crate::syntax::boundary::options::$options> = crate::Fragment<
                 crate::syntax::boundary::Standard<O>,
                 crate::syntax::delimiter::$delimiter,
                 crate::syntax::profile::case::$case<P>,
@@ -74,23 +77,23 @@ macro_rules! impl_type_aliases {
 
             #[cfg(feature = "alloc")]
             #[doc = concat!("The fragment buffer type for [`", stringify!($ident) ,"`].")]
-            pub type $fragment_buf<P, O = crate::syntax::boundary::options::$options> = crate::alloc::FragmentBuf<
+            pub type $fragment_buf<P, O = crate::syntax::boundary::options::$options> = crate::FragmentBuf<
                 crate::syntax::boundary::Standard<O>,
                 crate::syntax::delimiter::$delimiter,
                 crate::syntax::profile::case::$case<P>,
             >;
 
             #[doc = $docs]
-            pub type $ident<P, O = crate::syntax::boundary::options::$options> = crate::core::Ident<
+            pub type $ident<P, O = crate::syntax::boundary::options::$options> = crate::Ident<
                 crate::syntax::boundary::Standard<O>,
                 crate::syntax::delimiter::$delimiter,
                 crate::syntax::profile::case::$case<P>,
             >;
 
             #[doc = concat!("The segment type for [`", stringify!($ident) ,"`].")]
-            pub type $segment<'a, P, O = crate::syntax::boundary::options::$options> = crate::core::Segment<
+            pub type $segment<'a, P, O = crate::syntax::boundary::options::$options> = crate::Segment<
                 crate::syntax::delimiter::$delimiter,
-                &'a crate::core::Chunk<
+                &'a crate::Chunk<
                     crate::syntax::boundary::Standard<O>,
                     crate::syntax::delimiter::$delimiter,
                     crate::syntax::profile::case::$case<P>
@@ -119,14 +122,14 @@ macro_rules! impl_type_aliases {
         #[doc = concat!("Types relating to [`", stringify!($ident) ,"`].")]
         pub mod $module {
             #[doc = concat!("The chunk type for [`", stringify!($ident) ,"`].")]
-            pub type $chunk = crate::core::Chunk<
+            pub type $chunk = crate::Chunk<
                 crate::syntax::boundary::Standard<crate::syntax::boundary::options::$options>,
                 crate::syntax::delimiter::$delimiter,
                 crate::syntax::profile::case::$case<crate::syntax::profile::$profile>,
             >;
 
             #[doc = concat!("The fragment type for [`", stringify!($ident) ,"`].")]
-            pub type $fragment = crate::core::Fragment<
+            pub type $fragment = crate::Fragment<
                 crate::syntax::boundary::Standard<crate::syntax::boundary::options::$options>,
                 crate::syntax::delimiter::$delimiter,
                 crate::syntax::profile::case::$case<crate::syntax::profile::$profile>,
@@ -134,23 +137,23 @@ macro_rules! impl_type_aliases {
 
             #[cfg(feature = "alloc")]
             #[doc = concat!("The fragment buffer type for [`", stringify!($ident) ,"`].")]
-            pub type $fragment_buf = crate::alloc::FragmentBuf<
+            pub type $fragment_buf = crate::FragmentBuf<
                 crate::syntax::boundary::Standard<crate::syntax::boundary::options::$options>,
                 crate::syntax::delimiter::$delimiter,
                 crate::syntax::profile::case::$case<crate::syntax::profile::$profile>,
             >;
 
             #[doc = $docs]
-            pub type $ident = crate::core::Ident<
+            pub type $ident = crate::Ident<
                 crate::syntax::boundary::Standard<crate::syntax::boundary::options::$options>,
                 crate::syntax::delimiter::$delimiter,
                 crate::syntax::profile::case::$case<crate::syntax::profile::$profile>,
             >;
 
             #[doc = concat!("The segment type for [`", stringify!($ident) ,"`].")]
-            pub type $segment<'a> = crate::core::Segment<
+            pub type $segment<'a> = crate::Segment<
                 crate::syntax::delimiter::$delimiter,
-                &'a crate::core::Chunk<
+                &'a crate::Chunk<
                     crate::syntax::boundary::Standard<crate::syntax::boundary::options::$options>,
                     crate::syntax::delimiter::$delimiter,
                     crate::syntax::profile::case::$case<crate::syntax::profile::$profile>,
@@ -1275,15 +1278,24 @@ macro_rules! impl_type_aliases {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-#[cfg(feature = "unicode")]
 #[allow(missing_docs)]
 pub mod generic {
     //! Identifiers which are generic across their boundary and character
     //! profile selection, but fixed for delimiter and case profiles.
     //!
-    //! See the [`presets`] module documentation for more details.
+    //! # How To Use
     //!
-    //! [`presets`]: crate::presets
+    //! These are intended to be used by filling in the generics for these types
+    //! under a type alias.
+    //!
+    //! ```
+    //! // Same as `ascii::CamelIdent`, except that it breaks on all boundaries,
+    //! // including transitions to/from ASCII digits.
+    //! type MyCustomIdent = typed_ident::presets::generic::CamelIdent<
+    //!     typed_ident::syntax::profile::Ascii,
+    //!     typed_ident::syntax::boundary::options::AllBoundaries,
+    //! >;
+    //! ```
     //!
     #![doc = include_str!("README.md")]
 
@@ -1299,10 +1311,12 @@ pub mod generic {
 pub mod ascii {
     //! Identifiers using the [`Ascii`] character profile.
     //!
-    //! See the [`presets`] module documentation for more details.
-    //!
     //! [`Ascii`]: crate::syntax::profile::Ascii
-    //! [`presets`]: crate::presets
+    //!
+    //! # Character Set
+    //!
+    //! * **Start** => any character that passes `c.is_ascii_alphabetic()`.
+    //! * **Continue** => any character that passes `c.is_ascii_alphanumeric()`.
     //!
     #![doc = include_str!("README.md")]
 
@@ -1317,10 +1331,11 @@ pub mod ascii {
 pub mod strict {
     //! Identifiers using the [`Strict`] character profile.
     //!
-    //! See the [`presets`] module documentation for more details.
+    //! This is same as the [`unicode`] presets, except that it disallows `Mc`,
+    //! `Me`, and `Mn` characters at the start of a chunk.
     //!
     //! [`Strict`]: crate::syntax::profile::Strict
-    //! [`presets`]: crate::presets
+    //! [`unicode`]: crate::presets::unicode
     //!
     #![doc = include_str!("README.md")]
 
@@ -1335,10 +1350,17 @@ pub mod strict {
 pub mod unicode {
     //! Identifiers using the [`Unicode`] character profile.
     //!
-    //! See the [`presets`] module documentation for more details.
-    //!
     //! [`Unicode`]: crate::syntax::profile::Unicode
-    //! [`presets`]: crate::presets
+    //!
+    //! # Character Set
+    //!
+    //! This profile uses the [`unicode-ident`] crate.
+    //!
+    //! * **Start** => any character that passes `is_xid_start(c)`.
+    //! * **Continue** => any character that passes `is_xid_continue(c)` (except
+    //!   LOW LINE).
+    //!
+    //! [`unicode-ident`]: unicode_ident
     //!
     #![doc = include_str!("README.md")]
 
