@@ -122,42 +122,30 @@ macro_rules! impl_type_aliases {
         #[doc = concat!("Types relating to [`", stringify!($ident) ,"`].")]
         pub mod $module {
             #[doc = concat!("The chunk type for [`", stringify!($ident) ,"`].")]
-            pub type $chunk = crate::Chunk<
-                crate::syntax::boundary::Standard<crate::syntax::boundary::options::$options>,
-                crate::syntax::delimiter::$delimiter,
-                crate::syntax::profile::case::$case<crate::syntax::profile::$profile>,
+            pub type $chunk = crate::presets::generic::$module::$chunk<
+                crate::syntax::profile::$profile,
             >;
 
             #[doc = concat!("The fragment type for [`", stringify!($ident) ,"`].")]
-            pub type $fragment = crate::Fragment<
-                crate::syntax::boundary::Standard<crate::syntax::boundary::options::$options>,
-                crate::syntax::delimiter::$delimiter,
-                crate::syntax::profile::case::$case<crate::syntax::profile::$profile>,
+            pub type $fragment = crate::presets::generic::$module::$fragment<
+                crate::syntax::profile::$profile,
             >;
 
             #[cfg(feature = "alloc")]
             #[doc = concat!("The fragment buffer type for [`", stringify!($ident) ,"`].")]
-            pub type $fragment_buf = crate::FragmentBuf<
-                crate::syntax::boundary::Standard<crate::syntax::boundary::options::$options>,
-                crate::syntax::delimiter::$delimiter,
-                crate::syntax::profile::case::$case<crate::syntax::profile::$profile>,
+            pub type $fragment_buf = crate::presets::generic::$module::$fragment_buf<
+                crate::syntax::profile::$profile,
             >;
 
             #[doc = $docs]
-            pub type $ident = crate::Ident<
-                crate::syntax::boundary::Standard<crate::syntax::boundary::options::$options>,
-                crate::syntax::delimiter::$delimiter,
-                crate::syntax::profile::case::$case<crate::syntax::profile::$profile>,
+            pub type $ident = crate::presets::generic::$module::$ident<
+                crate::syntax::profile::$profile,
             >;
 
             #[doc = concat!("The segment type for [`", stringify!($ident) ,"`].")]
-            pub type $segment<'a> = crate::Segment<
-                crate::syntax::delimiter::$delimiter,
-                &'a crate::Chunk<
-                    crate::syntax::boundary::Standard<crate::syntax::boundary::options::$options>,
-                    crate::syntax::delimiter::$delimiter,
-                    crate::syntax::profile::case::$case<crate::syntax::profile::$profile>,
-                >,
+            pub type $segment<'a> = crate::presets::generic::$module::$segment<
+                'a,
+                crate::syntax::profile::$profile,
             >;
         }
         #[doc(inline)]
