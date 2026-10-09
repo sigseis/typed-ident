@@ -62,9 +62,8 @@ cargo fmt &&
     cargo clippy --all-targets --all-features -- -D warnings &&
     cargo hack check --feature-powerset &&
     cargo hack build --feature-powerset &&
-    cargo doc --all-features &&
+    cargo +nightly rustdoc --all-features -- --cfg docsrs &&
     cargo hack test --feature-powerset --lib &&
-    cargo test --lib --all-features &&
     cargo test --doc --all-features &&
     cargo test --all-features --test '*' &&
     cargo +nightly miri test --all-features --lib &&

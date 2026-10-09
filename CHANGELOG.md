@@ -16,6 +16,7 @@ release during this time, including patch releases.
 
 ### Breaking Changes
 
+- Removed `UNICODE_*` constants other than `UNICODE_VERSION`, changed reported version calculation.
 - Removed the `presets` feature flag (presets are now always enabled).
 - Renamed `Chunk`'s `WordStrs` and `WordStrIndices` to `StrWords` and `StrWordIndices`.
 - The `alloc`, `core`, and `error` modules are now private, re-exporting their contents into their parents.
