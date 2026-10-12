@@ -11,7 +11,6 @@ mod macros;
 // -----------------------------------------------------------------------------
 mod bounded;
 mod delimited;
-mod formattable_identifier;
 
 // =============================================================================
 // USES
@@ -20,4 +19,3 @@ mod formattable_identifier;
 // -----------------------------------------------------------------------------
 pub use bounded::{AsLowerCamel, AsLowerHybrid, AsUpperCamel, AsUpperHybrid};
 pub use delimited::{AsLowerKebab, AsLowerSnake, AsUpperKebab, AsUpperSnake};
-pub use formattable_identifier::*;

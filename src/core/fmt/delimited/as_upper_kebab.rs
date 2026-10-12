@@ -3,9 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::delimited::{Canonical, Decorated};
-use crate::syntax::{Boundary, Delimiter, Profile};
 
 // =============================================================================
 // TYPEDEFS
@@ -332,25 +331,17 @@ pub trait AsUpperKebab {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> AsUpperKebab for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> AsUpperKebab for I {
     #[inline]
     fn as_upper_kebab(&self) -> UpperKebab<'_> {
-        UpperKebab(Canonical::new::<B, D, P::CharProfile>(
-            self.as_str(),
-            '-',
-            false,
-        ))
+        UpperKebab(Canonical::new::<I>(self.as_str(), '-', false))
     }
     #[inline]
     fn as_upper_kebab_canonical(&self) -> UpperKebabCanonical<'_> {
-        UpperKebabCanonical(Canonical::new::<B, D, P::CharProfile>(
-            self.as_str(),
-            '-',
-            true,
-        ))
+        UpperKebabCanonical(Canonical::new::<I>(self.as_str(), '-', true))
     }
     #[inline]
     fn as_upper_kebab_decorated(&self) -> UpperKebabDecorated<'_> {
-        UpperKebabDecorated(Decorated::new::<B, D, P::CharProfile>(self.as_str(), '-'))
+        UpperKebabDecorated(Decorated::new::<I>(self.as_str(), '-'))
     }
 }

@@ -11,14 +11,14 @@ use std::process::ExitCode;
 use typed_ident::convert::*;
 use typed_ident::presets::unicode::*;
 use typed_ident::syntax::delimiter::*;
-use typed_ident::{ConvertibleIdentifier, Error};
+use typed_ident::{Error, Identifier};
 
 // =============================================================================
 // COMMAND: Profile Configurations
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-fn reformat_from<I: ConvertibleIdentifier + ?Sized>(cli: &Cli, ident: &str) -> Option<Error> {
+fn reformat_from<I: Identifier + ?Sized>(cli: &Cli, ident: &str) -> Option<Error> {
     let ident = match I::new(ident) {
         Ok(ident) => ident,
         Err(error) => return Some(error),

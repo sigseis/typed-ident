@@ -3,12 +3,9 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::AsLowerCamel;
-use crate::syntax::boundary::Boundary;
 use crate::syntax::boundary::options::{Default, Options};
-use crate::syntax::delimiter::Delimiter;
-use crate::syntax::profile::Profile;
 use core::fmt::Write;
 use std_alloc::string::String;
 
@@ -564,7 +561,7 @@ pub trait ToLowerCamel {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> ToLowerCamel for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> ToLowerCamel for I {
     #[inline]
     fn to_lower_camel_opts<O: Options>(&self) -> String {
         let mut string = String::with_capacity(self.len());

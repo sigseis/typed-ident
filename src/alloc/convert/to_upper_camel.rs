@@ -3,12 +3,9 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::AsUpperCamel;
-use crate::syntax::boundary::Boundary;
 use crate::syntax::boundary::options::{Default, Options};
-use crate::syntax::delimiter::Delimiter;
-use crate::syntax::profile::Profile;
 use core::fmt::Write;
 use std_alloc::string::String;
 
@@ -562,7 +559,7 @@ pub trait ToUpperCamel {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> ToUpperCamel for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> ToUpperCamel for I {
     #[inline]
     fn to_upper_camel_opts<O: Options>(&self) -> String {
         let mut string = String::with_capacity(self.len());

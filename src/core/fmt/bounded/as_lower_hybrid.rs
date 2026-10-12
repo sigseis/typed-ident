@@ -3,12 +3,11 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::bounded::{Canonical, Decorated, Delimited};
 use crate::syntax::boundary::Standard;
 use crate::syntax::boundary::options::{Default, Options};
-use crate::syntax::delimiter::AsciiFlatLine;
-use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::syntax::delimiter::{AsciiFlatLine, Delimiter};
 
 // =============================================================================
 // TYPEDEFS
@@ -704,10 +703,10 @@ pub trait AsLowerHybrid {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> AsLowerHybrid for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> AsLowerHybrid for I {
     #[inline]
     fn as_lower_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> LowerHybrid<'_> {
-        LowerHybrid(Canonical::new::<B, D, P::CharProfile, Standard<O>>(
+        LowerHybrid(Canonical::new::<I, Standard<O>>(
             self.as_str(),
             default_delim.as_char(),
             false,
@@ -718,7 +717,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsLowerHybrid for Ident<B, D, P> {
         &self,
         default_delim: AsciiFlatLine,
     ) -> LowerHybridCanonical<'_> {
-        LowerHybridCanonical(Canonical::new::<B, D, P::CharProfile, Standard<O>>(
+        LowerHybridCanonical(Canonical::new::<I, Standard<O>>(
             self.as_str(),
             default_delim.as_char(),
             true,
@@ -729,7 +728,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsLowerHybrid for Ident<B, D, P> {
         &self,
         default_delim: AsciiFlatLine,
     ) -> LowerHybridDecorated<'_> {
-        LowerHybridDecorated(Decorated::new::<B, D, P::CharProfile, Standard<O>>(
+        LowerHybridDecorated(Decorated::new::<I, Standard<O>>(
             self.as_str(),
             default_delim.as_char(),
             Some(match default_delim {
@@ -743,7 +742,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsLowerHybrid for Ident<B, D, P> {
         &self,
         default_delim: AsciiFlatLine,
     ) -> LowerHybridDelimited<'_> {
-        LowerHybridDelimited(Delimited::new::<B, D, P::CharProfile, Standard<O>>(
+        LowerHybridDelimited(Delimited::new::<I, Standard<O>>(
             self.as_str(),
             default_delim.as_char(),
             Some(match default_delim {

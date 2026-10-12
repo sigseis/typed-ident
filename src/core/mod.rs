@@ -29,8 +29,6 @@ pub type StrSegment<'a> = Segment<char, &'a str>;
 pub use chunk::Chunk;
 pub use error::*;
 #[doc(inline)]
-pub use fmt::FormattableIdentifier;
-#[doc(inline)]
 pub use fragment::Fragment;
 pub use ident::*;
 pub use identifier::*;

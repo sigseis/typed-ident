@@ -3,11 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::AsUpperSnake;
-use crate::syntax::boundary::Boundary;
-use crate::syntax::delimiter::Delimiter;
-use crate::syntax::profile::Profile;
 use core::fmt::Write;
 use std_alloc::string::String;
 
@@ -259,7 +256,7 @@ pub trait ToUpperSnake {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> ToUpperSnake for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> ToUpperSnake for I {
     #[inline]
     fn to_upper_snake(&self) -> String {
         let mut string = String::with_capacity(self.len());

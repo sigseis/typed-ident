@@ -3,9 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::delimited::{Canonical, Decorated};
-use crate::syntax::{Boundary, Delimiter, Profile};
 
 // =============================================================================
 // TYPEDEFS
@@ -332,25 +331,17 @@ pub trait AsLowerSnake {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> AsLowerSnake for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> AsLowerSnake for I {
     #[inline]
     fn as_lower_snake(&self) -> LowerSnake<'_> {
-        LowerSnake(Canonical::new::<B, D, P::CharProfile>(
-            self.as_str(),
-            '_',
-            false,
-        ))
+        LowerSnake(Canonical::new::<I>(self.as_str(), '_', false))
     }
     #[inline]
     fn as_lower_snake_canonical(&self) -> LowerSnakeCanonical<'_> {
-        LowerSnakeCanonical(Canonical::new::<B, D, P::CharProfile>(
-            self.as_str(),
-            '_',
-            true,
-        ))
+        LowerSnakeCanonical(Canonical::new::<I>(self.as_str(), '_', true))
     }
     #[inline]
     fn as_lower_snake_decorated(&self) -> LowerSnakeDecorated<'_> {
-        LowerSnakeDecorated(Decorated::new::<B, D, P::CharProfile>(self.as_str(), '_'))
+        LowerSnakeDecorated(Decorated::new::<I>(self.as_str(), '_'))
     }
 }

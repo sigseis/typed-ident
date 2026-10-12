@@ -24,5 +24,4 @@ pub type StringSegment = crate::Segment<char, std_alloc::string::String>;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-pub use convert::ConvertibleIdentifier;
 pub use fragment_buf::*;

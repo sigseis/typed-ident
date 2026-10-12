@@ -3,9 +3,10 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+use crate::Identifier;
 use crate::fmt::bounded::Writer;
 use crate::fragment::StrSegments;
-use crate::syntax::{Boundary, Delimiter, Profile, TrivialBoundary};
+use crate::syntax::{Boundary, CharProfile, Delimiter, Profile, TrivialBoundary};
 
 // =============================================================================
 // TYPES
@@ -25,18 +26,18 @@ pub(super) struct Decorated<'a, const UPPER: bool> {
 
 // -----------------------------------------------------------------------------
 impl<'a, const UPPER: bool> Decorated<'a, UPPER> {
-    fn format<B: Boundary, D: Delimiter, P: Profile, T: TrivialBoundary>(
+    fn format<B: Boundary, D: Delimiter, P: CharProfile, T: TrivialBoundary>(
         &self,
         f: &mut core::fmt::Formatter<'_>,
     ) -> core::fmt::Result {
         let writer = Writer::<UPPER>::new(f);
-        writer.write_decorated::<T, P::CharProfile>(
+        writer.write_decorated::<T, P>(
             &mut StrSegments::<B, D, P::Segmentation>::new(self.ident),
             self.default_delim,
             self.alternative_delim,
         )
     }
-    pub(crate) fn new<B: Boundary, D: Delimiter, P: Profile, T: TrivialBoundary>(
+    pub(crate) fn new<I: Identifier + ?Sized, T: TrivialBoundary>(
         ident: &'a str,
         default_delim: char,
         alternative_delim: Option<char>,
@@ -44,7 +45,12 @@ impl<'a, const UPPER: bool> Decorated<'a, UPPER> {
         Self {
             alternative_delim,
             default_delim,
-            format: Self::format::<B, D, P, T>,
+            format: Self::format::<
+                I::Boundary,
+                I::Delimiter,
+                <I::Profile as Profile>::CharProfile,
+                T,
+            >,
             ident,
         }
     }

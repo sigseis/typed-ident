@@ -3,12 +3,10 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::AsLowerHybrid;
-use crate::syntax::boundary::Boundary;
 use crate::syntax::boundary::options::{Default, Options};
-use crate::syntax::delimiter::{AsciiFlatLine, Delimiter};
-use crate::syntax::profile::Profile;
+use crate::syntax::delimiter::AsciiFlatLine;
 use core::fmt::Write;
 use std_alloc::string::String;
 
@@ -586,7 +584,7 @@ pub trait ToLowerHybrid {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> ToLowerHybrid for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> ToLowerHybrid for I {
     #[inline]
     fn to_lower_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> String {
         let mut string = String::with_capacity(self.len());

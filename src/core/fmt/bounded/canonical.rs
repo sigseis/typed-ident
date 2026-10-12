@@ -3,9 +3,10 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+use crate::Identifier;
 use crate::fmt::bounded::Writer;
 use crate::fragment::StrWords;
-use crate::syntax::{Boundary, Delimiter, Profile, TrivialBoundary};
+use crate::syntax::{Boundary, CharProfile, Delimiter, Profile, TrivialBoundary};
 
 // =============================================================================
 // TYPES
@@ -25,25 +26,30 @@ pub(super) struct Canonical<'a, const UPPER: bool> {
 
 // -----------------------------------------------------------------------------
 impl<'a, const UPPER: bool> Canonical<'a, UPPER> {
-    fn format<B: Boundary, D: Delimiter, P: Profile, T: TrivialBoundary>(
+    fn format<B: Boundary, D: Delimiter, P: CharProfile, T: TrivialBoundary>(
         &self,
         f: &mut core::fmt::Formatter<'_>,
     ) -> core::fmt::Result {
         let writer = Writer::<UPPER>::new(f);
-        writer.write_canonical::<T, P::CharProfile>(
+        writer.write_canonical::<T, P>(
             &mut StrWords::<B, D, P::Segmentation>::new(self.ident),
             self.default_delim,
             self.validate_start,
         )
     }
-    pub(crate) fn new<B: Boundary, D: Delimiter, P: Profile, T: TrivialBoundary>(
+    pub(crate) fn new<I: Identifier + ?Sized, T: TrivialBoundary>(
         ident: &'a str,
         default_delim: char,
         validate_start: bool,
     ) -> Self {
         Self {
             default_delim,
-            format: Self::format::<B, D, P, T>,
+            format: Self::format::<
+                I::Boundary,
+                I::Delimiter,
+                <I::Profile as Profile>::CharProfile,
+                T,
+            >,
             ident,
             validate_start,
         }

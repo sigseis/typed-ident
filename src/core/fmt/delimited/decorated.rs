@@ -2,10 +2,11 @@
 // USES
 // =============================================================================
 
+use crate::Identifier;
 // -----------------------------------------------------------------------------
 use crate::fmt::delimited::Writer;
 use crate::fragment::StrSegments;
-use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::syntax::{Boundary, CharProfile, Delimiter, Profile};
 
 // =============================================================================
 // TYPES
@@ -24,7 +25,7 @@ pub(super) struct Decorated<'a, const UPPER: bool> {
 
 // -----------------------------------------------------------------------------
 impl<'a, const UPPER: bool> Decorated<'a, UPPER> {
-    fn format<B: Boundary, D: Delimiter, P: Profile>(
+    fn format<B: Boundary, D: Delimiter, P: CharProfile>(
         &self,
         f: &mut core::fmt::Formatter<'_>,
     ) -> core::fmt::Result {
@@ -34,13 +35,10 @@ impl<'a, const UPPER: bool> Decorated<'a, UPPER> {
             self.default_delim,
         )
     }
-    pub(crate) fn new<B: Boundary, D: Delimiter, P: Profile>(
-        ident: &'a str,
-        default_delim: char,
-    ) -> Self {
+    pub(crate) fn new<I: Identifier + ?Sized>(ident: &'a str, default_delim: char) -> Self {
         Self {
             default_delim,
-            format: Self::format::<B, D, P>,
+            format: Self::format::<I::Boundary, I::Delimiter, <I::Profile as Profile>::CharProfile>,
             ident,
         }
     }

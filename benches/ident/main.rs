@@ -23,7 +23,6 @@ use std::hint::black_box;
 use std::time::Duration;
 use typed_ident::Identifier;
 use typed_ident::convert::*;
-use typed_ident::fmt::*;
 use typed_ident::syntax::Profile;
 
 // =============================================================================
