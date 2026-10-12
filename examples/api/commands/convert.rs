@@ -28,42 +28,42 @@ fn reformat_from<I: Identifier + ?Sized>(cli: &Cli, ident: &str) -> Option<Error
     };
     let (canonical, decorated, delimited) = match to {
         CasedFormat::UpperCamel => (
-            ident.to_upper_camel_canonical(),
+            ident.to_upper_camel(),
             ident.to_upper_camel_decorated(),
             Some(ident.to_upper_camel_delimited()),
         ),
         CasedFormat::LowerCamel => (
-            ident.to_lower_camel_canonical(),
+            ident.to_lower_camel(),
             ident.to_lower_camel_decorated(),
             Some(ident.to_lower_camel_delimited()),
         ),
         CasedFormat::UpperSnake => (
-            ident.to_upper_snake_canonical(),
+            ident.to_upper_snake(),
             ident.to_upper_snake_decorated(),
             None,
         ),
         CasedFormat::LowerSnake => (
-            ident.to_lower_snake_canonical(),
+            ident.to_lower_snake(),
             ident.to_lower_snake_decorated(),
             None,
         ),
         CasedFormat::UpperKebab => (
-            ident.to_upper_kebab_canonical(),
+            ident.to_upper_kebab(),
             ident.to_upper_kebab_decorated(),
             None,
         ),
         CasedFormat::LowerKebab => (
-            ident.to_lower_kebab_canonical(),
+            ident.to_lower_kebab(),
             ident.to_lower_kebab_decorated(),
             None,
         ),
         CasedFormat::UpperHybrid => (
-            ident.to_upper_hybrid_canonical(AsciiFlatLine::LowLine),
+            ident.to_upper_hybrid(AsciiFlatLine::LowLine),
             ident.to_upper_hybrid_decorated(AsciiFlatLine::LowLine),
             Some(ident.to_upper_hybrid_delimited(AsciiFlatLine::LowLine)),
         ),
         CasedFormat::LowerHybrid => (
-            ident.to_lower_hybrid_canonical(AsciiFlatLine::LowLine),
+            ident.to_lower_hybrid(AsciiFlatLine::LowLine),
             ident.to_lower_hybrid_decorated(AsciiFlatLine::LowLine),
             Some(ident.to_lower_hybrid_delimited(AsciiFlatLine::LowLine)),
         ),

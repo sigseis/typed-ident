@@ -19,6 +19,7 @@ release during this time, including patch releases.
 - Removed `ConvertibleIdentifier` and `FormattableIdentifier`, now you can just use `Identifier`.
 - Removed `UNICODE_*` constants other than `UNICODE_VERSION`, changed reported version calculation.
 - Removed the `presets` feature flag (presets are now always enabled).
+- Removed the plain-form formatter variants that were added in v0.0.2.
 - Renamed `Chunk`'s `WordStrs` and `WordStrIndices` to `StrWords` and `StrWordIndices`.
 - The `alloc`, `core`, and `error` modules are now private, re-exporting their contents into their parents.
 

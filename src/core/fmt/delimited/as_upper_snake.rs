@@ -26,20 +26,6 @@ impl_displayable_type! {
 
 // -----------------------------------------------------------------------------
 impl_displayable_type! {
-    name=UpperSnakeCanonical,
-    over=Canonical,
-    upper=true,
-    docs=concat!(
-        "A `Display` type for the [`AsUpperSnake`] trait.",
-        "\n\n",
-        "This type is constructed by calling the [`as_upper_snake_canonical`] method.",
-        "\n\n",
-        "[`as_upper_snake_canonical`]: AsUpperSnake::as_upper_snake_canonical",
-    ),
-}
-
-// -----------------------------------------------------------------------------
-impl_displayable_type! {
     name=UpperSnakeDecorated,
     over=Decorated,
     upper=true,
@@ -57,7 +43,7 @@ impl_displayable_type! {
 // =============================================================================
 
 /// Provides methods for formatting an identifier in upper-snake format, using
-/// plain, canonical, or decorated forms.
+/// canonical, or decorated forms.
 ///
 /// For explicit-delimited identifiers like this one, there's no difference
 /// between the decorated and delimited forms. So a delimited method is not
@@ -77,97 +63,6 @@ impl_displayable_type! {
 /// [`fmt`]: crate::fmt
 pub trait AsUpperSnake {
     /// Returns a displayable type that converts the provided input to upper
-    /// snake in plain form.
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// assert_eq!(
-    ///     LowerCamelIdent::new("__lower__camel_case__")?
-    ///         .as_upper_snake()
-    ///         .to_string(),
-    ///     "LOWER_CAMEL_CASE"
-    /// );
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
-    ///         .as_upper_snake()
-    ///         .to_string(),
-    ///     "LOWER_HYBRID_CASE"
-    /// );
-    /// assert_eq!(
-    ///     LowerKebabIdent::new("--lower--kebab-case--")?
-    ///         .as_upper_snake()
-    ///         .to_string(),
-    ///     "LOWER_KEBAB_CASE"
-    /// );
-    /// assert_eq!(
-    ///     LowerSnakeIdent::new("__lower__snake_case__")?
-    ///         .as_upper_snake()
-    ///         .to_string(),
-    ///     "LOWER_SNAKE_CASE"
-    /// );
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
-    ///         .as_upper_snake()
-    ///         .to_string(),
-    ///     "UPPER_CAMEL_CASE"
-    /// );
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
-    ///         .as_upper_snake()
-    ///         .to_string(),
-    ///     "UPPER_HYBRID_CASE"
-    /// );
-    /// assert_eq!(
-    ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
-    ///         .as_upper_snake()
-    ///         .to_string(),
-    ///     "UPPER_KEBAB_CASE"
-    /// );
-    /// assert_eq!(
-    ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
-    ///         .as_upper_snake()
-    ///         .to_string(),
-    ///     "UPPER_SNAKE_CASE"
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// This form will *NOT* attempt to validate the first character to ensure
-    /// it could be considered a valid identifier (see
-    /// [`as_upper_snake_canonical`] for a version that would validate this).
-    ///
-    /// [`as_upper_snake_canonical`]: Self::as_upper_snake_canonical
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("_____")?
-    ///         .as_upper_snake()
-    ///         .to_string(),
-    ///     ""
-    /// );
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__2__Example__Camel__")?
-    ///         .as_upper_snake()
-    ///         .to_string(),
-    ///     "2_EXAMPLE_CAMEL"
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_upper_snake(&self) -> UpperSnake<'_>;
-
-    /// Returns a displayable type that converts the provided input to upper
     /// snake in canonical form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
@@ -183,49 +78,49 @@ pub trait AsUpperSnake {
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
-    ///         .as_upper_snake_canonical()
+    ///         .as_upper_snake()
     ///         .to_string(),
     ///     "LOWER_CAMEL_CASE"
     /// );
     /// assert_eq!(
     ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
-    ///         .as_upper_snake_canonical()
+    ///         .as_upper_snake()
     ///         .to_string(),
     ///     "LOWER_HYBRID_CASE"
     /// );
     /// assert_eq!(
     ///     LowerKebabIdent::new("--lower--kebab-case--")?
-    ///         .as_upper_snake_canonical()
+    ///         .as_upper_snake()
     ///         .to_string(),
     ///     "LOWER_KEBAB_CASE"
     /// );
     /// assert_eq!(
     ///     LowerSnakeIdent::new("__lower__snake_case__")?
-    ///         .as_upper_snake_canonical()
+    ///         .as_upper_snake()
     ///         .to_string(),
     ///     "LOWER_SNAKE_CASE"
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
-    ///         .as_upper_snake_canonical()
+    ///         .as_upper_snake()
     ///         .to_string(),
     ///     "UPPER_CAMEL_CASE"
     /// );
     /// assert_eq!(
     ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
-    ///         .as_upper_snake_canonical()
+    ///         .as_upper_snake()
     ///         .to_string(),
     ///     "UPPER_HYBRID_CASE"
     /// );
     /// assert_eq!(
     ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
-    ///         .as_upper_snake_canonical()
+    ///         .as_upper_snake()
     ///         .to_string(),
     ///     "UPPER_KEBAB_CASE"
     /// );
     /// assert_eq!(
     ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
-    ///         .as_upper_snake_canonical()
+    ///         .as_upper_snake()
     ///         .to_string(),
     ///     "UPPER_SNAKE_CASE"
     /// );
@@ -233,30 +128,27 @@ pub trait AsUpperSnake {
     /// ```
     ///
     /// This form *WILL* attempt to validate the first character to ensure it
-    /// could be considered a valid identifier (see [`as_upper_snake`] for a
-    /// version that would *NOT* validate this).
-    ///
-    /// [`as_upper_snake`]: Self::as_upper_snake
+    /// could be considered a valid identifier.
     ///
     /// ```
     /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("_____")?
-    ///         .as_upper_snake_canonical()
+    ///         .as_upper_snake()
     ///         .to_string(),
     ///     "_"
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__2__Example__Camel__")?
-    ///         .as_upper_snake_canonical()
+    ///         .as_upper_snake()
     ///         .to_string(),
     ///     "_2_EXAMPLE_CAMEL"
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_upper_snake_canonical(&self) -> UpperSnakeCanonical<'_>;
+    fn as_upper_snake(&self) -> UpperSnake<'_>;
 
     /// Returns a displayable type that converts the provided input to upper
     /// snake in decorated form.
@@ -334,11 +226,7 @@ pub trait AsUpperSnake {
 impl<I: Identifier + ?Sized> AsUpperSnake for I {
     #[inline]
     fn as_upper_snake(&self) -> UpperSnake<'_> {
-        UpperSnake(Canonical::new::<I>(self.as_str(), '_', false))
-    }
-    #[inline]
-    fn as_upper_snake_canonical(&self) -> UpperSnakeCanonical<'_> {
-        UpperSnakeCanonical(Canonical::new::<I>(self.as_str(), '_', true))
+        UpperSnake(Canonical::new::<I>(self.as_str(), '_'))
     }
     #[inline]
     fn as_upper_snake_decorated(&self) -> UpperSnakeDecorated<'_> {

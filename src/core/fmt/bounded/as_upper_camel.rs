@@ -18,25 +18,11 @@ impl_displayable_type! {
     over=Canonical,
     upper=true,
     docs=concat!(
-        "A `Display` type for the [`AsUpperCamel`] trait in plain form.",
+        "A `Display` type for the [`AsUpperCamel`] trait in canonical form.",
         "\n\n",
         "This type is constructed by calling one of the [`as_upper_camel`] methods.",
         "\n\n",
         "[`as_upper_camel`]: AsUpperCamel::as_upper_camel"
-    ),
-}
-
-// -----------------------------------------------------------------------------
-impl_displayable_type! {
-    name=UpperCamelCanonical,
-    over=Canonical,
-    upper=true,
-    docs=concat!(
-        "A `Display` type for the [`AsUpperCamel`] trait in canonical form.",
-        "\n\n",
-        "This type is constructed by calling one of the [`as_upper_camel_canonical`] methods.",
-        "\n\n",
-        "[`as_upper_camel_canonical`]: AsUpperCamel::as_upper_camel_canonical"
     ),
 }
 
@@ -73,7 +59,7 @@ impl_displayable_type! {
 // =============================================================================
 
 /// Provides methods for formatting an identifier in upper-camel format, using
-/// plain, canonical, decorated, or delimited forms.
+/// canonical, decorated, or delimited forms.
 ///
 /// See the [`fmt`] module for more details.
 ///
@@ -89,7 +75,7 @@ impl_displayable_type! {
 /// [`fmt`]: crate::fmt
 pub trait AsUpperCamel {
     /// Returns a displayable type that converts the provided input to upper
-    /// camel in plain form.
+    /// camel in canonical form.
     ///
     /// This method uses the default boundary options. If you have customized
     /// your boundary definitions, you almost certainly want to use the method
@@ -158,11 +144,8 @@ pub trait AsUpperCamel {
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     ///
-    /// This form will *NOT* attempt to validate the first character to ensure
-    /// it could be considered a valid identifier (see
-    /// [`as_upper_camel_canonical`] for a version that would validate this).
-    ///
-    /// [`as_upper_camel_canonical`]: Self::as_upper_camel_canonical
+    /// This form *WILL* attempt to validate the first character to ensure it
+    /// could be considered a valid identifier.
     ///
     /// ```
     /// # use typed_ident::fmt::*;
@@ -171,13 +154,13 @@ pub trait AsUpperCamel {
     ///     UpperCamelIdent::new("_____")?
     ///         .as_upper_camel()
     ///         .to_string(),
-    ///     ""
+    ///     "_"
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__2__Example__Camel__")?
     ///         .as_upper_camel()
     ///         .to_string(),
-    ///     "2ExampleCamel"
+    ///     "_2ExampleCamel"
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -188,7 +171,7 @@ pub trait AsUpperCamel {
     }
 
     /// Returns a displayable type that converts the provided input to upper
-    /// camel in plain form, over some provided boundary options.
+    /// camel in canonical form, over some provided boundary options.
     ///
     /// Use this method if you want to transform the boundary policy of the
     /// input string, or if you want to persist the same customized policy (in
@@ -245,164 +228,6 @@ pub trait AsUpperCamel {
     /// ```
     #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
     fn as_upper_camel_opts<O: Options>(&self) -> UpperCamel<'_>;
-
-    /// Returns a displayable type that converts the provided input to upper
-    /// camel in canonical form.
-    ///
-    /// This method uses the default boundary options. If you have customized
-    /// your boundary definitions, you almost certainly want to use the method
-    /// [`as_upper_camel_canonical_opts`].
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`as_upper_camel_canonical_opts`]: Self::as_upper_camel_canonical_opts
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// assert_eq!(
-    ///     LowerCamelIdent::new("__lower__camel_case__")?
-    ///         .as_upper_camel_canonical()
-    ///         .to_string(),
-    ///     "LowerCamelCase"
-    /// );
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
-    ///         .as_upper_camel_canonical()
-    ///         .to_string(),
-    ///     "LowerHybridCase"
-    /// );
-    /// assert_eq!(
-    ///     LowerKebabIdent::new("--lower--kebab-case--")?
-    ///         .as_upper_camel_canonical()
-    ///         .to_string(),
-    ///     "LowerKebabCase"
-    /// );
-    /// assert_eq!(
-    ///     LowerSnakeIdent::new("__lower__snake_case__")?
-    ///         .as_upper_camel_canonical()
-    ///         .to_string(),
-    ///     "LowerSnakeCase"
-    /// );
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
-    ///         .as_upper_camel_canonical()
-    ///         .to_string(),
-    ///     "UpperCamelCase"
-    /// );
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
-    ///         .as_upper_camel_canonical()
-    ///         .to_string(),
-    ///     "UpperHybridCase"
-    /// );
-    /// assert_eq!(
-    ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
-    ///         .as_upper_camel_canonical()
-    ///         .to_string(),
-    ///     "UpperKebabCase"
-    /// );
-    /// assert_eq!(
-    ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
-    ///         .as_upper_camel_canonical()
-    ///         .to_string(),
-    ///     "UpperSnakeCase"
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// This form *WILL* attempt to validate the first character to ensure it
-    /// could be considered a valid identifier (see [`as_upper_camel`] for a
-    /// version that would *NOT* validate this).
-    ///
-    /// [`as_upper_camel`]: Self::as_upper_camel
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("_____")?
-    ///         .as_upper_camel_canonical()
-    ///         .to_string(),
-    ///     "_"
-    /// );
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__2__Example__Camel__")?
-    ///         .as_upper_camel_canonical()
-    ///         .to_string(),
-    ///     "_2ExampleCamel"
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_upper_camel_canonical(&self) -> UpperCamelCanonical<'_> {
-        self.as_upper_camel_canonical_opts::<Default>()
-    }
-
-    /// Returns a displayable type that converts the provided input to upper
-    /// camel in canonical form, over some provided boundary options.
-    ///
-    /// Use this method if you want to transform the boundary policy of the
-    /// input string, or if you want to persist the same customized policy (in
-    /// place of simply using the default).
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Transforming to a more-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .as_upper_camel_canonical_opts::<AllBoundaries>()
-    ///         .to_string(),
-    ///     "Abc123HttpDevServer" // Digits recognized as proper boundaries.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .as_upper_camel_canonical_opts::<Default>()
-    ///         .to_string(),
-    ///     "Abc_123HttpDevServer" // Digits aren't recognized as boundaries.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// Transforming to a less-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .as_upper_camel_canonical_opts::<NoBoundaries>()
-    ///         .to_string(),
-    ///     "Http_Dev_Server" // Nothing recognized as a boundary.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .as_upper_camel_canonical_opts::<Default>()
-    ///         .to_string(),
-    ///     "HttpDevServer" // Normal boundaries are recognized.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_upper_camel_canonical_opts<O: Options>(&self) -> UpperCamelCanonical<'_>;
 
     /// Returns a displayable type that converts the provided input to upper
     /// camel in decorated form.
@@ -676,11 +501,7 @@ pub trait AsUpperCamel {
 impl<I: Identifier + ?Sized> AsUpperCamel for I {
     #[inline]
     fn as_upper_camel_opts<O: Options>(&self) -> UpperCamel<'_> {
-        UpperCamel(Canonical::new::<I, Standard<O>>(self.as_str(), '_', false))
-    }
-    #[inline]
-    fn as_upper_camel_canonical_opts<O: Options>(&self) -> UpperCamelCanonical<'_> {
-        UpperCamelCanonical(Canonical::new::<I, Standard<O>>(self.as_str(), '_', true))
+        UpperCamel(Canonical::new::<I, Standard<O>>(self.as_str(), '_'))
     }
     #[inline]
     fn as_upper_camel_decorated_opts<O: Options>(&self) -> UpperCamelDecorated<'_> {

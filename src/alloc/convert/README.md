@@ -46,7 +46,7 @@ So, you can get some really tricky failures, like this:
 # use typed_ident::convert::*;
 # use typed_ident::presets::unicode::*;
 let ident = LowerSnakeIdent::new("ident_ᴨ")?;
-let upper_camel_ish = ident.to_upper_camel_canonical();
+let upper_camel_ish = ident.to_upper_camel();
 
 // Chunk boundary preserved, but `ᴨ` has no uppercase mapping.
 assert_eq!(upper_camel_ish, "Ident_ᴨ");
