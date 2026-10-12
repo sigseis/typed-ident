@@ -2,8 +2,8 @@
 // USES
 // =============================================================================
 
-use crate::Identifier;
 // -----------------------------------------------------------------------------
+use crate::Identifier;
 use crate::fmt::delimited::Writer;
 use crate::fragment::StrSegments;
 use crate::syntax::{Boundary, CharProfile, Delimiter, Profile};

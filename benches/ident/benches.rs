@@ -250,7 +250,7 @@ pub fn bench<I>(
             use heck::ToLowerCamelCase;
             s.to_lower_camel_case()
         },
-        /*canonical_format=*/ |s| I::new(s).unwrap().to_lower_camel_canonical(),
+        /*canonical_format=*/ |s| I::new(s).unwrap().to_lower_camel(),
         /*decorated_format=*/ |s| I::new(s).unwrap().to_lower_camel_decorated(),
     );
     bench_convert(
@@ -264,7 +264,7 @@ pub fn bench<I>(
             use heck::ToUpperCamelCase;
             s.to_upper_camel_case()
         },
-        /*canonical_format=*/ |s| I::new(s).unwrap().to_upper_camel_canonical(),
+        /*canonical_format=*/ |s| I::new(s).unwrap().to_upper_camel(),
         /*decorated_format=*/ |s| I::new(s).unwrap().to_upper_camel_decorated(),
     );
 
@@ -282,7 +282,7 @@ pub fn bench<I>(
             use heck::ToKebabCase;
             s.to_kebab_case()
         },
-        /*canonical_format=*/ |s| I::new(s).unwrap().to_lower_kebab_canonical(),
+        /*canonical_format=*/ |s| I::new(s).unwrap().to_lower_kebab(),
         /*decorated_format=*/ |s| I::new(s).unwrap().to_lower_kebab_decorated(),
     );
     bench_convert(
@@ -296,7 +296,7 @@ pub fn bench<I>(
             use heck::ToShoutyKebabCase;
             s.to_shouty_kebab_case()
         },
-        /*canonical_format=*/ |s| I::new(s).unwrap().to_upper_kebab_canonical(),
+        /*canonical_format=*/ |s| I::new(s).unwrap().to_upper_kebab(),
         /*decorated_format=*/ |s| I::new(s).unwrap().to_upper_kebab_decorated(),
     );
 
@@ -314,7 +314,7 @@ pub fn bench<I>(
             use heck::ToSnakeCase;
             s.to_snake_case()
         },
-        /*canonical_format=*/ |s| I::new(s).unwrap().to_lower_snake_canonical(),
+        /*canonical_format=*/ |s| I::new(s).unwrap().to_lower_snake(),
         /*decorated_format=*/ |s| I::new(s).unwrap().to_lower_snake_decorated(),
     );
     bench_convert(
@@ -328,7 +328,7 @@ pub fn bench<I>(
             use heck::ToShoutySnakeCase;
             s.to_shouty_snake_case()
         },
-        /*canonical_format=*/ |s| I::new(s).unwrap().to_upper_snake_canonical(),
+        /*canonical_format=*/ |s| I::new(s).unwrap().to_upper_snake(),
         /*decorated_format=*/ |s| I::new(s).unwrap().to_upper_snake_decorated(),
     );
 }

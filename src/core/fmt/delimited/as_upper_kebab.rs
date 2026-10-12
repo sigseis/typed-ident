@@ -26,20 +26,6 @@ impl_displayable_type! {
 
 // -----------------------------------------------------------------------------
 impl_displayable_type! {
-    name=UpperKebabCanonical,
-    over=Canonical,
-    upper=true,
-    docs=concat!(
-        "A `Display` type for the [`AsUpperKebab`] trait.",
-        "\n\n",
-        "This type is constructed by calling the [`as_upper_kebab_canonical`] method.",
-        "\n\n",
-        "[`as_upper_kebab_canonical`]: AsUpperKebab::as_upper_kebab_canonical",
-    ),
-}
-
-// -----------------------------------------------------------------------------
-impl_displayable_type! {
     name=UpperKebabDecorated,
     over=Decorated,
     upper=true,
@@ -57,7 +43,7 @@ impl_displayable_type! {
 // =============================================================================
 
 /// Provides methods for formatting an identifier in upper-kebab format, using
-/// plain, canonical, or decorated forms.
+/// canonical, or decorated forms.
 ///
 /// For explicit-delimited identifiers like this one, there's no difference
 /// between the decorated and delimited forms. So a delimited method is not
@@ -77,97 +63,6 @@ impl_displayable_type! {
 /// [`fmt`]: crate::fmt
 pub trait AsUpperKebab {
     /// Returns a displayable type that converts the provided input to upper
-    /// kebab in plain form.
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// assert_eq!(
-    ///     LowerCamelIdent::new("__lower__camel_case__")?
-    ///         .as_upper_kebab()
-    ///         .to_string(),
-    ///     "LOWER-CAMEL-CASE"
-    /// );
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
-    ///         .as_upper_kebab()
-    ///         .to_string(),
-    ///     "LOWER-HYBRID-CASE"
-    /// );
-    /// assert_eq!(
-    ///     LowerKebabIdent::new("--lower--kebab-case--")?
-    ///         .as_upper_kebab()
-    ///         .to_string(),
-    ///     "LOWER-KEBAB-CASE"
-    /// );
-    /// assert_eq!(
-    ///     LowerSnakeIdent::new("__lower__snake_case__")?
-    ///         .as_upper_kebab()
-    ///         .to_string(),
-    ///     "LOWER-SNAKE-CASE"
-    /// );
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
-    ///         .as_upper_kebab()
-    ///         .to_string(),
-    ///     "UPPER-CAMEL-CASE"
-    /// );
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
-    ///         .as_upper_kebab()
-    ///         .to_string(),
-    ///     "UPPER-HYBRID-CASE"
-    /// );
-    /// assert_eq!(
-    ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
-    ///         .as_upper_kebab()
-    ///         .to_string(),
-    ///     "UPPER-KEBAB-CASE"
-    /// );
-    /// assert_eq!(
-    ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
-    ///         .as_upper_kebab()
-    ///         .to_string(),
-    ///     "UPPER-SNAKE-CASE"
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// This form will *NOT* attempt to validate the first character to ensure
-    /// it could be considered a valid identifier (see
-    /// [`as_upper_kebab_canonical`] for a version that would validate this).
-    ///
-    /// [`as_upper_kebab_canonical`]: Self::as_upper_kebab_canonical
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("_____")?
-    ///         .as_upper_kebab()
-    ///         .to_string(),
-    ///     ""
-    /// );
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__2__Example__Camel__")?
-    ///         .as_upper_kebab()
-    ///         .to_string(),
-    ///     "2-EXAMPLE-CAMEL"
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_upper_kebab(&self) -> UpperKebab<'_>;
-
-    /// Returns a displayable type that converts the provided input to upper
     /// kebab in canonical form.
     ///
     /// See the [`fmt`] module documentation for details on different forms.
@@ -183,49 +78,49 @@ pub trait AsUpperKebab {
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
-    ///         .as_upper_kebab_canonical()
+    ///         .as_upper_kebab()
     ///         .to_string(),
     ///     "LOWER-CAMEL-CASE"
     /// );
     /// assert_eq!(
     ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
-    ///         .as_upper_kebab_canonical()
+    ///         .as_upper_kebab()
     ///         .to_string(),
     ///     "LOWER-HYBRID-CASE"
     /// );
     /// assert_eq!(
     ///     LowerKebabIdent::new("--lower--kebab-case--")?
-    ///         .as_upper_kebab_canonical()
+    ///         .as_upper_kebab()
     ///         .to_string(),
     ///     "LOWER-KEBAB-CASE"
     /// );
     /// assert_eq!(
     ///     LowerSnakeIdent::new("__lower__snake_case__")?
-    ///         .as_upper_kebab_canonical()
+    ///         .as_upper_kebab()
     ///         .to_string(),
     ///     "LOWER-SNAKE-CASE"
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
-    ///         .as_upper_kebab_canonical()
+    ///         .as_upper_kebab()
     ///         .to_string(),
     ///     "UPPER-CAMEL-CASE"
     /// );
     /// assert_eq!(
     ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
-    ///         .as_upper_kebab_canonical()
+    ///         .as_upper_kebab()
     ///         .to_string(),
     ///     "UPPER-HYBRID-CASE"
     /// );
     /// assert_eq!(
     ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
-    ///         .as_upper_kebab_canonical()
+    ///         .as_upper_kebab()
     ///         .to_string(),
     ///     "UPPER-KEBAB-CASE"
     /// );
     /// assert_eq!(
     ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
-    ///         .as_upper_kebab_canonical()
+    ///         .as_upper_kebab()
     ///         .to_string(),
     ///     "UPPER-SNAKE-CASE"
     /// );
@@ -233,30 +128,27 @@ pub trait AsUpperKebab {
     /// ```
     ///
     /// This form *WILL* attempt to validate the first character to ensure it
-    /// could be considered a valid identifier (see [`as_upper_kebab`] for a
-    /// version that would *NOT* validate this).
-    ///
-    /// [`as_upper_kebab`]: Self::as_upper_kebab
+    /// could be considered a valid identifier.
     ///
     /// ```
     /// # use typed_ident::fmt::*;
     /// # use typed_ident::presets::unicode::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("_____")?
-    ///         .as_upper_kebab_canonical()
+    ///         .as_upper_kebab()
     ///         .to_string(),
     ///     "-"
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__2__Example__Camel__")?
-    ///         .as_upper_kebab_canonical()
+    ///         .as_upper_kebab()
     ///         .to_string(),
     ///     "-2-EXAMPLE-CAMEL"
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_upper_kebab_canonical(&self) -> UpperKebabCanonical<'_>;
+    fn as_upper_kebab(&self) -> UpperKebab<'_>;
 
     /// Returns a displayable type that converts the provided input to upper
     /// kebab in decorated form.
@@ -334,11 +226,7 @@ pub trait AsUpperKebab {
 impl<I: Identifier + ?Sized> AsUpperKebab for I {
     #[inline]
     fn as_upper_kebab(&self) -> UpperKebab<'_> {
-        UpperKebab(Canonical::new::<I>(self.as_str(), '-', false))
-    }
-    #[inline]
-    fn as_upper_kebab_canonical(&self) -> UpperKebabCanonical<'_> {
-        UpperKebabCanonical(Canonical::new::<I>(self.as_str(), '-', true))
+        UpperKebab(Canonical::new::<I>(self.as_str(), '-'))
     }
     #[inline]
     fn as_upper_kebab_decorated(&self) -> UpperKebabDecorated<'_> {

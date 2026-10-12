@@ -39,7 +39,6 @@ There's four kinds of formats you can apply over your formatting operations:
 
 | **Form**      | **Leading/Trailing Delimiters**       | **Other Delimiters**                                                             |
 |---------------|---------------------------------------|----------------------------------------------------------------------------------|
-| **Plain**     | Removed                               | Removed unless necessary to separate chunks                                      |
 | **Canonical** | Removed unless necessary for validity | Removed unless necessary to separate chunks                                      |
 | **Decorated** | Retained                              | Retained if >1 delimiters, otherwise removed if not necessary to separate chunks |
 | **Delimited** | Retained                              | Retained                                                                         |
@@ -51,10 +50,6 @@ This library allows you to choose, so it's up to you.
 # use typed_ident::presets::unicode::*;
 assert_eq!(
     SnakeIdent::new("__2foo_bar__baz__")?.as_upper_camel().to_string(),
-    "2fooBarBaz"
-);
-assert_eq!(
-    SnakeIdent::new("__2foo_bar__baz__")?.as_upper_camel_canonical().to_string(),
     "_2fooBarBaz"
 );
 assert_eq!(
@@ -87,19 +82,19 @@ For situations involving `CamelCase`, where the intent is to have exactly one up
 # use typed_ident::presets::unicode::*;
 // If at chunk-start...
 assert_eq!(
-    CamelIdent::new("ßtest")?.as_upper_camel_canonical().to_string(),
+    CamelIdent::new("ßtest")?.as_upper_camel().to_string(),
     "Sstest" // ß -> SS -> Ss
 );
 assert_eq!(
-    CamelIdent::new("ﬄtest")?.as_upper_camel_canonical().to_string(),
+    CamelIdent::new("ﬄtest")?.as_upper_camel().to_string(),
     "Ffltest" // ﬄ -> FFL -> Ffl
 );
 assert_eq!(
-    CamelIdent::new("Test_ßtest")?.as_upper_camel_canonical().to_string(),
+    CamelIdent::new("Test_ßtest")?.as_upper_camel().to_string(),
     "TestSstest" // ß -> SS -> Ss
 );
 assert_eq!(
-    CamelIdent::new("Test_ﬄtest")?.as_upper_camel_canonical().to_string(),
+    CamelIdent::new("Test_ﬄtest")?.as_upper_camel().to_string(),
     "TestFfltest" // ﬄ -> FFL -> Ffl
 );
 // etc.
@@ -118,7 +113,7 @@ So, TL;DR, as far as formatting is concerned, `Σ` maps to `σ` *always*.
 # use typed_ident::fmt::*;
 # use typed_ident::presets::unicode::*;
 assert_eq!(
-    CamelIdent::new("Σ")?.as_lower_camel_canonical().to_string(),
+    CamelIdent::new("Σ")?.as_lower_camel().to_string(),
     "σ" // Despite being at word-end
 );
 // etc.

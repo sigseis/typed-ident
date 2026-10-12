@@ -18,12 +18,12 @@ fn main() -> ExitCode {
     let identifier = args.next().expect("expected at least one input argument");
     let identifier = HybridIdent::new(&identifier).expect("expected a hybrid-ident identifier");
     let result = match format.as_str() {
-        "lower-camel" => identifier.to_lower_camel_canonical(),
-        "upper-camel" => identifier.to_upper_camel_canonical(),
-        "lower-kebab" => identifier.to_lower_kebab_canonical(),
-        "upper-kebab" => identifier.to_upper_kebab_canonical(),
-        "lower-snake" => identifier.to_lower_snake_canonical(),
-        "upper-snake" => identifier.to_upper_snake_canonical(),
+        "lower-camel" => identifier.to_lower_camel(),
+        "upper-camel" => identifier.to_upper_camel(),
+        "lower-kebab" => identifier.to_lower_kebab(),
+        "upper-kebab" => identifier.to_upper_kebab(),
+        "lower-snake" => identifier.to_lower_snake(),
+        "upper-snake" => identifier.to_upper_snake(),
         unknown => {
             eprintln!("unknown command: {unknown}");
             return ExitCode::FAILURE;

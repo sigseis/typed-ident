@@ -17,7 +17,6 @@ pub(super) struct Canonical<'a, const UPPER: bool> {
     default_delim: char,
     format: fn(&Self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result,
     ident: &'a str,
-    validate_start: bool,
 }
 
 // =============================================================================
@@ -34,19 +33,13 @@ impl<'a, const UPPER: bool> Canonical<'a, UPPER> {
         writer.write_canonical::<P>(
             &mut StrWords::<B, D, P::Segmentation>::new(self.ident),
             self.default_delim,
-            self.validate_start,
         )
     }
-    pub(crate) fn new<I: Identifier + ?Sized>(
-        ident: &'a str,
-        default_delim: char,
-        validate_start: bool,
-    ) -> Self {
+    pub(crate) fn new<I: Identifier + ?Sized>(ident: &'a str, default_delim: char) -> Self {
         Self {
             default_delim,
             format: Self::format::<I::Boundary, I::Delimiter, <I::Profile as Profile>::CharProfile>,
             ident,
-            validate_start,
         }
     }
 }
