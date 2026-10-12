@@ -182,7 +182,7 @@ pub fn bench<I>(
     typename: &str,
     identifiers: &[String],
 ) where
-    I: ConvertibleIdentifier + FormattableIdentifier + ?Sized,
+    I: Identifier + ?Sized,
 {
     let type_prefix = format!("//Input<{charset}>/Preset<{presets}>/{typename}");
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

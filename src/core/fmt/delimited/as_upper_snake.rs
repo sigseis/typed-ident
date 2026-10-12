@@ -3,9 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::delimited::{Canonical, Decorated};
-use crate::syntax::{Boundary, Delimiter, Profile};
 
 // =============================================================================
 // TYPEDEFS
@@ -332,25 +331,17 @@ pub trait AsUpperSnake {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> AsUpperSnake for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> AsUpperSnake for I {
     #[inline]
     fn as_upper_snake(&self) -> UpperSnake<'_> {
-        UpperSnake(Canonical::new::<B, D, P::CharProfile>(
-            self.as_str(),
-            '_',
-            false,
-        ))
+        UpperSnake(Canonical::new::<I>(self.as_str(), '_', false))
     }
     #[inline]
     fn as_upper_snake_canonical(&self) -> UpperSnakeCanonical<'_> {
-        UpperSnakeCanonical(Canonical::new::<B, D, P::CharProfile>(
-            self.as_str(),
-            '_',
-            true,
-        ))
+        UpperSnakeCanonical(Canonical::new::<I>(self.as_str(), '_', true))
     }
     #[inline]
     fn as_upper_snake_decorated(&self) -> UpperSnakeDecorated<'_> {
-        UpperSnakeDecorated(Decorated::new::<B, D, P::CharProfile>(self.as_str(), '_'))
+        UpperSnakeDecorated(Decorated::new::<I>(self.as_str(), '_'))
     }
 }

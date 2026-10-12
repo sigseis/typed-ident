@@ -3,12 +3,10 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::AsUpperHybrid;
-use crate::syntax::boundary::Boundary;
 use crate::syntax::boundary::options::{Default, Options};
-use crate::syntax::delimiter::{AsciiFlatLine, Delimiter};
-use crate::syntax::profile::Profile;
+use crate::syntax::delimiter::AsciiFlatLine;
 use core::fmt::Write;
 use std_alloc::string::String;
 
@@ -588,7 +586,7 @@ pub trait ToUpperHybrid {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> ToUpperHybrid for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> ToUpperHybrid for I {
     #[inline]
     fn to_upper_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> String {
         let mut string = String::with_capacity(self.len());

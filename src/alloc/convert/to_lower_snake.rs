@@ -3,11 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::AsLowerSnake;
-use crate::syntax::boundary::Boundary;
-use crate::syntax::delimiter::Delimiter;
-use crate::syntax::profile::Profile;
 use core::fmt::Write;
 use std_alloc::string::String;
 
@@ -259,7 +256,7 @@ pub trait ToLowerSnake {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> ToLowerSnake for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> ToLowerSnake for I {
     #[inline]
     fn to_lower_snake(&self) -> String {
         let mut string = String::with_capacity(self.len());

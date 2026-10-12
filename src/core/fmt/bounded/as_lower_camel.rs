@@ -3,11 +3,10 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::bounded::{Canonical, Decorated, Delimited};
 use crate::syntax::boundary::Standard;
 use crate::syntax::boundary::options::{Default, Options};
-use crate::syntax::{Boundary, Delimiter, Profile};
 
 // =============================================================================
 // TYPEDEFS
@@ -676,37 +675,21 @@ pub trait AsLowerCamel {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> AsLowerCamel for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> AsLowerCamel for I {
     #[inline]
     fn as_lower_camel_opts<O: Options>(&self) -> LowerCamel<'_> {
-        LowerCamel(Canonical::new::<B, D, P::CharProfile, Standard<O>>(
-            self.as_str(),
-            '_',
-            false,
-        ))
+        LowerCamel(Canonical::new::<I, Standard<O>>(self.as_str(), '_', false))
     }
     #[inline]
     fn as_lower_camel_canonical_opts<O: Options>(&self) -> LowerCamelCanonical<'_> {
-        LowerCamelCanonical(Canonical::new::<B, D, P::CharProfile, Standard<O>>(
-            self.as_str(),
-            '_',
-            true,
-        ))
+        LowerCamelCanonical(Canonical::new::<I, Standard<O>>(self.as_str(), '_', true))
     }
     #[inline]
     fn as_lower_camel_decorated_opts<O: Options>(&self) -> LowerCamelDecorated<'_> {
-        LowerCamelDecorated(Decorated::new::<B, D, P::CharProfile, Standard<O>>(
-            self.as_str(),
-            '_',
-            None,
-        ))
+        LowerCamelDecorated(Decorated::new::<I, Standard<O>>(self.as_str(), '_', None))
     }
     #[inline]
     fn as_lower_camel_delimited_opts<O: Options>(&self) -> LowerCamelDelimited<'_> {
-        LowerCamelDelimited(Delimited::new::<B, D, P::CharProfile, Standard<O>>(
-            self.as_str(),
-            '_',
-            None,
-        ))
+        LowerCamelDelimited(Delimited::new::<I, Standard<O>>(self.as_str(), '_', None))
     }
 }

@@ -3,11 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::AsLowerKebab;
-use crate::syntax::boundary::Boundary;
-use crate::syntax::delimiter::Delimiter;
-use crate::syntax::profile::Profile;
 use core::fmt::Write;
 use std_alloc::string::String;
 
@@ -257,7 +254,7 @@ pub trait ToLowerKebab {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> ToLowerKebab for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> ToLowerKebab for I {
     #[inline]
     fn to_lower_kebab(&self) -> String {
         let mut string = String::with_capacity(self.len());

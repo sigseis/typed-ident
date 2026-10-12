@@ -3,11 +3,8 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::AsUpperKebab;
-use crate::syntax::boundary::Boundary;
-use crate::syntax::delimiter::Delimiter;
-use crate::syntax::profile::Profile;
 use core::fmt::Write;
 use std_alloc::string::String;
 
@@ -259,7 +256,7 @@ pub trait ToUpperKebab {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> ToUpperKebab for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> ToUpperKebab for I {
     #[inline]
     fn to_upper_kebab(&self) -> String {
         let mut string = String::with_capacity(self.len());

@@ -3,12 +3,11 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Ident;
+use crate::Identifier;
 use crate::fmt::bounded::{Canonical, Decorated, Delimited};
 use crate::syntax::boundary::Standard;
 use crate::syntax::boundary::options::{Default, Options};
-use crate::syntax::delimiter::AsciiFlatLine;
-use crate::syntax::{Boundary, Delimiter, Profile};
+use crate::syntax::delimiter::{AsciiFlatLine, Delimiter};
 
 // =============================================================================
 // TYPEDEFS
@@ -710,10 +709,10 @@ pub trait AsUpperHybrid {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<B: Boundary, D: Delimiter, P: Profile> AsUpperHybrid for Ident<B, D, P> {
+impl<I: Identifier + ?Sized> AsUpperHybrid for I {
     #[inline]
     fn as_upper_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> UpperHybrid<'_> {
-        UpperHybrid(Canonical::new::<B, D, P::CharProfile, Standard<O>>(
+        UpperHybrid(Canonical::new::<I, Standard<O>>(
             self.as_str(),
             default_delim.as_char(),
             false,
@@ -724,7 +723,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsUpperHybrid for Ident<B, D, P> {
         &self,
         default_delim: AsciiFlatLine,
     ) -> UpperHybridCanonical<'_> {
-        UpperHybridCanonical(Canonical::new::<B, D, P::CharProfile, Standard<O>>(
+        UpperHybridCanonical(Canonical::new::<I, Standard<O>>(
             self.as_str(),
             default_delim.as_char(),
             true,
@@ -735,7 +734,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsUpperHybrid for Ident<B, D, P> {
         &self,
         default_delim: AsciiFlatLine,
     ) -> UpperHybridDecorated<'_> {
-        UpperHybridDecorated(Decorated::new::<B, D, P::CharProfile, Standard<O>>(
+        UpperHybridDecorated(Decorated::new::<I, Standard<O>>(
             self.as_str(),
             default_delim.as_char(),
             Some(match default_delim {
@@ -749,7 +748,7 @@ impl<B: Boundary, D: Delimiter, P: Profile> AsUpperHybrid for Ident<B, D, P> {
         &self,
         default_delim: AsciiFlatLine,
     ) -> UpperHybridDelimited<'_> {
-        UpperHybridDelimited(Delimited::new::<B, D, P::CharProfile, Standard<O>>(
+        UpperHybridDelimited(Delimited::new::<I, Standard<O>>(
             self.as_str(),
             default_delim.as_char(),
             Some(match default_delim {
