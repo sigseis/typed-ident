@@ -19,49 +19,89 @@ It's basically a shortcut for calling the equivalent formatting traits from the 
 
 You should see the [`fmt`] modules for more information (especially regarding the different forms; canonical, decorated, and delimited).
 
+If you don't need to own the final result, but only need something displayable, then you should prefer the [`fmt`] variants.
+
 [`fmt`]: crate::fmt
 
-# Why Aren't Results Typed?
+# Type Assignments
 
-<div class="warning">
+The type produced by a conversion function is generic, so you'll need to suggest the final resulting type, similar to what you must do for something like the `collect` function on an iterator.
 
-**NOTE:** This is currently being reconsidered. See issue [#17](https://github.com/sigseis/typed-ident/issues/17).
+All types will support binding to `String` and `Box<str>`.
 
-</div>
+If you are binding to a typed identifier, then the type in question needs to be one that can be considered a superset of the target type. So for instance, if you were using the `ToLowerKebab` trait, then you could assign the output of those methods to any one of the following boxed identifier types:
 
-For two main reasons:
+- `LowerKebabIdent`
+- `CasedKebabIdent` (superset of `LowerKebabIdent`)
+- `KebabIdent` (superset of `CasedKebabIdent`)
+- `LowerHybridIdent` (superset of `LowerKebabIdent`)
+- `CasedHybridIdent` (superset of `CasedKebabIdent`)
+- `HybridIdent` (superset of `KebabIdent`)
 
-1. *(Most importantly)* string conversion may move you outside of the initial character profile.
-2. It's not guaranteed that the user wants to assign into a typed identifier, anyways.
 
-Reason (2) is pretty obvious, but (1) is quite nuanced.
+```rust
+# use typed_ident::convert::*;
+# use typed_ident::presets::unicode::*;
+let ident = LowerSnakeIdent::new("example_ident")?;
+let _converted: String = ident.to_lower_kebab()?;
+let _converted: Box<str> = ident.to_lower_kebab()?;
+let _converted: Box<LowerKebabIdent> = ident.to_lower_kebab()?;
+let _converted: Box<CasedKebabIdent> = ident.to_lower_kebab()?;
+let _converted: Box<KebabIdent> = ident.to_lower_kebab()?;
+let _converted: Box<LowerHybridIdent> = ident.to_lower_kebab()?;
+let _converted: Box<CasedHybridIdent> = ident.to_lower_kebab()?;
+let _converted: Box<HybridIdent> = ident.to_lower_kebab()?;
+# Ok::<(), typed_ident::Error>(())
+```
 
-The obvious reason for (1) is the user could define a really weird profile, in which the lower or uppercase equivalent characters are not present. But the more tricky and nuanced reason is: *not all cased Unicode characters have alternative cased mappings*!
+But note that assignment to something completely of a different format would not be allowed. We cannot assign to `CamelIdent` or `SnakeIdent` formats.
 
-For instance, consider the character `ᴨ` (GREEK LETTER SMALL CAPITAL PI). This character is registered as *lowercase*, but what's more - *there's no uppercase mapping for it*. In a perfect world, if a letter were cased it would have some alternative case mapping. If that were true, `to_uppercase` and `to_lowercase` would always change a cased character's casing, but that is *NOT* the case (pun intended).
+```rust,compile_fail
+# use typed_ident::convert::*;
+# use typed_ident::presets::unicode::*;
+let ident = LowerSnakeIdent::new("example_ident")?;
+let _converted: Box<LowerCamelIdent> = ident.to_lower_kebab()?;
+let _converted: Box<CasedCamelIdent> = ident.to_lower_kebab()?;
+let _converted: Box<CamelIdent> = ident.to_lower_kebab()?;
+let _converted: Box<LowerSnakeIdent> = ident.to_lower_kebab()?;
+let _converted: Box<CasedSnakeIdent> = ident.to_lower_kebab()?;
+let _converted: Box<SnakeIdent> = ident.to_lower_kebab()?;
+# Ok::<(), typed_ident::Error>(())
+```
 
-So, you can get some really tricky failures, like this:
+# Warning: Case Mappings
+
+Some cased Unicode characters don't have alternate case mappings.
+
+This could be either because the letter has no alternate-cased letter, *or* because the code point is more of a symbol than a letter so case mapping should not alter it.
+
+This means you *could* have a situation where conversion fails if you are too strict on the target type.
 
 ```rust
 # use typed_ident::convert::*;
 # use typed_ident::presets::unicode::*;
 let ident = LowerSnakeIdent::new("ident_ᴨ")?;
-let upper_camel_ish = ident.to_upper_camel();
+let upper_camel_ish: String = ident.to_upper_camel()?;
 
 // Chunk boundary preserved, but `ᴨ` has no uppercase mapping.
 assert_eq!(upper_camel_ish, "Ident_ᴨ");
 
 // The result therefore does not satisfy the strict UpperCamel profile.
 assert!(UpperCamelIdent::new(&upper_camel_ish).is_err());
+assert!(ident.to_upper_camel::<Box<UpperCamelIdent>>().is_err());
 
 // A profile that does not require uppercase chunk starts accepts it.
 assert!(CamelIdent::new(&upper_camel_ish).is_ok());
+assert!(ident.to_upper_camel::<Box<CamelIdent>>().is_ok());
 # Ok::<(), typed_ident::Error>(())
 ```
 
-If you'd like to remain working with strong types, my recommendation is this:
+Regardless of this, the user has to attempt to construct this situation, as such characters are not common.
 
-* Strongly case-type your input (e.g. something you control constraining over; `LowerCamelCaseIdent`, etc).
-* Weakly case-type your conversions (e.g. you are at the whims of Unicode; `SnakeCaseIdent`, etc).
+But if you don't have specific requirements for the target type of something post-conversion, it could be good idea to select a looser type post-conversion (like an unprefixed variant, `CamelIdent`, `KebabIdent`, etc). Or, if you just want to recall the formatting but don't need it to be typed, assign it to something completely lacking of format checks (`String`, `Box<str>`).
 
-As demonstrated in the above example code, this should always be okay as long as you don't define some weird profile.
+> **NOTE:** If you are really curious to see more examples of such characters, check the code repository for this project.
+>
+> Specifically, there's a helper project named `typed-ident-generator`, under the `generator` directory. Under that project, there's some code at `generator/src/commands/analyze_tables.rs`, where a complete list of such characters exist, as well as the code for analyzing the updated unicode tables to find if more such characters are added.
+>
+> An example of such oddities are mathematic symbols. We don't want to change what they are because, while they appear to be lowercase/uppercase, they are more symbolic in nature.

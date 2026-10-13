@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------------
 use crate::convert::*;
 use crate::presets::ascii::*;
+use std_alloc::string::String;
 
 // =============================================================================
 // TESTS
@@ -17,7 +18,8 @@ fn expected_to_upper_camel_delimited() {
     assert_eq!(
         CamelIdent::new("TLS1_3Config")
             .unwrap()
-            .to_upper_camel_delimited(),
-        "Tls1_3Config"
+            .to_upper_camel_delimited::<String>()
+            .unwrap(),
+        "Tls1_3Config",
     );
 }

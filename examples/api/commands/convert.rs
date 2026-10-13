@@ -18,54 +18,51 @@ use typed_ident::{Error, Identifier};
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-fn reformat_from<I: Identifier + ?Sized>(cli: &Cli, ident: &str) -> Option<Error> {
-    let ident = match I::new(ident) {
-        Ok(ident) => ident,
-        Err(error) => return Some(error),
-    };
+fn reformat_from<I: Identifier + ?Sized>(cli: &Cli, ident: &str) -> Result<(), Error> {
+    let ident = I::new(ident)?;
     let Some(to) = cli.to else {
         panic!("you need to provide a --to conversion option to say what to convert to");
     };
-    let (canonical, decorated, delimited) = match to {
+    let (canonical, decorated, delimited): (String, String, Option<String>) = match to {
         CasedFormat::UpperCamel => (
-            ident.to_upper_camel(),
-            ident.to_upper_camel_decorated(),
-            Some(ident.to_upper_camel_delimited()),
+            ident.to_upper_camel()?,
+            ident.to_upper_camel_decorated()?,
+            Some(ident.to_upper_camel_delimited()?),
         ),
         CasedFormat::LowerCamel => (
-            ident.to_lower_camel(),
-            ident.to_lower_camel_decorated(),
-            Some(ident.to_lower_camel_delimited()),
+            ident.to_lower_camel()?,
+            ident.to_lower_camel_decorated()?,
+            Some(ident.to_lower_camel_delimited()?),
         ),
         CasedFormat::UpperSnake => (
-            ident.to_upper_snake(),
-            ident.to_upper_snake_decorated(),
+            ident.to_upper_snake()?,
+            ident.to_upper_snake_decorated()?,
             None,
         ),
         CasedFormat::LowerSnake => (
-            ident.to_lower_snake(),
-            ident.to_lower_snake_decorated(),
+            ident.to_lower_snake()?,
+            ident.to_lower_snake_decorated()?,
             None,
         ),
         CasedFormat::UpperKebab => (
-            ident.to_upper_kebab(),
-            ident.to_upper_kebab_decorated(),
+            ident.to_upper_kebab()?,
+            ident.to_upper_kebab_decorated()?,
             None,
         ),
         CasedFormat::LowerKebab => (
-            ident.to_lower_kebab(),
-            ident.to_lower_kebab_decorated(),
+            ident.to_lower_kebab()?,
+            ident.to_lower_kebab_decorated()?,
             None,
         ),
         CasedFormat::UpperHybrid => (
-            ident.to_upper_hybrid(AsciiFlatLine::LowLine),
-            ident.to_upper_hybrid_decorated(AsciiFlatLine::LowLine),
-            Some(ident.to_upper_hybrid_delimited(AsciiFlatLine::LowLine)),
+            ident.to_upper_hybrid(AsciiFlatLine::LowLine)?,
+            ident.to_upper_hybrid_decorated(AsciiFlatLine::LowLine)?,
+            Some(ident.to_upper_hybrid_delimited(AsciiFlatLine::LowLine)?),
         ),
         CasedFormat::LowerHybrid => (
-            ident.to_lower_hybrid(AsciiFlatLine::LowLine),
-            ident.to_lower_hybrid_decorated(AsciiFlatLine::LowLine),
-            Some(ident.to_lower_hybrid_delimited(AsciiFlatLine::LowLine)),
+            ident.to_lower_hybrid(AsciiFlatLine::LowLine)?,
+            ident.to_lower_hybrid_decorated(AsciiFlatLine::LowLine)?,
+            Some(ident.to_lower_hybrid_delimited(AsciiFlatLine::LowLine)?),
         ),
     };
     let compare = match cli.compare {
@@ -109,7 +106,7 @@ fn reformat_from<I: Identifier + ?Sized>(cli: &Cli, ident: &str) -> Option<Error
         println!("  delimited: {delimited}");
     }
     println!();
-    None
+    Ok(())
 }
 
 // =============================================================================
@@ -138,7 +135,7 @@ pub fn convert(cli: &Cli) -> ExitCode {
             Format::UpperHybrid => reformat_from::<UpperHybridIdent>(cli, ident),
             Format::LowerHybrid => reformat_from::<LowerHybridIdent>(cli, ident),
         };
-        if let Some(error) = error {
+        if let Err(error) = error {
             failed = true;
             eprintln!("{ident}: failed conversion: {error}");
         }

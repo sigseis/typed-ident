@@ -4,6 +4,7 @@
 
 // -----------------------------------------------------------------------------
 mod char_intermediate;
+mod from_intermediate;
 mod into_intermediate;
 mod segment_intermediate;
 
@@ -12,4 +13,5 @@ mod segment_intermediate;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+pub(crate) use from_intermediate::*;
 pub(crate) use into_intermediate::*;

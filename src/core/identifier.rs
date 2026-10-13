@@ -73,7 +73,10 @@ pub trait Identifier {
     ///
     /// See the [`Ident::new`] documentation for details.
     #[inline]
-    fn new(s: &str) -> Result<&Ident<Self::Boundary, Self::Delimiter, Self::Profile>, Error> {
+    fn new<S>(s: &S) -> Result<&Ident<Self::Boundary, Self::Delimiter, Self::Profile>, Error>
+    where
+        S: AsRef<str> + ?Sized,
+    {
         Ident::new(s)
     }
 
@@ -82,9 +85,11 @@ pub trait Identifier {
     /// See the [`Ident::new_boxed`] documentation for details.
     #[cfg(feature = "alloc")]
     #[inline]
-    fn new_boxed(
-        s: std_alloc::string::String,
+    fn new_boxed<S>(
+        s: S,
     ) -> Result<std_alloc::boxed::Box<Ident<Self::Boundary, Self::Delimiter, Self::Profile>>, Error>
+    where
+        S: Into<std_alloc::string::String>,
     {
         Ident::new_boxed(s)
     }

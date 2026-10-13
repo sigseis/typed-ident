@@ -131,7 +131,11 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
-    pub fn new_boxed(string: String) -> Result<Box<Ident<B, D, P>>, Error> {
+    pub fn new_boxed<S>(string: S) -> Result<Box<Ident<B, D, P>>, Error>
+    where
+        S: Into<String>,
+    {
+        let string = string.into();
         let _ = Ident::<B, D, P>::new(&string)?;
         Ok(Self::new_boxed_unchecked(string))
     }

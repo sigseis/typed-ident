@@ -250,8 +250,8 @@ pub fn bench<I>(
             use heck::ToLowerCamelCase;
             s.to_lower_camel_case()
         },
-        /*canonical_format=*/ |s| I::new(s).unwrap().to_lower_camel(),
-        /*decorated_format=*/ |s| I::new(s).unwrap().to_lower_camel_decorated(),
+        /*canonical_format=*/ |s| I::new(s).unwrap().to_lower_camel().unwrap(),
+        /*decorated_format=*/ |s| I::new(s).unwrap().to_lower_camel_decorated().unwrap(),
     );
     bench_convert(
         c,
@@ -264,8 +264,8 @@ pub fn bench<I>(
             use heck::ToUpperCamelCase;
             s.to_upper_camel_case()
         },
-        /*canonical_format=*/ |s| I::new(s).unwrap().to_upper_camel(),
-        /*decorated_format=*/ |s| I::new(s).unwrap().to_upper_camel_decorated(),
+        /*canonical_format=*/ |s| I::new(s).unwrap().to_upper_camel().unwrap(),
+        /*decorated_format=*/ |s| I::new(s).unwrap().to_upper_camel_decorated().unwrap(),
     );
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -282,8 +282,8 @@ pub fn bench<I>(
             use heck::ToKebabCase;
             s.to_kebab_case()
         },
-        /*canonical_format=*/ |s| I::new(s).unwrap().to_lower_kebab(),
-        /*decorated_format=*/ |s| I::new(s).unwrap().to_lower_kebab_decorated(),
+        /*canonical_format=*/ |s| I::new(s).unwrap().to_lower_kebab().unwrap(),
+        /*decorated_format=*/ |s| I::new(s).unwrap().to_lower_kebab_decorated().unwrap(),
     );
     bench_convert(
         c,
@@ -296,8 +296,8 @@ pub fn bench<I>(
             use heck::ToShoutyKebabCase;
             s.to_shouty_kebab_case()
         },
-        /*canonical_format=*/ |s| I::new(s).unwrap().to_upper_kebab(),
-        /*decorated_format=*/ |s| I::new(s).unwrap().to_upper_kebab_decorated(),
+        /*canonical_format=*/ |s| I::new(s).unwrap().to_upper_kebab().unwrap(),
+        /*decorated_format=*/ |s| I::new(s).unwrap().to_upper_kebab_decorated().unwrap(),
     );
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -314,8 +314,8 @@ pub fn bench<I>(
             use heck::ToSnakeCase;
             s.to_snake_case()
         },
-        /*canonical_format=*/ |s| I::new(s).unwrap().to_lower_snake(),
-        /*decorated_format=*/ |s| I::new(s).unwrap().to_lower_snake_decorated(),
+        /*canonical_format=*/ |s| I::new(s).unwrap().to_lower_snake().unwrap(),
+        /*decorated_format=*/ |s| I::new(s).unwrap().to_lower_snake_decorated().unwrap(),
     );
     bench_convert(
         c,
@@ -328,7 +328,7 @@ pub fn bench<I>(
             use heck::ToShoutySnakeCase;
             s.to_shouty_snake_case()
         },
-        /*canonical_format=*/ |s| I::new(s).unwrap().to_upper_snake(),
-        /*decorated_format=*/ |s| I::new(s).unwrap().to_upper_snake_decorated(),
+        /*canonical_format=*/ |s| I::new(s).unwrap().to_upper_snake().unwrap(),
+        /*decorated_format=*/ |s| I::new(s).unwrap().to_upper_snake_decorated().unwrap(),
     );
 }

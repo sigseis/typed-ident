@@ -3,11 +3,20 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Identifier;
 use crate::fmt::AsUpperCamel;
+use crate::intermediate::FromIntermediate;
+use crate::syntax::Profile;
 use crate::syntax::boundary::options::{Default, Options};
+use crate::{Error, Identifier};
 use core::fmt::Write;
 use std_alloc::string::String;
+
+// =============================================================================
+// TYPE ALIASES
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+type UpperCamelIdent<P> = crate::presets::generic::UpperCamelIdent<<P as Profile>::CharProfile>;
 
 // =============================================================================
 // TRAITS
@@ -25,7 +34,7 @@ use std_alloc::string::String;
 /// </div>
 ///
 /// [`convert`]: crate::convert
-pub trait ToUpperCamel {
+pub trait ToUpperCamel: Identifier {
     /// Returns a string of the provided input converted to upper camel
     /// canonical form.
     ///
@@ -48,42 +57,42 @@ pub trait ToUpperCamel {
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
     ///         .to_upper_camel(),
-    ///     "LowerCamelCase"
+    ///     Ok(UpperCamelIdent::new_boxed("LowerCamelCase")?),
     /// );
     /// assert_eq!(
     ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
     ///         .to_upper_camel(),
-    ///     "LowerHybridCase"
+    ///     Ok(UpperCamelIdent::new_boxed("LowerHybridCase")?),
     /// );
     /// assert_eq!(
     ///     LowerKebabIdent::new("--lower--kebab-case--")?
     ///         .to_upper_camel(),
-    ///     "LowerKebabCase"
+    ///     Ok(UpperCamelIdent::new_boxed("LowerKebabCase")?),
     /// );
     /// assert_eq!(
     ///     LowerSnakeIdent::new("__lower__snake_case__")?
     ///         .to_upper_camel(),
-    ///     "LowerSnakeCase"
+    ///     Ok(UpperCamelIdent::new_boxed("LowerSnakeCase")?),
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
     ///         .to_upper_camel(),
-    ///     "UpperCamelCase"
+    ///     Ok(UpperCamelIdent::new_boxed("UpperCamelCase")?),
     /// );
     /// assert_eq!(
     ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
     ///         .to_upper_camel(),
-    ///     "UpperHybridCase"
+    ///     Ok(UpperCamelIdent::new_boxed("UpperHybridCase")?),
     /// );
     /// assert_eq!(
     ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
     ///         .to_upper_camel(),
-    ///     "UpperKebabCase"
+    ///     Ok(UpperCamelIdent::new_boxed("UpperKebabCase")?),
     /// );
     /// assert_eq!(
     ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
     ///         .to_upper_camel(),
-    ///     "UpperSnakeCase"
+    ///     Ok(UpperCamelIdent::new_boxed("UpperSnakeCase")?),
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -97,19 +106,22 @@ pub trait ToUpperCamel {
     /// assert_eq!(
     ///     UpperCamelIdent::new("_____")?
     ///         .to_upper_camel(),
-    ///     "_"
+    ///     Ok(UpperCamelIdent::new_boxed("_")?),
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__2__Example__Camel__")?
     ///         .to_upper_camel(),
-    ///     "_2ExampleCamel"
+    ///     Ok(UpperCamelIdent::new_boxed("_2ExampleCamel")?),
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_camel(&self) -> String {
-        self.to_upper_camel_opts::<Default>()
+    fn to_upper_camel<T>(&self) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperCamelIdent<Self::Profile>>,
+    {
+        self.to_upper_camel_opts::<T, Default>()
     }
 
     /// Returns a string of the provided input converted to upper camel
@@ -133,14 +145,14 @@ pub trait ToUpperCamel {
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_camel_opts::<AllBoundaries>(),
-    ///     "Abc123HttpDevServer" // Digits recognized as proper boundaries.
+    ///         .to_upper_camel_opts::<_, AllBoundaries>(),
+    ///     Ok(UpperCamelIdent::new_boxed("Abc123HttpDevServer")?), // Digits recognized as proper boundaries.
     /// );
     /// // Compare this to...
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_camel_opts::<Default>(),
-    ///     "Abc_123HttpDevServer" // Digits aren't recognized as boundaries.
+    ///         .to_upper_camel_opts::<_, Default>(),
+    ///     Ok(UpperCamelIdent::new_boxed("Abc_123HttpDevServer")?), // Digits aren't recognized as boundaries.
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -153,19 +165,21 @@ pub trait ToUpperCamel {
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_camel_opts::<NoBoundaries>(),
-    ///     "Http_Dev_Server" // Nothing recognized as a boundary.
+    ///         .to_upper_camel_opts::<_, NoBoundaries>(),
+    ///     Ok(UpperCamelIdent::new_boxed("Http_Dev_Server")?), // Nothing recognized as a boundary.
     /// );
     /// // Compare this to...
     /// assert_eq!(
     ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_camel_opts::<Default>(),
-    ///     "HttpDevServer" // Normal boundaries are recognized.
+    ///         .to_upper_camel_opts::<_, Default>(),
+    ///     Ok(UpperCamelIdent::new_boxed("HttpDevServer")?), // Normal boundaries are recognized.
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_camel_opts<O: Options>(&self) -> String;
+    fn to_upper_camel_opts<T, O: Options>(&self) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperCamelIdent<Self::Profile>>;
 
     /// Returns a string of the provided input converted to upper camel
     /// decorated form.
@@ -187,49 +201,52 @@ pub trait ToUpperCamel {
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
     ///         .to_upper_camel_decorated(),
-    ///     "__Lower__CamelCase__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Lower__CamelCase__")?),
     /// );
     /// assert_eq!(
     ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
     ///         .to_upper_camel_decorated(),
-    ///     "__Lower__HybridCase__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Lower__HybridCase__")?),
     /// );
     /// assert_eq!(
     ///     LowerKebabIdent::new("--lower--kebab-case--")?
     ///         .to_upper_camel_decorated(),
-    ///     "__Lower__KebabCase__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Lower__KebabCase__")?),
     /// );
     /// assert_eq!(
     ///     LowerSnakeIdent::new("__lower__snake_case__")?
     ///         .to_upper_camel_decorated(),
-    ///     "__Lower__SnakeCase__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Lower__SnakeCase__")?),
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
     ///         .to_upper_camel_decorated(),
-    ///     "__Upper__CamelCase__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Upper__CamelCase__")?),
     /// );
     /// assert_eq!(
     ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
     ///         .to_upper_camel_decorated(),
-    ///     "__Upper__HybridCase__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Upper__HybridCase__")?),
     /// );
     /// assert_eq!(
     ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
     ///         .to_upper_camel_decorated(),
-    ///     "__Upper__KebabCase__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Upper__KebabCase__")?),
     /// );
     /// assert_eq!(
     ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
     ///         .to_upper_camel_decorated(),
-    ///     "__Upper__SnakeCase__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Upper__SnakeCase__")?),
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_camel_decorated(&self) -> String {
-        self.to_upper_camel_decorated_opts::<Default>()
+    fn to_upper_camel_decorated<T>(&self) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperCamelIdent<Self::Profile>>,
+    {
+        self.to_upper_camel_decorated_opts::<T, Default>()
     }
 
     /// Returns a string of the provided input converted to upper camel
@@ -253,14 +270,14 @@ pub trait ToUpperCamel {
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_camel_decorated_opts::<AllBoundaries>(),
-    ///     "__Abc123HttpDevServer__" // Digits recognized as proper boundaries.
+    ///         .to_upper_camel_decorated_opts::<_, AllBoundaries>(),
+    ///     Ok(UpperCamelIdent::new_boxed("__Abc123HttpDevServer__")?), // Digits recognized as proper boundaries.
     /// );
     /// // Compare this to...
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_camel_decorated_opts::<Default>(),
-    ///     "__Abc_123HttpDevServer__" // Digits aren't recognized as boundaries.
+    ///         .to_upper_camel_decorated_opts::<_, Default>(),
+    ///     Ok(UpperCamelIdent::new_boxed("__Abc_123HttpDevServer__")?), // Digits aren't recognized as boundaries.
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -273,19 +290,21 @@ pub trait ToUpperCamel {
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_camel_decorated_opts::<NoBoundaries>(),
-    ///     "__Http_Dev_Server__" // Nothing recognized as a boundary.
+    ///         .to_upper_camel_decorated_opts::<_, NoBoundaries>(),
+    ///     Ok(UpperCamelIdent::new_boxed("__Http_Dev_Server__")?), // Nothing recognized as a boundary.
     /// );
     /// // Compare this to...
     /// assert_eq!(
     ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_camel_decorated_opts::<Default>(),
-    ///     "__HttpDevServer__" // Normal boundaries are recognized.
+    ///         .to_upper_camel_decorated_opts::<_, Default>(),
+    ///     Ok(UpperCamelIdent::new_boxed("__HttpDevServer__")?), // Normal boundaries are recognized.
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_camel_decorated_opts<O: Options>(&self) -> String;
+    fn to_upper_camel_decorated_opts<T, O: Options>(&self) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperCamelIdent<Self::Profile>>;
 
     /// Returns a string of the provided input converted to upper camel
     /// delimited form.
@@ -307,48 +326,51 @@ pub trait ToUpperCamel {
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
     ///         .to_upper_camel_delimited(),
-    ///     "__Lower__Camel_Case__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Lower__Camel_Case__")?),
     /// );
     /// assert_eq!(
     ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
     ///         .to_upper_camel_delimited(),
-    ///     "__Lower__Hybrid_Case__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Lower__Hybrid_Case__")?),
     /// );
     /// assert_eq!(
     ///     LowerKebabIdent::new("--lower--kebab-case--")?
     ///         .to_upper_camel_delimited(),
-    ///     "__Lower__Kebab_Case__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Lower__Kebab_Case__")?),
     /// );
     /// assert_eq!(
     ///     LowerSnakeIdent::new("__lower__snake_case__")?
     ///         .to_upper_camel_delimited(),
-    ///     "__Lower__Snake_Case__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Lower__Snake_Case__")?),
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
     ///         .to_upper_camel_delimited(),
-    ///     "__Upper__Camel_Case__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Upper__Camel_Case__")?),
     /// );
     /// assert_eq!(
     ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
     ///         .to_upper_camel_delimited(),
-    ///     "__Upper__Hybrid_Case__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Upper__Hybrid_Case__")?),
     /// );
     /// assert_eq!(
     ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
     ///         .to_upper_camel_delimited(),
-    ///     "__Upper__Kebab_Case__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Upper__Kebab_Case__")?),
     /// );
     /// assert_eq!(
     ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
     ///         .to_upper_camel_delimited(),
-    ///     "__Upper__Snake_Case__"
+    ///     Ok(UpperCamelIdent::new_boxed("__Upper__Snake_Case__")?),
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_camel_delimited(&self) -> String {
-        self.to_upper_camel_delimited_opts::<Default>()
+    fn to_upper_camel_delimited<T>(&self) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperCamelIdent<Self::Profile>>,
+    {
+        self.to_upper_camel_delimited_opts::<T, Default>()
     }
 
     /// Returns a string of the provided input converted to upper camel
@@ -372,14 +394,14 @@ pub trait ToUpperCamel {
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_camel_delimited_opts::<AllBoundaries>(),
-    ///     "__Abc_123_HttpDevServer__" // Digits recognized as proper boundaries.
+    ///         .to_upper_camel_delimited_opts::<_, AllBoundaries>(),
+    ///     Ok(UpperCamelIdent::new_boxed("__Abc_123_HttpDevServer__")?), // Digits recognized as proper boundaries.
     /// );
     /// // Compare this to (in this case identical)...
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_camel_delimited_opts::<Default>(),
-    ///     "__Abc_123_HttpDevServer__" // Digits aren't recognized as boundaries.
+    ///         .to_upper_camel_delimited_opts::<_, Default>(),
+    ///     Ok(UpperCamelIdent::new_boxed("__Abc_123_HttpDevServer__")?), // Digits aren't recognized as boundaries.
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -392,19 +414,21 @@ pub trait ToUpperCamel {
     /// # use typed_ident::syntax::boundary::options::*;
     /// assert_eq!(
     ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_camel_delimited_opts::<NoBoundaries>(),
-    ///     "__Http_Dev_Server__" // Nothing recognized as a boundary.
+    ///         .to_upper_camel_delimited_opts::<_, NoBoundaries>(),
+    ///     Ok(UpperCamelIdent::new_boxed("__Http_Dev_Server__")?), // Nothing recognized as a boundary.
     /// );
     /// // Compare this to...
     /// assert_eq!(
     ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_camel_delimited_opts::<Default>(),
-    ///     "__HttpDevServer__" // Normal boundaries are recognized.
+    ///         .to_upper_camel_delimited_opts::<_, Default>(),
+    ///     Ok(UpperCamelIdent::new_boxed("__HttpDevServer__")?), // Normal boundaries are recognized.
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_camel_delimited_opts<O: Options>(&self) -> String;
+    fn to_upper_camel_delimited_opts<T, O: Options>(&self) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperCamelIdent<Self::Profile>>;
 }
 
 // =============================================================================
@@ -414,24 +438,33 @@ pub trait ToUpperCamel {
 // -----------------------------------------------------------------------------
 impl<I: Identifier + ?Sized> ToUpperCamel for I {
     #[inline]
-    fn to_upper_camel_opts<O: Options>(&self) -> String {
+    fn to_upper_camel_opts<T, O: Options>(&self) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperCamelIdent<Self::Profile>>,
+    {
         let mut string = String::with_capacity(self.len());
         write!(string, "{}", self.as_upper_camel_opts::<O>())
             .expect("failed to format an identifier into a string");
-        string
+        T::from_intermediate(string)
     }
     #[inline]
-    fn to_upper_camel_decorated_opts<O: Options>(&self) -> String {
+    fn to_upper_camel_decorated_opts<T, O: Options>(&self) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperCamelIdent<Self::Profile>>,
+    {
         let mut string = String::with_capacity(self.len());
         write!(string, "{}", self.as_upper_camel_decorated_opts::<O>())
             .expect("failed to format an identifier into a string");
-        string
+        T::from_intermediate(string)
     }
     #[inline]
-    fn to_upper_camel_delimited_opts<O: Options>(&self) -> String {
+    fn to_upper_camel_delimited_opts<T, O: Options>(&self) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperCamelIdent<Self::Profile>>,
+    {
         let mut string = String::with_capacity(self.len());
         write!(string, "{}", self.as_upper_camel_delimited_opts::<O>())
             .expect("failed to format an identifier into a string");
-        string
+        T::from_intermediate(string)
     }
 }
