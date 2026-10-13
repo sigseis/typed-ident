@@ -3,12 +3,21 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Identifier;
 use crate::fmt::AsUpperHybrid;
+use crate::intermediate::FromIntermediate;
+use crate::syntax::Profile;
 use crate::syntax::boundary::options::{Default, Options};
 use crate::syntax::delimiter::AsciiFlatLine;
+use crate::{Error, Identifier};
 use core::fmt::Write;
 use std_alloc::string::String;
+
+// =============================================================================
+// TYPE ALIASES
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+type UpperHybridIdent<P> = crate::presets::generic::UpperHybridIdent<<P as Profile>::CharProfile>;
 
 // =============================================================================
 // TRAITS
@@ -38,7 +47,7 @@ use std_alloc::string::String;
 /// `default_delim`.
 ///
 /// [`convert`]: crate::convert
-pub trait ToUpperHybrid {
+pub trait ToUpperHybrid: Identifier {
     /// Returns a string of the provided input converted to upper hybrid
     /// canonical form.
     ///
@@ -62,42 +71,42 @@ pub trait ToUpperHybrid {
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
     ///         .to_upper_hybrid(AsciiFlatLine::LowLine),
-    ///     "LowerCamelCase"
+    ///     Ok(UpperHybridIdent::new_boxed("LowerCamelCase")?),
     /// );
     /// assert_eq!(
     ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
     ///         .to_upper_hybrid(AsciiFlatLine::LowLine),
-    ///     "LowerHybridCase"
+    ///     Ok(UpperHybridIdent::new_boxed("LowerHybridCase")?),
     /// );
     /// assert_eq!(
     ///     LowerKebabIdent::new("--lower--kebab-case--")?
     ///         .to_upper_hybrid(AsciiFlatLine::LowLine),
-    ///     "LowerKebabCase"
+    ///     Ok(UpperHybridIdent::new_boxed("LowerKebabCase")?),
     /// );
     /// assert_eq!(
     ///     LowerSnakeIdent::new("__lower__snake_case__")?
     ///         .to_upper_hybrid(AsciiFlatLine::LowLine),
-    ///     "LowerSnakeCase"
+    ///     Ok(UpperHybridIdent::new_boxed("LowerSnakeCase")?),
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
     ///         .to_upper_hybrid(AsciiFlatLine::LowLine),
-    ///     "UpperCamelCase"
+    ///     Ok(UpperHybridIdent::new_boxed("UpperCamelCase")?),
     /// );
     /// assert_eq!(
     ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
     ///         .to_upper_hybrid(AsciiFlatLine::LowLine),
-    ///     "UpperHybridCase"
+    ///     Ok(UpperHybridIdent::new_boxed("UpperHybridCase")?),
     /// );
     /// assert_eq!(
     ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
     ///         .to_upper_hybrid(AsciiFlatLine::LowLine),
-    ///     "UpperKebabCase"
+    ///     Ok(UpperHybridIdent::new_boxed("UpperKebabCase")?),
     /// );
     /// assert_eq!(
     ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
     ///         .to_upper_hybrid(AsciiFlatLine::LowLine),
-    ///     "UpperSnakeCase"
+    ///     Ok(UpperHybridIdent::new_boxed("UpperSnakeCase")?),
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -112,19 +121,22 @@ pub trait ToUpperHybrid {
     /// assert_eq!(
     ///     UpperCamelIdent::new("_____")?
     ///         .to_upper_hybrid(AsciiFlatLine::LowLine),
-    ///     "_"
+    ///     Ok(UpperHybridIdent::new_boxed("_")?),
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__2__Example__Camel__")?
     ///         .to_upper_hybrid(AsciiFlatLine::LowLine),
-    ///     "_2ExampleCamel"
+    ///     Ok(UpperHybridIdent::new_boxed("_2ExampleCamel")?),
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_hybrid(&self, default_delim: AsciiFlatLine) -> String {
-        self.to_upper_hybrid_opts::<Default>(default_delim)
+    fn to_upper_hybrid<T>(&self, default_delim: AsciiFlatLine) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperHybridIdent<Self::Profile>>,
+    {
+        self.to_upper_hybrid_opts::<T, Default>(default_delim)
     }
 
     /// Returns a string of the provided input converted to upper hybrid
@@ -149,14 +161,14 @@ pub trait ToUpperHybrid {
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
     ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_hybrid_opts::<AllBoundaries>(AsciiFlatLine::LowLine),
-    ///     "Abc123HttpDevServer" // Digits recognized as proper boundaries.
+    ///         .to_upper_hybrid_opts::<_, AllBoundaries>(AsciiFlatLine::LowLine),
+    ///     Ok(UpperHybridIdent::new_boxed("Abc123HttpDevServer")?), // Digits recognized as proper boundaries.
     /// );
     /// // Compare this to...
     /// assert_eq!(
     ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_hybrid_opts::<Default>(AsciiFlatLine::LowLine),
-    ///     "Abc_123HttpDevServer" // Digits aren't recognized as boundaries.
+    ///         .to_upper_hybrid_opts::<_, Default>(AsciiFlatLine::LowLine),
+    ///     Ok(UpperHybridIdent::new_boxed("Abc_123HttpDevServer")?), // Digits aren't recognized as boundaries.
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -170,19 +182,21 @@ pub trait ToUpperHybrid {
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
     ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_hybrid_opts::<NoBoundaries>(AsciiFlatLine::LowLine),
-    ///     "Http_Dev_Server" // Nothing recognized as a boundary.
+    ///         .to_upper_hybrid_opts::<_, NoBoundaries>(AsciiFlatLine::LowLine),
+    ///     Ok(UpperHybridIdent::new_boxed("Http_Dev_Server")?), // Nothing recognized as a boundary.
     /// );
     /// // Compare this to...
     /// assert_eq!(
     ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_hybrid_opts::<Default>(AsciiFlatLine::LowLine),
-    ///     "HttpDevServer" // Normal boundaries are recognized.
+    ///         .to_upper_hybrid_opts::<_, Default>(AsciiFlatLine::LowLine),
+    ///     Ok(UpperHybridIdent::new_boxed("HttpDevServer")?), // Normal boundaries are recognized.
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> String;
+    fn to_upper_hybrid_opts<T, O: Options>(&self, default_delim: AsciiFlatLine) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperHybridIdent<Self::Profile>>;
 
     /// Returns a string of the provided input converted to upper hybrid
     /// decorated form.
@@ -205,49 +219,52 @@ pub trait ToUpperHybrid {
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
     ///         .to_upper_hybrid_decorated(AsciiFlatLine::LowLine),
-    ///     "__Lower__CamelCase__"
+    ///     Ok(UpperHybridIdent::new_boxed("__Lower__CamelCase__")?),
     /// );
     /// assert_eq!(
     ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
     ///         .to_upper_hybrid_decorated(AsciiFlatLine::LowLine),
-    ///     "_-Lower-_HybridCase-_"
+    ///     Ok(UpperHybridIdent::new_boxed("_-Lower-_HybridCase-_")?),
     /// );
     /// assert_eq!(
     ///     LowerKebabIdent::new("--lower--kebab-case--")?
     ///         .to_upper_hybrid_decorated(AsciiFlatLine::LowLine),
-    ///     "--Lower--KebabCase--"
+    ///     Ok(UpperHybridIdent::new_boxed("--Lower--KebabCase--")?),
     /// );
     /// assert_eq!(
     ///     LowerSnakeIdent::new("__lower__snake_case__")?
     ///         .to_upper_hybrid_decorated(AsciiFlatLine::LowLine),
-    ///     "__Lower__SnakeCase__"
+    ///     Ok(UpperHybridIdent::new_boxed("__Lower__SnakeCase__")?),
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
     ///         .to_upper_hybrid_decorated(AsciiFlatLine::LowLine),
-    ///     "__Upper__CamelCase__"
+    ///     Ok(UpperHybridIdent::new_boxed("__Upper__CamelCase__")?),
     /// );
     /// assert_eq!(
     ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
     ///         .to_upper_hybrid_decorated(AsciiFlatLine::LowLine),
-    ///     "-_Upper_-HybridCase_-"
+    ///     Ok(UpperHybridIdent::new_boxed("-_Upper_-HybridCase_-")?),
     /// );
     /// assert_eq!(
     ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
     ///         .to_upper_hybrid_decorated(AsciiFlatLine::LowLine),
-    ///     "--Upper--KebabCase--"
+    ///     Ok(UpperHybridIdent::new_boxed("--Upper--KebabCase--")?),
     /// );
     /// assert_eq!(
     ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
     ///         .to_upper_hybrid_decorated(AsciiFlatLine::LowLine),
-    ///     "__Upper__SnakeCase__"
+    ///     Ok(UpperHybridIdent::new_boxed("__Upper__SnakeCase__")?),
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_hybrid_decorated(&self, default_delim: AsciiFlatLine) -> String {
-        self.to_upper_hybrid_decorated_opts::<Default>(default_delim)
+    fn to_upper_hybrid_decorated<T>(&self, default_delim: AsciiFlatLine) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperHybridIdent<Self::Profile>>,
+    {
+        self.to_upper_hybrid_decorated_opts::<T, Default>(default_delim)
     }
 
     /// Returns a string of the provided input converted to upper hybrid
@@ -272,14 +289,14 @@ pub trait ToUpperHybrid {
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
     ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_hybrid_decorated_opts::<AllBoundaries>(AsciiFlatLine::LowLine),
-    ///     "__Abc123HttpDevServer__" // Digits recognized as proper boundaries.
+    ///         .to_upper_hybrid_decorated_opts::<_, AllBoundaries>(AsciiFlatLine::LowLine),
+    ///     Ok(UpperHybridIdent::new_boxed("__Abc123HttpDevServer__")?), // Digits recognized as proper boundaries.
     /// );
     /// // Compare this to...
     /// assert_eq!(
     ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_hybrid_decorated_opts::<Default>(AsciiFlatLine::LowLine),
-    ///     "__Abc_123HttpDevServer__" // Digits aren't recognized as boundaries.
+    ///         .to_upper_hybrid_decorated_opts::<_, Default>(AsciiFlatLine::LowLine),
+    ///     Ok(UpperHybridIdent::new_boxed("__Abc_123HttpDevServer__")?), // Digits aren't recognized as boundaries.
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -293,19 +310,24 @@ pub trait ToUpperHybrid {
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
     ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_hybrid_decorated_opts::<NoBoundaries>(AsciiFlatLine::LowLine),
-    ///     "__Http_Dev_Server__" // Nothing recognized as a boundary.
+    ///         .to_upper_hybrid_decorated_opts::<_, NoBoundaries>(AsciiFlatLine::LowLine),
+    ///     Ok(UpperHybridIdent::new_boxed("__Http_Dev_Server__")?), // Nothing recognized as a boundary.
     /// );
     /// // Compare this to...
     /// assert_eq!(
     ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_hybrid_decorated_opts::<Default>(AsciiFlatLine::LowLine),
-    ///     "__HttpDevServer__" // Normal boundaries are recognized.
+    ///         .to_upper_hybrid_decorated_opts::<_, Default>(AsciiFlatLine::LowLine),
+    ///     Ok(UpperHybridIdent::new_boxed("__HttpDevServer__")?), // Normal boundaries are recognized.
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_hybrid_decorated_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> String;
+    fn to_upper_hybrid_decorated_opts<T, O: Options>(
+        &self,
+        default_delim: AsciiFlatLine,
+    ) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperHybridIdent<Self::Profile>>;
 
     /// Returns a string of the provided input converted to upper hybrid
     /// delimited form.
@@ -328,48 +350,51 @@ pub trait ToUpperHybrid {
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
     ///         .to_upper_hybrid_delimited(AsciiFlatLine::LowLine),
-    ///     "__Lower__Camel_Case__"
+    ///     Ok(UpperHybridIdent::new_boxed("__Lower__Camel_Case__")?),
     /// );
     /// assert_eq!(
     ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
     ///         .to_upper_hybrid_delimited(AsciiFlatLine::LowLine),
-    ///     "_-Lower-_Hybrid-Case-_"
+    ///     Ok(UpperHybridIdent::new_boxed("_-Lower-_Hybrid-Case-_")?),
     /// );
     /// assert_eq!(
     ///     LowerKebabIdent::new("--lower--kebab-case--")?
     ///         .to_upper_hybrid_delimited(AsciiFlatLine::LowLine),
-    ///     "--Lower--Kebab-Case--"
+    ///     Ok(UpperHybridIdent::new_boxed("--Lower--Kebab-Case--")?),
     /// );
     /// assert_eq!(
     ///     LowerSnakeIdent::new("__lower__snake_case__")?
     ///         .to_upper_hybrid_delimited(AsciiFlatLine::LowLine),
-    ///     "__Lower__Snake_Case__"
+    ///     Ok(UpperHybridIdent::new_boxed("__Lower__Snake_Case__")?),
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
     ///         .to_upper_hybrid_delimited(AsciiFlatLine::LowLine),
-    ///     "__Upper__Camel_Case__"
+    ///     Ok(UpperHybridIdent::new_boxed("__Upper__Camel_Case__")?),
     /// );
     /// assert_eq!(
     ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
     ///         .to_upper_hybrid_delimited(AsciiFlatLine::LowLine),
-    ///     "-_Upper_-Hybrid_Case_-"
+    ///     Ok(UpperHybridIdent::new_boxed("-_Upper_-Hybrid_Case_-")?),
     /// );
     /// assert_eq!(
     ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
     ///         .to_upper_hybrid_delimited(AsciiFlatLine::LowLine),
-    ///     "--Upper--Kebab-Case--"
+    ///     Ok(UpperHybridIdent::new_boxed("--Upper--Kebab-Case--")?),
     /// );
     /// assert_eq!(
     ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
     ///         .to_upper_hybrid_delimited(AsciiFlatLine::LowLine),
-    ///     "__Upper__Snake_Case__"
+    ///     Ok(UpperHybridIdent::new_boxed("__Upper__Snake_Case__")?),
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_hybrid_delimited(&self, default_delim: AsciiFlatLine) -> String {
-        self.to_upper_hybrid_delimited_opts::<Default>(default_delim)
+    fn to_upper_hybrid_delimited<T>(&self, default_delim: AsciiFlatLine) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperHybridIdent<Self::Profile>>,
+    {
+        self.to_upper_hybrid_delimited_opts::<T, Default>(default_delim)
     }
 
     /// Returns a string of the provided input converted to upper hybrid
@@ -394,14 +419,14 @@ pub trait ToUpperHybrid {
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
     ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_hybrid_delimited_opts::<AllBoundaries>(AsciiFlatLine::LowLine),
-    ///     "__Abc_123_HttpDevServer__" // Digits recognized as proper boundaries.
+    ///         .to_upper_hybrid_delimited_opts::<_, AllBoundaries>(AsciiFlatLine::LowLine),
+    ///     Ok(UpperHybridIdent::new_boxed("__Abc_123_HttpDevServer__")?), // Digits recognized as proper boundaries.
     /// );
     /// // Compare this to (in this case identical)...
     /// assert_eq!(
     ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_hybrid_delimited_opts::<Default>(AsciiFlatLine::LowLine),
-    ///     "__Abc_123_HttpDevServer__" // Digits aren't recognized as boundaries.
+    ///         .to_upper_hybrid_delimited_opts::<_, Default>(AsciiFlatLine::LowLine),
+    ///     Ok(UpperHybridIdent::new_boxed("__Abc_123_HttpDevServer__")?), // Digits aren't recognized as boundaries.
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -415,19 +440,24 @@ pub trait ToUpperHybrid {
     /// # use typed_ident::syntax::delimiter::*;
     /// assert_eq!(
     ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_hybrid_delimited_opts::<NoBoundaries>(AsciiFlatLine::LowLine),
-    ///     "__Http_Dev_Server__" // Nothing recognized as a boundary.
+    ///         .to_upper_hybrid_delimited_opts::<_, NoBoundaries>(AsciiFlatLine::LowLine),
+    ///     Ok(UpperHybridIdent::new_boxed("__Http_Dev_Server__")?), // Nothing recognized as a boundary.
     /// );
     /// // Compare this to...
     /// assert_eq!(
     ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_hybrid_delimited_opts::<Default>(AsciiFlatLine::LowLine),
-    ///     "__HttpDevServer__" // Normal boundaries are recognized.
+    ///         .to_upper_hybrid_delimited_opts::<_, Default>(AsciiFlatLine::LowLine),
+    ///     Ok(UpperHybridIdent::new_boxed("__HttpDevServer__")?), // Normal boundaries are recognized.
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_hybrid_delimited_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> String;
+    fn to_upper_hybrid_delimited_opts<T, O: Options>(
+        &self,
+        default_delim: AsciiFlatLine,
+    ) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperHybridIdent<Self::Profile>>;
 }
 
 // =============================================================================
@@ -437,14 +467,23 @@ pub trait ToUpperHybrid {
 // -----------------------------------------------------------------------------
 impl<I: Identifier + ?Sized> ToUpperHybrid for I {
     #[inline]
-    fn to_upper_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> String {
+    fn to_upper_hybrid_opts<T, O: Options>(&self, default_delim: AsciiFlatLine) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperHybridIdent<Self::Profile>>,
+    {
         let mut string = String::with_capacity(self.len());
         write!(string, "{}", self.as_upper_hybrid_opts::<O>(default_delim))
             .expect("failed to format an identifier into a string");
-        string
+        T::from_intermediate(string)
     }
     #[inline]
-    fn to_upper_hybrid_decorated_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> String {
+    fn to_upper_hybrid_decorated_opts<T, O: Options>(
+        &self,
+        default_delim: AsciiFlatLine,
+    ) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperHybridIdent<Self::Profile>>,
+    {
         let mut string = String::with_capacity(self.len());
         write!(
             string,
@@ -452,10 +491,16 @@ impl<I: Identifier + ?Sized> ToUpperHybrid for I {
             self.as_upper_hybrid_decorated_opts::<O>(default_delim)
         )
         .expect("failed to format an identifier into a string");
-        string
+        T::from_intermediate(string)
     }
     #[inline]
-    fn to_upper_hybrid_delimited_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> String {
+    fn to_upper_hybrid_delimited_opts<T, O: Options>(
+        &self,
+        default_delim: AsciiFlatLine,
+    ) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperHybridIdent<Self::Profile>>,
+    {
         let mut string = String::with_capacity(self.len());
         write!(
             string,
@@ -463,6 +508,6 @@ impl<I: Identifier + ?Sized> ToUpperHybrid for I {
             self.as_upper_hybrid_delimited_opts::<O>(default_delim)
         )
         .expect("failed to format an identifier into a string");
-        string
+        T::from_intermediate(string)
     }
 }

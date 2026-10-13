@@ -3,10 +3,19 @@
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Identifier;
 use crate::fmt::AsUpperKebab;
+use crate::intermediate::FromIntermediate;
+use crate::syntax::Profile;
+use crate::{Error, Identifier};
 use core::fmt::Write;
 use std_alloc::string::String;
+
+// =============================================================================
+// TYPE ALIASES
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+type UpperKebabIdent<P> = crate::presets::generic::UpperKebabIdent<<P as Profile>::CharProfile>;
 
 // =============================================================================
 // TRAITS
@@ -28,7 +37,7 @@ use std_alloc::string::String;
 /// </div>
 ///
 /// [`convert`]: crate::convert
-pub trait ToUpperKebab {
+pub trait ToUpperKebab: Identifier {
     /// Returns a string of the provided input converted to upper kebab
     /// canonical form.
     ///
@@ -46,42 +55,42 @@ pub trait ToUpperKebab {
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
     ///         .to_upper_kebab(),
-    ///     "LOWER-CAMEL-CASE"
+    ///     Ok(UpperKebabIdent::new_boxed("LOWER-CAMEL-CASE")?),
     /// );
     /// assert_eq!(
     ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
     ///         .to_upper_kebab(),
-    ///     "LOWER-HYBRID-CASE"
+    ///     Ok(UpperKebabIdent::new_boxed("LOWER-HYBRID-CASE")?),
     /// );
     /// assert_eq!(
     ///     LowerKebabIdent::new("--lower--kebab-case--")?
     ///         .to_upper_kebab(),
-    ///     "LOWER-KEBAB-CASE"
+    ///     Ok(UpperKebabIdent::new_boxed("LOWER-KEBAB-CASE")?),
     /// );
     /// assert_eq!(
     ///     LowerSnakeIdent::new("__lower__snake_case__")?
     ///         .to_upper_kebab(),
-    ///     "LOWER-SNAKE-CASE"
+    ///     Ok(UpperKebabIdent::new_boxed("LOWER-SNAKE-CASE")?),
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
     ///         .to_upper_kebab(),
-    ///     "UPPER-CAMEL-CASE"
+    ///     Ok(UpperKebabIdent::new_boxed("UPPER-CAMEL-CASE")?),
     /// );
     /// assert_eq!(
     ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
     ///         .to_upper_kebab(),
-    ///     "UPPER-HYBRID-CASE"
+    ///     Ok(UpperKebabIdent::new_boxed("UPPER-HYBRID-CASE")?),
     /// );
     /// assert_eq!(
     ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
     ///         .to_upper_kebab(),
-    ///     "UPPER-KEBAB-CASE"
+    ///     Ok(UpperKebabIdent::new_boxed("UPPER-KEBAB-CASE")?),
     /// );
     /// assert_eq!(
     ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
     ///         .to_upper_kebab(),
-    ///     "UPPER-SNAKE-CASE"
+    ///     Ok(UpperKebabIdent::new_boxed("UPPER-SNAKE-CASE")?),
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -95,17 +104,19 @@ pub trait ToUpperKebab {
     /// assert_eq!(
     ///     UpperCamelIdent::new("_____")?
     ///         .to_upper_kebab(),
-    ///     "-"
+    ///     Ok(UpperKebabIdent::new_boxed("-")?),
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__2__Example__Camel__")?
     ///         .to_upper_kebab(),
-    ///     "-2-EXAMPLE-CAMEL"
+    ///     Ok(UpperKebabIdent::new_boxed("-2-EXAMPLE-CAMEL")?),
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_kebab(&self) -> String;
+    fn to_upper_kebab<T>(&self) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperKebabIdent<Self::Profile>>;
 
     /// Returns a string of the provided input converted to upper kebab
     /// decorated form.
@@ -124,47 +135,49 @@ pub trait ToUpperKebab {
     /// assert_eq!(
     ///     LowerCamelIdent::new("__lower__camel_case__")?
     ///         .to_upper_kebab_decorated(),
-    ///     "--LOWER--CAMEL-CASE--"
+    ///     Ok(UpperKebabIdent::new_boxed("--LOWER--CAMEL-CASE--")?),
     /// );
     /// assert_eq!(
     ///     LowerHybridIdent::new("_-lower-_hybrid-case-_")?
     ///         .to_upper_kebab_decorated(),
-    ///     "--LOWER--HYBRID-CASE--"
+    ///     Ok(UpperKebabIdent::new_boxed("--LOWER--HYBRID-CASE--")?),
     /// );
     /// assert_eq!(
     ///     LowerKebabIdent::new("--lower--kebab-case--")?
     ///         .to_upper_kebab_decorated(),
-    ///     "--LOWER--KEBAB-CASE--"
+    ///     Ok(UpperKebabIdent::new_boxed("--LOWER--KEBAB-CASE--")?),
     /// );
     /// assert_eq!(
     ///     LowerSnakeIdent::new("__lower__snake_case__")?
     ///         .to_upper_kebab_decorated(),
-    ///     "--LOWER--SNAKE-CASE--"
+    ///     Ok(UpperKebabIdent::new_boxed("--LOWER--SNAKE-CASE--")?),
     /// );
     /// assert_eq!(
     ///     UpperCamelIdent::new("__Upper__Camel_Case__")?
     ///         .to_upper_kebab_decorated(),
-    ///     "--UPPER--CAMEL-CASE--"
+    ///     Ok(UpperKebabIdent::new_boxed("--UPPER--CAMEL-CASE--")?),
     /// );
     /// assert_eq!(
     ///     UpperHybridIdent::new("-_Upper_-Hybrid_Case_-")?
     ///         .to_upper_kebab_decorated(),
-    ///     "--UPPER--HYBRID-CASE--"
+    ///     Ok(UpperKebabIdent::new_boxed("--UPPER--HYBRID-CASE--")?),
     /// );
     /// assert_eq!(
     ///     UpperKebabIdent::new("--UPPER--KEBAB-CASE--")?
     ///         .to_upper_kebab_decorated(),
-    ///     "--UPPER--KEBAB-CASE--"
+    ///     Ok(UpperKebabIdent::new_boxed("--UPPER--KEBAB-CASE--")?),
     /// );
     /// assert_eq!(
     ///     UpperSnakeIdent::new("__UPPER__SNAKE_CASE__")?
     ///         .to_upper_kebab_decorated(),
-    ///     "--UPPER--SNAKE-CASE--"
+    ///     Ok(UpperKebabIdent::new_boxed("--UPPER--SNAKE-CASE--")?),
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_kebab_decorated(&self) -> String;
+    fn to_upper_kebab_decorated<T>(&self) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperKebabIdent<Self::Profile>>;
 }
 
 // =============================================================================
@@ -174,17 +187,23 @@ pub trait ToUpperKebab {
 // -----------------------------------------------------------------------------
 impl<I: Identifier + ?Sized> ToUpperKebab for I {
     #[inline]
-    fn to_upper_kebab(&self) -> String {
+    fn to_upper_kebab<T>(&self) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperKebabIdent<Self::Profile>>,
+    {
         let mut string = String::with_capacity(self.len());
         write!(string, "{}", self.as_upper_kebab())
             .expect("failed to format an identifier into a string");
-        string
+        T::from_intermediate(string)
     }
     #[inline]
-    fn to_upper_kebab_decorated(&self) -> String {
+    fn to_upper_kebab_decorated<T>(&self) -> Result<T, Error>
+    where
+        T: FromIntermediate<UpperKebabIdent<Self::Profile>>,
+    {
         let mut string = String::with_capacity(self.len());
         write!(string, "{}", self.as_upper_kebab_decorated())
             .expect("failed to format an identifier into a string");
-        string
+        T::from_intermediate(string)
     }
 }

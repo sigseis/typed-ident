@@ -182,7 +182,11 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
-    pub fn new(s: &str) -> Result<&Self, Error> {
+    pub fn new<S>(s: &S) -> Result<&Self, Error>
+    where
+        S: AsRef<str> + ?Sized,
+    {
+        let s = s.as_ref();
         P::is_fragment::<D>(s)?;
         Ok(Self::new_unchecked(s))
     }

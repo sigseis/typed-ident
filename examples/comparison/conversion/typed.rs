@@ -17,7 +17,7 @@ fn main() -> ExitCode {
     let format = args.next().expect("expected at least one format argument");
     let identifier = args.next().expect("expected at least one input argument");
     let identifier = HybridIdent::new(&identifier).expect("expected a hybrid-ident identifier");
-    let result = match format.as_str() {
+    let result: String = match format.as_str() {
         "lower-camel" => identifier.to_lower_camel(),
         "upper-camel" => identifier.to_upper_camel(),
         "lower-kebab" => identifier.to_lower_kebab(),
@@ -28,7 +28,8 @@ fn main() -> ExitCode {
             eprintln!("unknown command: {unknown}");
             return ExitCode::FAILURE;
         }
-    };
+    }
+    .expect("failed to convert to the target format");
     println!("converted: {result}");
     ExitCode::SUCCESS
 }
