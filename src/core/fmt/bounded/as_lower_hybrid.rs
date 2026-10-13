@@ -6,7 +6,6 @@
 use crate::Identifier;
 use crate::fmt::bounded::{Canonical, Decorated, Delimited};
 use crate::syntax::boundary::Standard;
-use crate::syntax::boundary::options::{Default, Options};
 use crate::syntax::delimiter::{AsciiFlatLine, Delimiter};
 
 // =============================================================================
@@ -92,7 +91,6 @@ pub trait AsLowerHybrid {
     ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`as_lower_hybrid_opts`]: Self::as_lower_hybrid_opts
     /// [`fmt`]: crate::fmt
     ///
     /// # Examples
@@ -175,83 +173,14 @@ pub trait AsLowerHybrid {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[inline]
     #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_lower_hybrid(&self, default_delim: AsciiFlatLine) -> LowerHybrid<'_> {
-        self.as_lower_hybrid_opts::<Default>(default_delim)
-    }
-
-    /// Returns a displayable type that converts the provided input to lower
-    /// hybrid in canonical form, over some provided boundary options.
-    ///
-    /// Use this method if you want to transform the boundary policy of the
-    /// input string, or if you want to persist the same customized policy (in
-    /// place of simply using the default).
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Transforming to a more-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("__abc_123_httpDEVServer__")?
-    ///         .as_lower_hybrid_opts::<AllBoundaries>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "abc123HttpDevServer" // Digits recognized as proper boundaries.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("__abc_123_httpDEVServer__")?
-    ///         .as_lower_hybrid_opts::<Default>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "abc_123HttpDevServer" // Digits aren't recognized as boundaries.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// Transforming to a less-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("__httpDEVServer__")?
-    ///         .as_lower_hybrid_opts::<NoBoundaries>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "http_dev_server" // Nothing recognized as a boundary.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("__httpDEVServer__")?
-    ///         .as_lower_hybrid_opts::<Default>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "httpDevServer" // Normal boundaries are recognized.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_lower_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> LowerHybrid<'_>;
+    fn as_lower_hybrid(&self, default_delim: AsciiFlatLine) -> LowerHybrid<'_>;
 
     /// Returns a displayable type that converts the provided input to lower
     /// hybrid in decorated form.
     ///
-    /// This method uses the default boundary options. If you have customized
-    /// your boundary definitions, you almost certainly want to use the method
-    /// [`as_lower_hybrid_decorated_opts`].
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`as_lower_hybrid_decorated_opts`]: Self::as_lower_hybrid_decorated_opts
     /// [`fmt`]: crate::fmt
     ///
     /// # Examples
@@ -310,84 +239,14 @@ pub trait AsLowerHybrid {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[inline]
     #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_lower_hybrid_decorated(&self, default_delim: AsciiFlatLine) -> LowerHybridDecorated<'_> {
-        self.as_lower_hybrid_decorated_opts::<Default>(default_delim)
-    }
-
-    /// Returns a displayable type that converts the provided input to lower
-    /// hybrid in decorated form, over some provided boundary options.
-    ///
-    /// Use this method if you want to transform the boundary policy of the
-    /// input string, or if you want to persist the same customized policy (in
-    /// place of simply using the default).
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// Transforming to a more-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("__abc_123_httpDEVServer__")?
-    ///         .as_lower_hybrid_decorated_opts::<AllBoundaries>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__abc123HttpDevServer__" // Digits recognized as proper boundaries.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("__abc_123_httpDEVServer__")?
-    ///         .as_lower_hybrid_decorated_opts::<Default>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__abc_123HttpDevServer__" // Digits aren't recognized as boundaries.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// Transforming to a less-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("__httpDEVServer__")?
-    ///         .as_lower_hybrid_decorated_opts::<NoBoundaries>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__http_dev_server__" // Nothing recognized as a boundary.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("__httpDEVServer__")?
-    ///         .as_lower_hybrid_decorated_opts::<Default>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__httpDevServer__" // Normal boundaries are recognized.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_lower_hybrid_decorated_opts<O: Options>(
-        &self,
-        default_delim: AsciiFlatLine,
-    ) -> LowerHybridDecorated<'_>;
+    fn as_lower_hybrid_decorated(&self, default_delim: AsciiFlatLine) -> LowerHybridDecorated<'_>;
 
     /// Returns a displayable type that converts the provided input to lower
     /// hybrid in delimited form.
     ///
-    /// This method uses the default boundary options. If you have customized
-    /// your boundary definitions, you almost certainly want to use the method
-    /// [`as_lower_hybrid_delimited_opts`].
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`as_lower_hybrid_delimited_opts`]: Self::as_lower_hybrid_delimited_opts
     /// [`fmt`]: crate::fmt
     ///
     /// # Examples
@@ -447,73 +306,7 @@ pub trait AsLowerHybrid {
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_lower_hybrid_delimited(&self, default_delim: AsciiFlatLine) -> LowerHybridDelimited<'_> {
-        self.as_lower_hybrid_delimited_opts::<Default>(default_delim)
-    }
-
-    /// Returns a displayable type that converts the provided input to lower
-    /// hybrid in delimited form, over some provided boundary options.
-    ///
-    /// Use this method if you want to transform the boundary policy of the
-    /// input string, or if you want to persist the same customized policy (in
-    /// place of simply using the default).
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Transforming to a more-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("__abc_123_httpDEVServer__")?
-    ///         .as_lower_hybrid_delimited_opts::<AllBoundaries>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__abc_123_httpDevServer__" // Digits recognized as proper boundaries.
-    /// );
-    /// // Compare this to (in this case identical)...
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("__abc_123_httpDEVServer__")?
-    ///         .as_lower_hybrid_delimited_opts::<Default>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__abc_123_httpDevServer__" // Digits aren't recognized as boundaries.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// Transforming to a less-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("__httpDEVServer__")?
-    ///         .as_lower_hybrid_delimited_opts::<NoBoundaries>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__http_dev_server__" // Nothing recognized as a boundary.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     LowerHybridIdent::new("__httpDEVServer__")?
-    ///         .as_lower_hybrid_delimited_opts::<Default>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__httpDevServer__" // Normal boundaries are recognized.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_lower_hybrid_delimited_opts<O: Options>(
-        &self,
-        default_delim: AsciiFlatLine,
-    ) -> LowerHybridDelimited<'_>;
+    fn as_lower_hybrid_delimited(&self, default_delim: AsciiFlatLine) -> LowerHybridDelimited<'_>;
 }
 
 // =============================================================================
@@ -523,18 +316,15 @@ pub trait AsLowerHybrid {
 // -----------------------------------------------------------------------------
 impl<I: Identifier + ?Sized> AsLowerHybrid for I {
     #[inline]
-    fn as_lower_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> LowerHybrid<'_> {
-        LowerHybrid(Canonical::new::<I, Standard<O>>(
+    fn as_lower_hybrid(&self, default_delim: AsciiFlatLine) -> LowerHybrid<'_> {
+        LowerHybrid(Canonical::new::<I, Standard>(
             self.as_str(),
             default_delim.as_char(),
         ))
     }
     #[inline]
-    fn as_lower_hybrid_decorated_opts<O: Options>(
-        &self,
-        default_delim: AsciiFlatLine,
-    ) -> LowerHybridDecorated<'_> {
-        LowerHybridDecorated(Decorated::new::<I, Standard<O>>(
+    fn as_lower_hybrid_decorated(&self, default_delim: AsciiFlatLine) -> LowerHybridDecorated<'_> {
+        LowerHybridDecorated(Decorated::new::<I, Standard>(
             self.as_str(),
             default_delim.as_char(),
             Some(match default_delim {
@@ -544,11 +334,8 @@ impl<I: Identifier + ?Sized> AsLowerHybrid for I {
         ))
     }
     #[inline]
-    fn as_lower_hybrid_delimited_opts<O: Options>(
-        &self,
-        default_delim: AsciiFlatLine,
-    ) -> LowerHybridDelimited<'_> {
-        LowerHybridDelimited(Delimited::new::<I, Standard<O>>(
+    fn as_lower_hybrid_delimited(&self, default_delim: AsciiFlatLine) -> LowerHybridDelimited<'_> {
+        LowerHybridDelimited(Delimited::new::<I, Standard>(
             self.as_str(),
             default_delim.as_char(),
             Some(match default_delim {

@@ -30,12 +30,6 @@ type UpperKebabIdent<P> = crate::presets::generic::UpperKebabIdent<<P as Profile
 ///
 /// See the [`convert`] module for more details.
 ///
-/// <div class="warning">
-///
-/// **NOTE:** These traits are currently being reconsidered. See issue [#17](https://github.com/sigseis/typed-ident/issues/17).
-///
-/// </div>
-///
 /// [`convert`]: crate::convert
 pub trait ToUpperKebab: Identifier {
     /// Returns a string of the provided input converted to upper kebab
@@ -113,7 +107,7 @@ pub trait ToUpperKebab: Identifier {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    #[must_use = "format conversion returns a newly-allocated result, the original identifier is unmodified"]
     fn to_upper_kebab<T>(&self) -> Result<T, Error>
     where
         T: FromIntermediate<UpperKebabIdent<Self::Profile>>;
@@ -174,7 +168,7 @@ pub trait ToUpperKebab: Identifier {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    #[must_use = "format conversion returns a newly-allocated result, the original identifier is unmodified"]
     fn to_upper_kebab_decorated<T>(&self) -> Result<T, Error>
     where
         T: FromIntermediate<UpperKebabIdent<Self::Profile>>;

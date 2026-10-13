@@ -6,7 +6,6 @@
 use crate::fmt::AsUpperCamel;
 use crate::intermediate::FromIntermediate;
 use crate::syntax::Profile;
-use crate::syntax::boundary::options::{Default, Options};
 use crate::{Error, Identifier};
 use core::fmt::Write;
 use std_alloc::string::String;
@@ -27,24 +26,13 @@ type UpperCamelIdent<P> = crate::presets::generic::UpperCamelIdent<<P as Profile
 ///
 /// See the [`convert`] module for more details.
 ///
-/// <div class="warning">
-///
-/// **NOTE:** These traits are currently being reconsidered. See issue [#17](https://github.com/sigseis/typed-ident/issues/17).
-///
-/// </div>
-///
 /// [`convert`]: crate::convert
 pub trait ToUpperCamel: Identifier {
     /// Returns a string of the provided input converted to upper camel
     /// canonical form.
     ///
-    /// This method uses the default boundary options. If you have customized
-    /// your boundary definitions, you almost certainly want to use the method
-    /// [`to_upper_camel_opts`].
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`to_upper_camel_opts`]: Self::to_upper_camel_opts
     /// [`fmt`]: crate::fmt
     ///
     /// # Examples
@@ -115,82 +103,16 @@ pub trait ToUpperCamel: Identifier {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[inline]
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    #[must_use = "format conversion returns a newly-allocated result, the original identifier is unmodified"]
     fn to_upper_camel<T>(&self) -> Result<T, Error>
-    where
-        T: FromIntermediate<UpperCamelIdent<Self::Profile>>,
-    {
-        self.to_upper_camel_opts::<T, Default>()
-    }
-
-    /// Returns a string of the provided input converted to upper camel
-    /// canonical form.
-    ///
-    /// Use this method if you want to transform the boundary policy of the
-    /// input string, or if you want to persist the same customized policy (in
-    /// place of simply using the default).
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Transforming to a more-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::convert::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_camel_opts::<_, AllBoundaries>(),
-    ///     Ok(UpperCamelIdent::new_boxed("Abc123HttpDevServer")?), // Digits recognized as proper boundaries.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_camel_opts::<_, Default>(),
-    ///     Ok(UpperCamelIdent::new_boxed("Abc_123HttpDevServer")?), // Digits aren't recognized as boundaries.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// Transforming to a less-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::convert::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_camel_opts::<_, NoBoundaries>(),
-    ///     Ok(UpperCamelIdent::new_boxed("Http_Dev_Server")?), // Nothing recognized as a boundary.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_camel_opts::<_, Default>(),
-    ///     Ok(UpperCamelIdent::new_boxed("HttpDevServer")?), // Normal boundaries are recognized.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_camel_opts<T, O: Options>(&self) -> Result<T, Error>
     where
         T: FromIntermediate<UpperCamelIdent<Self::Profile>>;
 
     /// Returns a string of the provided input converted to upper camel
     /// decorated form.
     ///
-    /// This method uses the default boundary options. If you have customized
-    /// your boundary definitions, you almost certainly want to use the method
-    /// [`to_upper_camel_decorated_opts`].
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`to_upper_camel_decorated_opts`]: Self::to_upper_camel_decorated_opts
     /// [`fmt`]: crate::fmt
     ///
     /// # Examples
@@ -240,82 +162,16 @@ pub trait ToUpperCamel: Identifier {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[inline]
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    #[must_use = "format conversion returns a newly-allocated result, the original identifier is unmodified"]
     fn to_upper_camel_decorated<T>(&self) -> Result<T, Error>
-    where
-        T: FromIntermediate<UpperCamelIdent<Self::Profile>>,
-    {
-        self.to_upper_camel_decorated_opts::<T, Default>()
-    }
-
-    /// Returns a string of the provided input converted to upper camel
-    /// decorated form.
-    ///
-    /// Use this method if you want to transform the boundary policy of the
-    /// input string, or if you want to persist the same customized policy (in
-    /// place of simply using the default).
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Transforming to a more-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::convert::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_camel_decorated_opts::<_, AllBoundaries>(),
-    ///     Ok(UpperCamelIdent::new_boxed("__Abc123HttpDevServer__")?), // Digits recognized as proper boundaries.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_camel_decorated_opts::<_, Default>(),
-    ///     Ok(UpperCamelIdent::new_boxed("__Abc_123HttpDevServer__")?), // Digits aren't recognized as boundaries.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// Transforming to a less-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::convert::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_camel_decorated_opts::<_, NoBoundaries>(),
-    ///     Ok(UpperCamelIdent::new_boxed("__Http_Dev_Server__")?), // Nothing recognized as a boundary.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_camel_decorated_opts::<_, Default>(),
-    ///     Ok(UpperCamelIdent::new_boxed("__HttpDevServer__")?), // Normal boundaries are recognized.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_camel_decorated_opts<T, O: Options>(&self) -> Result<T, Error>
     where
         T: FromIntermediate<UpperCamelIdent<Self::Profile>>;
 
     /// Returns a string of the provided input converted to upper camel
     /// delimited form.
     ///
-    /// This method uses the default boundary options. If you have customized
-    /// your boundary definitions, you almost certainly want to use the method
-    /// [`to_upper_camel_delimited_opts`].
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`to_upper_camel_delimited_opts`]: Self::to_upper_camel_delimited_opts
     /// [`fmt`]: crate::fmt
     ///
     /// # Examples
@@ -365,68 +221,8 @@ pub trait ToUpperCamel: Identifier {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    #[must_use = "format conversion returns a newly-allocated result, the original identifier is unmodified"]
     fn to_upper_camel_delimited<T>(&self) -> Result<T, Error>
-    where
-        T: FromIntermediate<UpperCamelIdent<Self::Profile>>,
-    {
-        self.to_upper_camel_delimited_opts::<T, Default>()
-    }
-
-    /// Returns a string of the provided input converted to upper camel
-    /// delimited form.
-    ///
-    /// Use this method if you want to transform the boundary policy of the
-    /// input string, or if you want to persist the same customized policy (in
-    /// place of simply using the default).
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Transforming to a more-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::convert::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_camel_delimited_opts::<_, AllBoundaries>(),
-    ///     Ok(UpperCamelIdent::new_boxed("__Abc_123_HttpDevServer__")?), // Digits recognized as proper boundaries.
-    /// );
-    /// // Compare this to (in this case identical)...
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_camel_delimited_opts::<_, Default>(),
-    ///     Ok(UpperCamelIdent::new_boxed("__Abc_123_HttpDevServer__")?), // Digits aren't recognized as boundaries.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// Transforming to a less-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::convert::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_camel_delimited_opts::<_, NoBoundaries>(),
-    ///     Ok(UpperCamelIdent::new_boxed("__Http_Dev_Server__")?), // Nothing recognized as a boundary.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperCamelIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_camel_delimited_opts::<_, Default>(),
-    ///     Ok(UpperCamelIdent::new_boxed("__HttpDevServer__")?), // Normal boundaries are recognized.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_camel_delimited_opts<T, O: Options>(&self) -> Result<T, Error>
     where
         T: FromIntermediate<UpperCamelIdent<Self::Profile>>;
 }
@@ -438,32 +234,32 @@ pub trait ToUpperCamel: Identifier {
 // -----------------------------------------------------------------------------
 impl<I: Identifier + ?Sized> ToUpperCamel for I {
     #[inline]
-    fn to_upper_camel_opts<T, O: Options>(&self) -> Result<T, Error>
+    fn to_upper_camel<T>(&self) -> Result<T, Error>
     where
         T: FromIntermediate<UpperCamelIdent<Self::Profile>>,
     {
         let mut string = String::with_capacity(self.len());
-        write!(string, "{}", self.as_upper_camel_opts::<O>())
+        write!(string, "{}", self.as_upper_camel())
             .expect("failed to format an identifier into a string");
         T::from_intermediate(string)
     }
     #[inline]
-    fn to_upper_camel_decorated_opts<T, O: Options>(&self) -> Result<T, Error>
+    fn to_upper_camel_decorated<T>(&self) -> Result<T, Error>
     where
         T: FromIntermediate<UpperCamelIdent<Self::Profile>>,
     {
         let mut string = String::with_capacity(self.len());
-        write!(string, "{}", self.as_upper_camel_decorated_opts::<O>())
+        write!(string, "{}", self.as_upper_camel_decorated())
             .expect("failed to format an identifier into a string");
         T::from_intermediate(string)
     }
     #[inline]
-    fn to_upper_camel_delimited_opts<T, O: Options>(&self) -> Result<T, Error>
+    fn to_upper_camel_delimited<T>(&self) -> Result<T, Error>
     where
         T: FromIntermediate<UpperCamelIdent<Self::Profile>>,
     {
         let mut string = String::with_capacity(self.len());
-        write!(string, "{}", self.as_upper_camel_delimited_opts::<O>())
+        write!(string, "{}", self.as_upper_camel_delimited())
             .expect("failed to format an identifier into a string");
         T::from_intermediate(string)
     }
