@@ -21,6 +21,7 @@ release during this time, including patch releases.
 - Hid the `SliceIndex` type so that it cannot be named by the end-user.
 - Removed `ConvertibleIdentifier` and `FormattableIdentifier`, now you can just use `Identifier`.
 - Removed `UNICODE_*` constants other than `UNICODE_VERSION`, changed reported version calculation.
+- Removed the `_opts` formatting variants from the `As*` and `To*` traits.
 - Removed the `presets` feature flag (presets are now always enabled).
 - Removed the plain-form formatter variants that were added in v0.0.2.
 - Renamed `Chunk`'s `WordStrs` and `WordStrIndices` to `StrWords` and `StrWordIndices`.

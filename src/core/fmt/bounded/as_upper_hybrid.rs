@@ -6,7 +6,6 @@
 use crate::Identifier;
 use crate::fmt::bounded::{Canonical, Decorated, Delimited};
 use crate::syntax::boundary::Standard;
-use crate::syntax::boundary::options::{Default, Options};
 use crate::syntax::delimiter::{AsciiFlatLine, Delimiter};
 
 // =============================================================================
@@ -90,13 +89,8 @@ pub trait AsUpperHybrid {
     /// Returns a displayable type that converts the provided input to upper
     /// hybrid in canonical form.
     ///
-    /// This method uses the default boundary options. If you have customized
-    /// your boundary definitions, you almost certainly want to use the method
-    /// [`as_upper_hybrid_opts`].
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`as_upper_hybrid_opts`]: Self::as_upper_hybrid_opts
     /// [`fmt`]: crate::fmt
     ///
     /// # Examples
@@ -179,83 +173,14 @@ pub trait AsUpperHybrid {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[inline]
     #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_upper_hybrid(&self, default_delim: AsciiFlatLine) -> UpperHybrid<'_> {
-        self.as_upper_hybrid_opts::<Default>(default_delim)
-    }
-
-    /// Returns a displayable type that converts the provided input to upper
-    /// hybrid in canonical form, over some provided boundary options.
-    ///
-    /// Use this method if you want to transform the boundary policy of the
-    /// input string, or if you want to persist the same customized policy (in
-    /// place of simply using the default).
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Transforming to a more-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .as_upper_hybrid_opts::<AllBoundaries>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "Abc123HttpDevServer" // Digits recognized as proper boundaries.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .as_upper_hybrid_opts::<Default>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "Abc_123HttpDevServer" // Digits aren't recognized as boundaries.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// Transforming to a less-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .as_upper_hybrid_opts::<NoBoundaries>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "Http_Dev_Server" // Nothing recognized as a boundary.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .as_upper_hybrid_opts::<Default>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "HttpDevServer" // Normal boundaries are recognized.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_upper_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> UpperHybrid<'_>;
+    fn as_upper_hybrid(&self, default_delim: AsciiFlatLine) -> UpperHybrid<'_>;
 
     /// Returns a displayable type that converts the provided input to upper
     /// hybrid in decorated form.
     ///
-    /// This method uses the default boundary options. If you have customized
-    /// your boundary definitions, you almost certainly want to use the method
-    /// [`as_upper_hybrid_decorated_opts`].
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`as_upper_hybrid_decorated_opts`]: Self::as_upper_hybrid_decorated_opts
     /// [`fmt`]: crate::fmt
     ///
     /// # Examples
@@ -314,86 +239,14 @@ pub trait AsUpperHybrid {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[inline]
     #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_upper_hybrid_decorated(&self, default_delim: AsciiFlatLine) -> UpperHybridDecorated<'_> {
-        self.as_upper_hybrid_decorated_opts::<Default>(default_delim)
-    }
-
-    /// Returns a displayable type that converts the provided input to upper
-    /// hybrid in decorated form, over some provided boundary options.
-    ///
-    /// Use this method if you want to transform the boundary policy of the
-    /// input string, or if you want to persist the same customized policy (in
-    /// place of simply using the default).
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Transforming to a more-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .as_upper_hybrid_decorated_opts::<AllBoundaries>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__Abc123HttpDevServer__" // Digits recognized as proper boundaries.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .as_upper_hybrid_decorated_opts::<Default>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__Abc_123HttpDevServer__" // Digits aren't recognized as boundaries.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// Transforming to a less-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .as_upper_hybrid_decorated_opts::<NoBoundaries>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__Http_Dev_Server__" // Nothing recognized as a boundary.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .as_upper_hybrid_decorated_opts::<Default>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__HttpDevServer__" // Normal boundaries are recognized.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_upper_hybrid_decorated_opts<O: Options>(
-        &self,
-        default_delim: AsciiFlatLine,
-    ) -> UpperHybridDecorated<'_>;
+    fn as_upper_hybrid_decorated(&self, default_delim: AsciiFlatLine) -> UpperHybridDecorated<'_>;
 
     /// Returns a displayable type that converts the provided input to upper
     /// hybrid in delimited form.
     ///
-    /// This method uses the default boundary options. If you have customized
-    /// your boundary definitions, you almost certainly want to use the method
-    /// [`as_upper_hybrid_delimited_opts`].
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`as_upper_hybrid_delimited_opts`]: Self::as_upper_hybrid_delimited_opts
     /// [`fmt`]: crate::fmt
     ///
     /// # Examples
@@ -453,73 +306,7 @@ pub trait AsUpperHybrid {
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_upper_hybrid_delimited(&self, default_delim: AsciiFlatLine) -> UpperHybridDelimited<'_> {
-        self.as_upper_hybrid_delimited_opts::<Default>(default_delim)
-    }
-
-    /// Returns a displayable type that converts the provided input to upper
-    /// hybrid in delimited form, over some provided boundary options.
-    ///
-    /// Use this method if you want to transform the boundary policy of the
-    /// input string, or if you want to persist the same customized policy (in
-    /// place of simply using the default).
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Transforming to a more-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .as_upper_hybrid_delimited_opts::<AllBoundaries>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__Abc_123_HttpDevServer__" // Digits recognized as proper boundaries.
-    /// );
-    /// // Compare this to (in this case identical)...
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .as_upper_hybrid_delimited_opts::<Default>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__Abc_123_HttpDevServer__" // Digits aren't recognized as boundaries.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// Transforming to a less-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::fmt::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .as_upper_hybrid_delimited_opts::<NoBoundaries>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__Http_Dev_Server__" // Nothing recognized as a boundary.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .as_upper_hybrid_delimited_opts::<Default>(AsciiFlatLine::LowLine)
-    ///         .to_string(),
-    ///     "__HttpDevServer__" // Normal boundaries are recognized.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "formatting operations return displayable types, the original identifier is unmodified"]
-    fn as_upper_hybrid_delimited_opts<O: Options>(
-        &self,
-        default_delim: AsciiFlatLine,
-    ) -> UpperHybridDelimited<'_>;
+    fn as_upper_hybrid_delimited(&self, default_delim: AsciiFlatLine) -> UpperHybridDelimited<'_>;
 }
 
 // =============================================================================
@@ -529,18 +316,15 @@ pub trait AsUpperHybrid {
 // -----------------------------------------------------------------------------
 impl<I: Identifier + ?Sized> AsUpperHybrid for I {
     #[inline]
-    fn as_upper_hybrid_opts<O: Options>(&self, default_delim: AsciiFlatLine) -> UpperHybrid<'_> {
-        UpperHybrid(Canonical::new::<I, Standard<O>>(
+    fn as_upper_hybrid(&self, default_delim: AsciiFlatLine) -> UpperHybrid<'_> {
+        UpperHybrid(Canonical::new::<I, Standard>(
             self.as_str(),
             default_delim.as_char(),
         ))
     }
     #[inline]
-    fn as_upper_hybrid_decorated_opts<O: Options>(
-        &self,
-        default_delim: AsciiFlatLine,
-    ) -> UpperHybridDecorated<'_> {
-        UpperHybridDecorated(Decorated::new::<I, Standard<O>>(
+    fn as_upper_hybrid_decorated(&self, default_delim: AsciiFlatLine) -> UpperHybridDecorated<'_> {
+        UpperHybridDecorated(Decorated::new::<I, Standard>(
             self.as_str(),
             default_delim.as_char(),
             Some(match default_delim {
@@ -550,11 +334,8 @@ impl<I: Identifier + ?Sized> AsUpperHybrid for I {
         ))
     }
     #[inline]
-    fn as_upper_hybrid_delimited_opts<O: Options>(
-        &self,
-        default_delim: AsciiFlatLine,
-    ) -> UpperHybridDelimited<'_> {
-        UpperHybridDelimited(Delimited::new::<I, Standard<O>>(
+    fn as_upper_hybrid_delimited(&self, default_delim: AsciiFlatLine) -> UpperHybridDelimited<'_> {
+        UpperHybridDelimited(Delimited::new::<I, Standard>(
             self.as_str(),
             default_delim.as_char(),
             Some(match default_delim {

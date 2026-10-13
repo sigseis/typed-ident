@@ -6,7 +6,6 @@
 use crate::fmt::AsUpperHybrid;
 use crate::intermediate::FromIntermediate;
 use crate::syntax::Profile;
-use crate::syntax::boundary::options::{Default, Options};
 use crate::syntax::delimiter::AsciiFlatLine;
 use crate::{Error, Identifier};
 use core::fmt::Write;
@@ -28,12 +27,6 @@ type UpperHybridIdent<P> = crate::presets::generic::UpperHybridIdent<<P as Profi
 ///
 /// See the [`convert`] module for more details.
 ///
-/// <div class="warning">
-///
-/// **NOTE:** These traits are currently being reconsidered. See issue [#17](https://github.com/sigseis/typed-ident/issues/17).
-///
-/// </div>
-///
 /// # Default Delimiter
 ///
 /// These method additionally takes a `default_delim` parameter, which is
@@ -51,13 +44,8 @@ pub trait ToUpperHybrid: Identifier {
     /// Returns a string of the provided input converted to upper hybrid
     /// canonical form.
     ///
-    /// This method uses the default boundary options. If you have customized
-    /// your boundary definitions, you almost certainly want to use the method
-    /// [`to_upper_hybrid_opts`].
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`to_upper_hybrid_opts`]: Self::to_upper_hybrid_opts
     /// [`fmt`]: crate::fmt
     ///
     /// # Examples
@@ -130,84 +118,16 @@ pub trait ToUpperHybrid: Identifier {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[inline]
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    #[must_use = "format conversion returns a newly-allocated result, the original identifier is unmodified"]
     fn to_upper_hybrid<T>(&self, default_delim: AsciiFlatLine) -> Result<T, Error>
-    where
-        T: FromIntermediate<UpperHybridIdent<Self::Profile>>,
-    {
-        self.to_upper_hybrid_opts::<T, Default>(default_delim)
-    }
-
-    /// Returns a string of the provided input converted to upper hybrid
-    /// canonical form.
-    ///
-    /// Use this method if you want to transform the boundary policy of the
-    /// input string, or if you want to persist the same customized policy (in
-    /// place of simply using the default).
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Transforming to a more-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::convert::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_hybrid_opts::<_, AllBoundaries>(AsciiFlatLine::LowLine),
-    ///     Ok(UpperHybridIdent::new_boxed("Abc123HttpDevServer")?), // Digits recognized as proper boundaries.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_hybrid_opts::<_, Default>(AsciiFlatLine::LowLine),
-    ///     Ok(UpperHybridIdent::new_boxed("Abc_123HttpDevServer")?), // Digits aren't recognized as boundaries.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// Transforming to a less-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::convert::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_hybrid_opts::<_, NoBoundaries>(AsciiFlatLine::LowLine),
-    ///     Ok(UpperHybridIdent::new_boxed("Http_Dev_Server")?), // Nothing recognized as a boundary.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_hybrid_opts::<_, Default>(AsciiFlatLine::LowLine),
-    ///     Ok(UpperHybridIdent::new_boxed("HttpDevServer")?), // Normal boundaries are recognized.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_hybrid_opts<T, O: Options>(&self, default_delim: AsciiFlatLine) -> Result<T, Error>
     where
         T: FromIntermediate<UpperHybridIdent<Self::Profile>>;
 
     /// Returns a string of the provided input converted to upper hybrid
     /// decorated form.
     ///
-    /// This method uses the default boundary options. If you have customized
-    /// your boundary definitions, you almost certainly want to use the method
-    /// [`to_upper_hybrid_decorated_opts`].
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`to_upper_hybrid_decorated_opts`]: Self::to_upper_hybrid_decorated_opts
     /// [`fmt`]: crate::fmt
     ///
     /// # Examples
@@ -258,87 +178,16 @@ pub trait ToUpperHybrid: Identifier {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[inline]
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    #[must_use = "format conversion returns a newly-allocated result, the original identifier is unmodified"]
     fn to_upper_hybrid_decorated<T>(&self, default_delim: AsciiFlatLine) -> Result<T, Error>
-    where
-        T: FromIntermediate<UpperHybridIdent<Self::Profile>>,
-    {
-        self.to_upper_hybrid_decorated_opts::<T, Default>(default_delim)
-    }
-
-    /// Returns a string of the provided input converted to upper hybrid
-    /// decorated form.
-    ///
-    /// Use this method if you want to transform the boundary policy of the
-    /// input string, or if you want to persist the same customized policy (in
-    /// place of simply using the default).
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Transforming to a more-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::convert::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_hybrid_decorated_opts::<_, AllBoundaries>(AsciiFlatLine::LowLine),
-    ///     Ok(UpperHybridIdent::new_boxed("__Abc123HttpDevServer__")?), // Digits recognized as proper boundaries.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_hybrid_decorated_opts::<_, Default>(AsciiFlatLine::LowLine),
-    ///     Ok(UpperHybridIdent::new_boxed("__Abc_123HttpDevServer__")?), // Digits aren't recognized as boundaries.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// Transforming to a less-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::convert::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_hybrid_decorated_opts::<_, NoBoundaries>(AsciiFlatLine::LowLine),
-    ///     Ok(UpperHybridIdent::new_boxed("__Http_Dev_Server__")?), // Nothing recognized as a boundary.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_hybrid_decorated_opts::<_, Default>(AsciiFlatLine::LowLine),
-    ///     Ok(UpperHybridIdent::new_boxed("__HttpDevServer__")?), // Normal boundaries are recognized.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_hybrid_decorated_opts<T, O: Options>(
-        &self,
-        default_delim: AsciiFlatLine,
-    ) -> Result<T, Error>
     where
         T: FromIntermediate<UpperHybridIdent<Self::Profile>>;
 
     /// Returns a string of the provided input converted to upper hybrid
     /// delimited form.
     ///
-    /// This method uses the default boundary options. If you have customized
-    /// your boundary definitions, you almost certainly want to use the method
-    /// [`to_upper_hybrid_delimited_opts`].
-    ///
     /// See the [`fmt`] module documentation for details on different forms.
     ///
-    /// [`to_upper_hybrid_delimited_opts`]: Self::to_upper_hybrid_delimited_opts
     /// [`fmt`]: crate::fmt
     ///
     /// # Examples
@@ -389,73 +238,8 @@ pub trait ToUpperHybrid: Identifier {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    #[must_use = "format conversion returns a newly-allocated result, the original identifier is unmodified"]
     fn to_upper_hybrid_delimited<T>(&self, default_delim: AsciiFlatLine) -> Result<T, Error>
-    where
-        T: FromIntermediate<UpperHybridIdent<Self::Profile>>,
-    {
-        self.to_upper_hybrid_delimited_opts::<T, Default>(default_delim)
-    }
-
-    /// Returns a string of the provided input converted to upper hybrid
-    /// delimited form.
-    ///
-    /// Use this method if you want to transform the boundary policy of the
-    /// input string, or if you want to persist the same customized policy (in
-    /// place of simply using the default).
-    ///
-    /// See the [`fmt`] module documentation for details on different forms.
-    ///
-    /// [`fmt`]: crate::fmt
-    ///
-    /// # Examples
-    ///
-    /// Transforming to a more-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::convert::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_hybrid_delimited_opts::<_, AllBoundaries>(AsciiFlatLine::LowLine),
-    ///     Ok(UpperHybridIdent::new_boxed("__Abc_123_HttpDevServer__")?), // Digits recognized as proper boundaries.
-    /// );
-    /// // Compare this to (in this case identical)...
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__Abc_123_HttpDEVServer__")?
-    ///         .to_upper_hybrid_delimited_opts::<_, Default>(AsciiFlatLine::LowLine),
-    ///     Ok(UpperHybridIdent::new_boxed("__Abc_123_HttpDevServer__")?), // Digits aren't recognized as boundaries.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    ///
-    /// Transforming to a less-bounded policy:
-    ///
-    /// ```
-    /// # use typed_ident::convert::*;
-    /// # use typed_ident::presets::unicode::*;
-    /// # use typed_ident::syntax::boundary::options::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_hybrid_delimited_opts::<_, NoBoundaries>(AsciiFlatLine::LowLine),
-    ///     Ok(UpperHybridIdent::new_boxed("__Http_Dev_Server__")?), // Nothing recognized as a boundary.
-    /// );
-    /// // Compare this to...
-    /// assert_eq!(
-    ///     UpperHybridIdent::new("__HttpDEVServer__")?
-    ///         .to_upper_hybrid_delimited_opts::<_, Default>(AsciiFlatLine::LowLine),
-    ///     Ok(UpperHybridIdent::new_boxed("__HttpDevServer__")?), // Normal boundaries are recognized.
-    /// );
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
-    fn to_upper_hybrid_delimited_opts<T, O: Options>(
-        &self,
-        default_delim: AsciiFlatLine,
-    ) -> Result<T, Error>
     where
         T: FromIntermediate<UpperHybridIdent<Self::Profile>>;
 }
@@ -467,47 +251,33 @@ pub trait ToUpperHybrid: Identifier {
 // -----------------------------------------------------------------------------
 impl<I: Identifier + ?Sized> ToUpperHybrid for I {
     #[inline]
-    fn to_upper_hybrid_opts<T, O: Options>(&self, default_delim: AsciiFlatLine) -> Result<T, Error>
+    fn to_upper_hybrid<T>(&self, default_delim: AsciiFlatLine) -> Result<T, Error>
     where
         T: FromIntermediate<UpperHybridIdent<Self::Profile>>,
     {
         let mut string = String::with_capacity(self.len());
-        write!(string, "{}", self.as_upper_hybrid_opts::<O>(default_delim))
+        write!(string, "{}", self.as_upper_hybrid(default_delim))
             .expect("failed to format an identifier into a string");
         T::from_intermediate(string)
     }
     #[inline]
-    fn to_upper_hybrid_decorated_opts<T, O: Options>(
-        &self,
-        default_delim: AsciiFlatLine,
-    ) -> Result<T, Error>
+    fn to_upper_hybrid_decorated<T>(&self, default_delim: AsciiFlatLine) -> Result<T, Error>
     where
         T: FromIntermediate<UpperHybridIdent<Self::Profile>>,
     {
         let mut string = String::with_capacity(self.len());
-        write!(
-            string,
-            "{}",
-            self.as_upper_hybrid_decorated_opts::<O>(default_delim)
-        )
-        .expect("failed to format an identifier into a string");
+        write!(string, "{}", self.as_upper_hybrid_decorated(default_delim))
+            .expect("failed to format an identifier into a string");
         T::from_intermediate(string)
     }
     #[inline]
-    fn to_upper_hybrid_delimited_opts<T, O: Options>(
-        &self,
-        default_delim: AsciiFlatLine,
-    ) -> Result<T, Error>
+    fn to_upper_hybrid_delimited<T>(&self, default_delim: AsciiFlatLine) -> Result<T, Error>
     where
         T: FromIntermediate<UpperHybridIdent<Self::Profile>>,
     {
         let mut string = String::with_capacity(self.len());
-        write!(
-            string,
-            "{}",
-            self.as_upper_hybrid_delimited_opts::<O>(default_delim)
-        )
-        .expect("failed to format an identifier into a string");
+        write!(string, "{}", self.as_upper_hybrid_delimited(default_delim))
+            .expect("failed to format an identifier into a string");
         T::from_intermediate(string)
     }
 }

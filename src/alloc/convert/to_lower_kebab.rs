@@ -28,12 +28,6 @@ type LowerKebabIdent<P> = crate::presets::generic::LowerKebabIdent<<P as Profile
 /// between the decorated and delimited forms. So a delimited method is not
 /// provided.
 ///
-/// <div class="warning">
-///
-/// **NOTE:** These traits are currently being reconsidered. See issue [#17](https://github.com/sigseis/typed-ident/issues/17).
-///
-/// </div>
-///
 /// See the [`convert`] module for more details.
 ///
 /// [`convert`]: crate::convert
@@ -113,7 +107,7 @@ pub trait ToLowerKebab: Identifier {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    #[must_use = "format conversion returns a newly-allocated result, the original identifier is unmodified"]
     fn to_lower_kebab<T>(&self) -> Result<T, Error>
     where
         T: FromIntermediate<LowerKebabIdent<Self::Profile>>;
@@ -172,7 +166,7 @@ pub trait ToLowerKebab: Identifier {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    #[must_use = "format conversion returns a newly-allocated result, the original identifier is unmodified"]
     fn to_lower_kebab_decorated<T>(&self) -> Result<T, Error>
     where
         T: FromIntermediate<LowerKebabIdent<Self::Profile>>;

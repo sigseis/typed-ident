@@ -30,12 +30,6 @@ type UpperSnakeIdent<P> = crate::presets::generic::UpperSnakeIdent<<P as Profile
 ///
 /// See the [`convert`] module for more details.
 ///
-/// <div class="warning">
-///
-/// **NOTE:** These traits are currently being reconsidered. See issue [#17](https://github.com/sigseis/typed-ident/issues/17).
-///
-/// </div>
-///
 /// [`convert`]: crate::convert
 pub trait ToUpperSnake: Identifier {
     /// Returns a string of the provided input converted to upper snake
@@ -113,7 +107,7 @@ pub trait ToUpperSnake: Identifier {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    #[must_use = "format conversion returns a newly-allocated result, the original identifier is unmodified"]
     fn to_upper_snake<T>(&self) -> Result<T, Error>
     where
         T: FromIntermediate<UpperSnakeIdent<Self::Profile>>;
@@ -174,7 +168,7 @@ pub trait ToUpperSnake: Identifier {
     /// );
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[must_use = "format conversion returns a newly-allocated string, the original identifier is unmodified"]
+    #[must_use = "format conversion returns a newly-allocated result, the original identifier is unmodified"]
     fn to_upper_snake_decorated<T>(&self) -> Result<T, Error>
     where
         T: FromIntermediate<UpperSnakeIdent<Self::Profile>>;
