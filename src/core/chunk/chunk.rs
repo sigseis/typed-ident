@@ -423,6 +423,15 @@ impl<B, D, P> core::ops::Deref for Chunk<B, D, P> {
 }
 
 // -----------------------------------------------------------------------------
+impl<'a, B, D, P> crate::type_erased::TypeErased for &'a Chunk<B, D, P> {
+    type Erased = &'a str;
+    #[inline(always)]
+    fn type_erased(self) -> Self::Erased {
+        self.as_str()
+    }
+}
+
+// -----------------------------------------------------------------------------
 impl_typed_slice_cmp! {
     name=Chunk,
     against=Fragment,

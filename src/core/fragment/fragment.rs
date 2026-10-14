@@ -925,6 +925,15 @@ impl<B, D, P> Default for &Fragment<B, D, P> {
 }
 
 // -----------------------------------------------------------------------------
+impl<'a, B, D, P> crate::type_erased::TypeErased for &'a Fragment<B, D, P> {
+    type Erased = &'a str;
+    #[inline(always)]
+    fn type_erased(self) -> Self::Erased {
+        self.as_str()
+    }
+}
+
+// -----------------------------------------------------------------------------
 impl_typed_slice_common! {
     name=Fragment,
     name_lowercase=fragment,

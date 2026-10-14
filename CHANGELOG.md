@@ -13,6 +13,7 @@ release during this time, including patch releases.
 ### Added
 
 - Added the ability to iterate over words of a fragment; `Words`, `StrWords`, `WordIndices`, `StrWordIndices`.
+- Added `TryFrom<String>` for owned types (such as `Box<Chunk>`, `Box<Fragment>`, and `Box<Ident>`).
 - Loosened the argument requirements for `new` and `new_boxed`.
 
 ### Breaking Changes
@@ -25,6 +26,7 @@ release during this time, including patch releases.
 - Removed the `presets` feature flag (presets are now always enabled).
 - Removed the plain-form formatter variants that were added in v0.0.2.
 - Renamed `Chunk`'s `WordStrs` and `WordStrIndices` to `StrWords` and `StrWordIndices`.
+- Renamed `into_owned` to `to_owned` to better match other similar methods/traits.
 - The `alloc`, `core`, and `error` modules are now private, re-exporting their contents into their parents.
 
 ## [0.0.2] - 2026-09-18

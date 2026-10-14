@@ -12,6 +12,7 @@ mod identifier;
 pub(crate) mod pattern;
 mod segment;
 pub(crate) mod slice_index;
+pub(crate) mod type_erased;
 
 // =============================================================================
 // Common Helper Definition

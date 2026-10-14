@@ -80,12 +80,12 @@ fn test_ident_pass<I: Identifier + TypeLabel + ?Sized>(
         let forward_segments: Vec<_> = ident
             .segment_indices()
             .type_erased()
-            .map(|(i, s)| (i, s.into_owned()))
+            .map(|(i, s)| (i, s.to_owned()))
             .collect();
         let reverse_segments: Vec<_> = ident
             .segment_indices()
             .type_erased()
-            .map(|(i, s)| (i, s.into_owned()))
+            .map(|(i, s)| (i, s.to_owned()))
             .rev()
             .collect();
         let mut checked_segments = reverse_segments.clone();
@@ -143,12 +143,12 @@ fn test_ident_pass<I: Identifier + TypeLabel + ?Sized>(
         let forward_segments: Vec<_> = ident
             .chunked_segment_indices()
             .type_erased()
-            .map(|(i, s)| (i, s.into_owned()))
+            .map(|(i, s)| (i, s.to_owned()))
             .collect();
         let reverse_segments: Vec<_> = ident
             .chunked_segment_indices()
             .type_erased()
-            .map(|(i, s)| (i, s.into_owned()))
+            .map(|(i, s)| (i, s.to_owned()))
             .rev()
             .collect();
         let mut checked_segments = reverse_segments.clone();

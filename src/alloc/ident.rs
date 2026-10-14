@@ -57,7 +57,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// ```
     #[must_use = "this function returns an allocated identifier, it does not mutate the original"]
     #[inline]
-    pub fn join<F>(&self, fragment: F) -> Result<Box<Ident<B, D, P>>, Error>
+    pub fn join<F>(&self, fragment: F) -> Result<Box<Self>, Error>
     where
         D: Default,
         F: IntoIntermediate<B, D, P>,
@@ -104,7 +104,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// ```
     #[must_use = "this function returns an allocated identifier, it does not mutate the original"]
     #[inline]
-    pub fn join_with<F>(&self, fragment: F, delim: D) -> Result<Box<Ident<B, D, P>>, Error>
+    pub fn join_with<F>(&self, fragment: F, delim: D) -> Result<Box<Self>, Error>
     where
         F: IntoIntermediate<B, D, P>,
     {
@@ -131,7 +131,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
-    pub fn new_boxed<S>(string: S) -> Result<Box<Ident<B, D, P>>, Error>
+    pub fn new_boxed<S>(string: S) -> Result<Box<Self>, Error>
     where
         S: Into<String>,
     {
@@ -174,11 +174,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// ```
     #[must_use = "this function returns an allocated identifier, it does not mutate the original"]
     #[inline]
-    pub fn with_circumfix<F1, F2>(
-        &self,
-        prefix: F1,
-        suffix: F2,
-    ) -> Result<Box<Ident<B, D, P>>, Error>
+    pub fn with_circumfix<F1, F2>(&self, prefix: F1, suffix: F2) -> Result<Box<Self>, Error>
     where
         F1: IntoIntermediate<B, D, P>,
         F2: IntoIntermediate<B, D, P>,
@@ -225,7 +221,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// ```
     #[must_use = "this function returns an allocated identifier, it does not mutate the original"]
     #[inline]
-    pub fn with_prefix<F>(&self, prefix: F) -> Result<Box<Ident<B, D, P>>, Error>
+    pub fn with_prefix<F>(&self, prefix: F) -> Result<Box<Self>, Error>
     where
         F: IntoIntermediate<B, D, P>,
     {
@@ -267,7 +263,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// ```
     #[must_use = "this function returns an allocated identifier, it does not mutate the original"]
     #[inline]
-    pub fn with_suffix<F>(&self, suffix: F) -> Result<Box<Ident<B, D, P>>, Error>
+    pub fn with_suffix<F>(&self, suffix: F) -> Result<Box<Self>, Error>
     where
         F: IntoIntermediate<B, D, P>,
     {
@@ -360,29 +356,6 @@ impl<B, D, P> Ident<B, D, P> {
         Ident::new_boxed_unchecked(self.into_string())
     }
 
-    /// Attempts a fallible convert into a different boxed type-configured
-    /// identifier.
-    ///
-    /// You should first attempt to call [`convert`] on a type, if that compiles
-    /// it is preferred to this function (and you will not need to call this
-    /// function), because it is truly zero-cost.
-    ///
-    /// This is equivalent to just calling [`new_boxed`] on the target type with
-    /// the current type's string contents. This function is provided for
-    /// ergonomic convenience.
-    ///
-    /// [`convert`]: Self::convert
-    /// [`new_boxed`]: Self::new_boxed
-    #[inline]
-    pub fn try_convert<B2, D2, P2>(self: Box<Self>) -> Result<Box<Ident<B2, D2, P2>>, Error>
-    where
-        B2: Boundary,
-        D2: Delimiter,
-        P2: CasedProfile,
-    {
-        Ident::new_boxed(self.into_string())
-    }
-
     /// Converts a boxed identifier into a boxed string slice.
     ///
     /// # Examples
@@ -399,7 +372,7 @@ impl<B, D, P> Ident<B, D, P> {
     /// ```
     #[must_use]
     #[inline]
-    pub fn into_boxed_str(self: Box<Ident<B, D, P>>) -> Box<str> {
+    pub fn into_boxed_str(self: Box<Self>) -> Box<str> {
         // SAFETY: Ident is transparent over Fragment, which is itself
         // transparent over str, so Box<Ident> has the same allocation layout,
         // pointer metadata, alignment, and ownership behavior as Box<str>.
@@ -422,7 +395,7 @@ impl<B, D, P> Ident<B, D, P> {
     /// ```
     #[must_use]
     #[inline]
-    pub fn into_fragment_buf(self: Box<Ident<B, D, P>>) -> FragmentBuf<B, D, P> {
+    pub fn into_fragment_buf(self: Box<Self>) -> FragmentBuf<B, D, P> {
         FragmentBuf::from_string_unchecked(self.into_string())
     }
 
@@ -442,19 +415,19 @@ impl<B, D, P> Ident<B, D, P> {
     /// ```
     #[must_use]
     #[inline]
-    pub fn into_string(self: Box<Ident<B, D, P>>) -> String {
+    pub fn into_string(self: Box<Self>) -> String {
         self.into_boxed_str().into()
     }
 
     /// Converts a string into a boxed identifier, bypassing checks.
     #[must_use]
     #[inline]
-    pub(crate) fn new_boxed_unchecked(string: String) -> Box<Ident<B, D, P>> {
+    pub(crate) fn new_boxed_unchecked(string: String) -> Box<Self> {
         let boxed_str = string.into_boxed_str();
         // SAFETY: Ident is transparent over Fragment, which is itself
         // transparent over str, so Box<Ident> has the same allocation layout,
         // pointer metadata, alignment, and ownership behavior as Box<str>.
-        unsafe { Box::from_raw(Box::into_raw(boxed_str) as *mut Ident<B, D, P>) }
+        unsafe { Box::from_raw(Box::into_raw(boxed_str) as *mut Self) }
     }
 
     /// Converts an identifier into an owned boxed identifier.
@@ -472,7 +445,7 @@ impl<B, D, P> Ident<B, D, P> {
     /// ```
     #[must_use]
     #[inline]
-    pub fn to_boxed_ident(&self) -> Box<Ident<B, D, P>> {
+    pub fn to_boxed_ident(&self) -> Box<Self> {
         Ident::new_boxed_unchecked(String::from(self.as_str()))
     }
 
@@ -493,5 +466,59 @@ impl<B, D, P> Ident<B, D, P> {
     #[inline]
     pub fn to_fragment_buf(&self) -> FragmentBuf<B, D, P> {
         FragmentBuf::from_fragment(self)
+    }
+
+    /// Attempts a fallible convert into a different boxed type-configured
+    /// identifier.
+    ///
+    /// You should first attempt to call [`convert`] on a type, if that compiles
+    /// it is preferred to this function (and you will not need to call this
+    /// function), because it is truly zero-cost.
+    ///
+    /// This is equivalent to just calling [`new_boxed`] on the target type with
+    /// the current type's string contents. This function is provided for
+    /// ergonomic convenience.
+    ///
+    /// [`convert`]: Self::convert
+    /// [`new_boxed`]: Self::new_boxed
+    #[inline]
+    pub fn try_convert<B2, D2, P2>(self: Box<Self>) -> Result<Box<Ident<B2, D2, P2>>, Error>
+    where
+        B2: Boundary,
+        D2: Delimiter,
+        P2: CasedProfile,
+    {
+        Ident::new_boxed(self.into_string())
+    }
+}
+
+// =============================================================================
+// TRAIT IMPLS
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+impl<B, D, P> crate::type_erased::TypeErased for Box<Ident<B, D, P>> {
+    type Erased = String;
+    #[inline(always)]
+    fn type_erased(self) -> Self::Erased {
+        self.into_string()
+    }
+}
+
+// -----------------------------------------------------------------------------
+impl<B, D, P> std_alloc::borrow::ToOwned for Ident<B, D, P> {
+    type Owned = Box<Ident<B, D, P>>;
+    #[inline]
+    fn to_owned(&self) -> Self::Owned {
+        self.to_boxed_ident()
+    }
+}
+
+// -----------------------------------------------------------------------------
+impl<B: Boundary, D: Delimiter, P: CasedProfile> TryFrom<String> for Box<Ident<B, D, P>> {
+    type Error = crate::Error;
+    #[inline]
+    fn try_from(orig: String) -> Result<Self, Self::Error> {
+        Ident::new_boxed(orig)
     }
 }

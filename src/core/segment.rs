@@ -13,6 +13,7 @@ mod tests;
 
 // -----------------------------------------------------------------------------
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
+use crate::type_erased::TypeErased;
 use crate::{Chunk, Error, ErrorKind, StrSegment};
 
 // =============================================================================
@@ -94,373 +95,6 @@ impl<'a, B, D: Delimiter, P> Segment<D, &'a Chunk<B, D, P>> {
             Segment::Chunk(chunk) => Self::Chunk(Chunk::new_unchecked(chunk)),
         }
     }
-
-    /// Returns `true` if the contents of this segment is an empty chunk.
-    ///
-    /// Since a delimiter can never be empty, if the segment is a delimiter,
-    /// this will return `false`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine);
-    /// assert_eq!(segment.is_empty(), false);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?);
-    /// assert_eq!(segment.is_empty(), false);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("")?);
-    /// assert_eq!(segment.is_empty(), true);
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn is_empty(&self) -> bool {
-        match self {
-            Self::Delim(_) => false,
-            Self::Chunk(chunk) => chunk.is_empty(),
-        }
-    }
-
-    /// Returns the byte length of the string representation of `self`.
-    ///
-    /// For delimiters, this will first cast as a character, then return the
-    /// UTF-8 length of the character. For chunks, the length of the chunk is
-    /// used directly.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine);
-    /// assert_eq!(segment.len(), 1);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?);
-    /// assert_eq!(segment.len(), 5);
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn len(&self) -> usize {
-        match self {
-            Self::Delim(delim) => delim.as_char().len_utf8(),
-            Self::Chunk(chunk) => (*chunk).as_str().len(),
-        }
-    }
-
-    /// Converts the segment to a type-erased representation.
-    ///
-    /// The `Delim` variant will be converted to a `char`, and the `Chunk`
-    /// variant will be converted to a `&str`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::assert_matches;
-    /// # use typed_ident::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine).type_erased();
-    /// assert!(segment.is_delim_and(|c| *c == '_'));
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?).type_erased();
-    /// assert!(segment.is_chunk_and(|c| *c == "Upper"));
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn type_erased(self) -> Segment<char, &'a str> {
-        match self {
-            Self::Delim(delim) => Segment::Delim(delim.as_char()),
-            Self::Chunk(chunk) => Segment::Chunk(chunk.as_str()),
-        }
-    }
-
-    /// Converts a segment's delimiter to a type-erased representation.
-    ///
-    /// The `Delim` variant will be converted to a `char`, but the chunk
-    /// will remain strongly-typed.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::assert_matches;
-    /// # use typed_ident::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine).type_erased_delim();
-    /// assert!(segment.is_delim_and(|c| *c == '_'));
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?).type_erased_delim();
-    /// assert!(segment.is_chunk_and(|c| *c == "Upper"));
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn type_erased_delim(self) -> Segment<char, &'a Chunk<B, D, P>> {
-        match self {
-            Self::Delim(delim) => Segment::Delim(delim.as_char()),
-            Self::Chunk(chunk) => Segment::Chunk(chunk),
-        }
-    }
-
-    /// Converts a segment's chunk to a type-erased representation.
-    ///
-    /// The `Chunk` variant will be converted to a `&str`, but the delimiter
-    /// will remain strongly-typed.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::assert_matches;
-    /// # use typed_ident::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine).type_erased_chunk();
-    /// assert!(segment.is_delim_and(|c| *c == '_'));
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?).type_erased_chunk();
-    /// assert!(segment.is_chunk_and(|c| *c == "Upper"));
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn type_erased_chunk(self) -> Segment<D, &'a str> {
-        match self {
-            Self::Delim(delim) => Segment::Delim(delim),
-            Self::Chunk(chunk) => Segment::Chunk(chunk.as_str()),
-        }
-    }
-}
-
-// -----------------------------------------------------------------------------
-impl<'a, D: Delimiter> Segment<D, &'a str> {
-    /// Returns `true` if the contents of this segment is an empty chunk.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine)
-    ///     .type_erased_chunk();
-    /// assert_eq!(segment.is_empty(), false);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?)
-    ///     .type_erased_chunk();
-    /// assert_eq!(segment.is_empty(), false);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("")?)
-    ///     .type_erased_chunk();
-    /// assert_eq!(segment.is_empty(), true);
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn is_empty(&self) -> bool {
-        match self {
-            Self::Delim(_) => false,
-            Self::Chunk(chunk) => chunk.is_empty(),
-        }
-    }
-
-    /// Returns the byte length of the string representation of `self`.
-    ///
-    /// For delimiters, this will first cast as a character, then return the
-    /// UTF-8 length of the character. For chunks, the length of the chunk is
-    /// used directly.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine)
-    ///     .type_erased_chunk();
-    /// assert_eq!(segment.len(), 1);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?)
-    ///     .type_erased_chunk();
-    /// assert_eq!(segment.len(), 5);
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn len(&self) -> usize {
-        match self {
-            Self::Delim(delim) => delim.as_char().len_utf8(),
-            Self::Chunk(chunk) => chunk.len(),
-        }
-    }
-
-    /// Converts the segment to a type-erased representation.
-    ///
-    /// The `Delim` variant will be converted to a `char`, and the `Chunk`
-    /// variant will be converted to a `&str`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::assert_matches;
-    /// # use typed_ident::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine)
-    ///     .type_erased_chunk().type_erased();
-    /// assert!(segment.is_delim_and(|c| *c == '_'));
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?)
-    ///     .type_erased_chunk().type_erased();
-    /// assert!(segment.is_chunk_and(|c| *c == "Upper"));
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn type_erased(self) -> Segment<char, &'a str> {
-        match self {
-            Self::Delim(delim) => Segment::Delim(delim.as_char()),
-            Self::Chunk(chunk) => Segment::Chunk(chunk),
-        }
-    }
-}
-
-// -----------------------------------------------------------------------------
-impl<'a, B, D, P> Segment<char, &'a Chunk<B, D, P>> {
-    /// Returns `true` if the contents of this segment is an empty chunk.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine)
-    ///     .type_erased_delim();
-    /// assert_eq!(segment.is_empty(), false);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?)
-    ///     .type_erased_delim();
-    /// assert_eq!(segment.is_empty(), false);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("")?)
-    ///     .type_erased_delim();
-    /// assert_eq!(segment.is_empty(), true);
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn is_empty(&self) -> bool {
-        match self {
-            Self::Delim(_) => false,
-            Self::Chunk(chunk) => chunk.is_empty(),
-        }
-    }
-
-    /// Returns the byte length of the string representation of `self`.
-    ///
-    /// For character delimiters, this will return the UTF-8 length of the
-    /// character. For chunks, the length of the chunk is used directly.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine)
-    ///     .type_erased_delim();
-    /// assert_eq!(segment.len(), 1);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?)
-    ///     .type_erased_delim();
-    /// assert_eq!(segment.len(), 5);
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn len(&self) -> usize {
-        match self {
-            Self::Delim(delim) => delim.len_utf8(),
-            Self::Chunk(chunk) => (*chunk).as_str().len(),
-        }
-    }
-
-    /// Converts the segment to a type-erased representation.
-    ///
-    /// The `Chunk` variant will be converted to a `&str`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::assert_matches;
-    /// # use typed_ident::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine)
-    ///     .type_erased_delim().type_erased();
-    /// assert!(segment.is_delim_and(|c| *c == '_'));
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?)
-    ///     .type_erased_delim().type_erased();
-    /// assert!(segment.is_chunk_and(|c| *c == "Upper"));
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn type_erased(self) -> Segment<char, &'a str> {
-        match self {
-            Self::Delim(delim) => Segment::Delim(delim),
-            Self::Chunk(chunk) => Segment::Chunk(chunk.as_str()),
-        }
-    }
-}
-
-// -----------------------------------------------------------------------------
-impl Segment<char, &str> {
-    /// Returns `true` if the contents of this segment is an empty chunk.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine)
-    ///     .type_erased();
-    /// assert_eq!(segment.is_empty(), false);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?)
-    ///     .type_erased();
-    /// assert_eq!(segment.is_empty(), false);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("")?)
-    ///     .type_erased();
-    /// assert_eq!(segment.is_empty(), true);
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn is_empty(&self) -> bool {
-        match self {
-            Self::Delim(_) => false,
-            Self::Chunk(chunk) => chunk.is_empty(),
-        }
-    }
-
-    /// Returns the byte length of the string representation of `self`.
-    ///
-    /// For character delimiters, this will return the UTF-8 length of the
-    /// character. For chunks, the length of the chunk is used directly.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine)
-    ///     .type_erased();
-    /// assert_eq!(segment.len(), 1);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?)
-    ///     .type_erased();
-    /// assert_eq!(segment.len(), 5);
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn len(&self) -> usize {
-        match self {
-            Self::Delim(delim) => delim.len_utf8(),
-            Self::Chunk(chunk) => chunk.len(),
-        }
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -491,69 +125,43 @@ impl<D, C> Segment<D, C> {
         }
     }
 
-    /// Returns `true` for every delimiter.
-    ///
-    /// # Examples
+    /// Returns `Some` if the segment is a chunk, otherwise returns `None`.
     ///
     /// ```
     /// # use typed_ident::syntax::delimiter::*;
     /// # use typed_ident::presets::unicode::camel::*;
     /// let delim = CamelSegment::Delim(LowLine);
-    /// assert!(delim.is_delim());
+    /// assert_eq!(delim.chunk(), None);
     ///
     /// let chunk = CamelSegment::Chunk(CamelChunk::new("chunk")?);
-    /// assert!(!chunk.is_delim());
+    /// assert_eq!(chunk.chunk(), Some(CamelChunk::new("chunk")?));
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
-    pub const fn is_delim(&self) -> bool {
-        matches!(self, Self::Delim(_))
-    }
-
-    /// Returns `true` if a delimiter and the predicate passes.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let delim = CamelSegment::Delim(LowLine);
-    /// assert!(delim.is_delim_and(|d| *d == '_'));
-    /// assert!(!delim.is_delim_and(|d| *d == '-'));
-    ///
-    /// let chunk = CamelSegment::Chunk(CamelChunk::new("chunk")?);
-    /// assert!(!chunk.is_delim_and(|d| *d == '_'));
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[inline]
-    pub fn is_delim_and(&self, pred: impl FnOnce(&D) -> bool) -> bool {
+    pub fn chunk(self) -> Option<C> {
         match self {
-            Self::Delim(delim) => pred(delim),
-            _ => false,
+            Self::Chunk(chunk) => Some(chunk),
+            _ => None,
         }
     }
 
-    /// Returns `true` for every delimiter. For a chunk, returns the result of
-    /// the predicate.
-    ///
-    /// # Examples
+    /// Returns `Some` if the segment is a delim, otherwise returns `None`.
     ///
     /// ```
     /// # use typed_ident::syntax::delimiter::*;
     /// # use typed_ident::presets::unicode::camel::*;
     /// let delim = CamelSegment::Delim(LowLine);
-    /// assert!(delim.is_delim_or(|c| *c == "chunk"));
+    /// assert_eq!(delim.delim(), Some(LowLine));
     ///
     /// let chunk = CamelSegment::Chunk(CamelChunk::new("chunk")?);
-    /// assert!(chunk.is_delim_or(|c| *c == "chunk"));
-    /// assert!(!chunk.is_delim_or(|c| *c == "text"));
+    /// assert_eq!(chunk.delim(), None);
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
-    pub fn is_delim_or(&self, pred: impl FnOnce(&C) -> bool) -> bool {
+    pub fn delim(self) -> Option<D> {
         match self {
-            Self::Chunk(chunk) => pred(chunk),
-            _ => true,
+            Self::Delim(delim) => Some(delim),
+            _ => None,
         }
     }
 
@@ -623,43 +231,221 @@ impl<D, C> Segment<D, C> {
         }
     }
 
-    /// Returns `Some` if the segment is a delim, otherwise returns `None`.
+    /// Returns `true` for every delimiter.
+    ///
+    /// # Examples
     ///
     /// ```
     /// # use typed_ident::syntax::delimiter::*;
     /// # use typed_ident::presets::unicode::camel::*;
     /// let delim = CamelSegment::Delim(LowLine);
-    /// assert_eq!(delim.delim(), Some(LowLine));
+    /// assert!(delim.is_delim());
     ///
     /// let chunk = CamelSegment::Chunk(CamelChunk::new("chunk")?);
-    /// assert_eq!(chunk.delim(), None);
+    /// assert!(!chunk.is_delim());
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
-    pub fn delim(self) -> Option<D> {
+    pub const fn is_delim(&self) -> bool {
+        matches!(self, Self::Delim(_))
+    }
+
+    /// Returns `true` if a delimiter and the predicate passes.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use typed_ident::syntax::delimiter::*;
+    /// # use typed_ident::presets::unicode::camel::*;
+    /// let delim = CamelSegment::Delim(LowLine);
+    /// assert!(delim.is_delim_and(|d| *d == '_'));
+    /// assert!(!delim.is_delim_and(|d| *d == '-'));
+    ///
+    /// let chunk = CamelSegment::Chunk(CamelChunk::new("chunk")?);
+    /// assert!(!chunk.is_delim_and(|d| *d == '_'));
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[inline]
+    pub fn is_delim_and(&self, pred: impl FnOnce(&D) -> bool) -> bool {
         match self {
-            Self::Delim(delim) => Some(delim),
-            _ => None,
+            Self::Delim(delim) => pred(delim),
+            _ => false,
         }
     }
 
-    /// Returns `Some` if the segment is a chunk, otherwise returns `None`.
+    /// Returns `true` for every delimiter. For a chunk, returns the result of
+    /// the predicate.
+    ///
+    /// # Examples
     ///
     /// ```
     /// # use typed_ident::syntax::delimiter::*;
     /// # use typed_ident::presets::unicode::camel::*;
     /// let delim = CamelSegment::Delim(LowLine);
-    /// assert_eq!(delim.chunk(), None);
+    /// assert!(delim.is_delim_or(|c| *c == "chunk"));
     ///
     /// let chunk = CamelSegment::Chunk(CamelChunk::new("chunk")?);
-    /// assert_eq!(chunk.chunk(), Some(CamelChunk::new("chunk")?));
+    /// assert!(chunk.is_delim_or(|c| *c == "chunk"));
+    /// assert!(!chunk.is_delim_or(|c| *c == "text"));
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
-    pub fn chunk(self) -> Option<C> {
+    pub fn is_delim_or(&self, pred: impl FnOnce(&C) -> bool) -> bool {
         match self {
-            Self::Chunk(chunk) => Some(chunk),
-            _ => None,
+            Self::Chunk(chunk) => pred(chunk),
+            _ => true,
+        }
+    }
+
+    /// Returns `true` if the contents of this segment is an empty chunk.
+    ///
+    /// Since a delimiter can never be empty, if the segment is a delimiter,
+    /// this will return `false`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use typed_ident::syntax::delimiter::*;
+    /// # use typed_ident::presets::unicode::camel::*;
+    /// let segment = CamelSegment::Delim(LowLine);
+    /// assert_eq!(segment.is_empty(), false);
+    ///
+    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?);
+    /// assert_eq!(segment.is_empty(), false);
+    ///
+    /// let segment = CamelSegment::Chunk(CamelChunk::new("")?);
+    /// assert_eq!(segment.is_empty(), true);
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[inline]
+    pub fn is_empty(&self) -> bool
+    where
+        C: AsRef<str>,
+    {
+        match self {
+            Self::Delim(_) => false,
+            Self::Chunk(chunk) => chunk.as_ref().is_empty(),
+        }
+    }
+
+    /// Returns the byte length of the string representation of `self`.
+    ///
+    /// For delimiters, this will first cast as a character, then return the
+    /// UTF-8 length of the character. For chunks, the length of the chunk is
+    /// used directly.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use typed_ident::syntax::delimiter::*;
+    /// # use typed_ident::presets::unicode::camel::*;
+    /// let segment = CamelSegment::Delim(LowLine);
+    /// assert_eq!(segment.len(), 1);
+    ///
+    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?);
+    /// assert_eq!(segment.len(), 5);
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[inline]
+    pub fn len(&self) -> usize
+    where
+        D: Into<char> + Copy,
+        C: AsRef<str>,
+    {
+        match self {
+            Self::Delim(delim) => Into::<char>::into(*delim).len_utf8(),
+            Self::Chunk(chunk) => chunk.as_ref().len(),
+        }
+    }
+
+    /// Converts the segment to a type-erased representation.
+    ///
+    /// The `Delim` variant will be converted to a `char`, and the `Chunk`
+    /// variant will be converted to a `&str`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::assert_matches;
+    /// # use typed_ident::*;
+    /// # use typed_ident::syntax::delimiter::*;
+    /// # use typed_ident::presets::unicode::camel::*;
+    /// let segment = CamelSegment::Delim(LowLine).type_erased();
+    /// assert!(segment.is_delim_and(|c| *c == '_'));
+    ///
+    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?).type_erased();
+    /// assert!(segment.is_chunk_and(|c| *c == "Upper"));
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[inline]
+    pub fn type_erased(self) -> Segment<D::Erased, C::Erased>
+    where
+        D: TypeErased,
+        C: TypeErased,
+    {
+        match self {
+            Self::Delim(delim) => Segment::Delim(delim.type_erased()),
+            Self::Chunk(chunk) => Segment::Chunk(chunk.type_erased()),
+        }
+    }
+
+    /// Converts a segment's delimiter to a type-erased representation.
+    ///
+    /// The `Delim` variant will be converted to a `char`, but the chunk
+    /// will remain strongly-typed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::assert_matches;
+    /// # use typed_ident::*;
+    /// # use typed_ident::syntax::delimiter::*;
+    /// # use typed_ident::presets::unicode::camel::*;
+    /// let segment = CamelSegment::Delim(LowLine).type_erased_delim();
+    /// assert!(segment.is_delim_and(|c| *c == '_'));
+    ///
+    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?).type_erased_delim();
+    /// assert!(segment.is_chunk_and(|c| *c == "Upper"));
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[inline]
+    pub fn type_erased_delim(self) -> Segment<D::Erased, C>
+    where
+        D: TypeErased,
+    {
+        match self {
+            Self::Delim(delim) => Segment::Delim(delim.type_erased()),
+            Self::Chunk(chunk) => Segment::Chunk(chunk),
+        }
+    }
+
+    /// Converts a segment's chunk to a type-erased representation.
+    ///
+    /// The `Chunk` variant will be converted to a `&str`, but the delimiter
+    /// will remain strongly-typed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::assert_matches;
+    /// # use typed_ident::*;
+    /// # use typed_ident::syntax::delimiter::*;
+    /// # use typed_ident::presets::unicode::camel::*;
+    /// let segment = CamelSegment::Delim(LowLine).type_erased_chunk();
+    /// assert!(segment.is_delim_and(|c| *c == '_'));
+    ///
+    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?).type_erased_chunk();
+    /// assert!(segment.is_chunk_and(|c| *c == "Upper"));
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[inline]
+    pub fn type_erased_chunk(self) -> Segment<D, C::Erased>
+    where
+        C: TypeErased,
+    {
+        match self {
+            Self::Delim(delim) => Segment::Delim(delim),
+            Self::Chunk(chunk) => Segment::Chunk(chunk.type_erased()),
         }
     }
 }
