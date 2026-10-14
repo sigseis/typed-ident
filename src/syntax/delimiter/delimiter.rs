@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------------
 use crate::syntax::SubsetOf;
 use crate::syntax::delimiter::AppendClosed;
+use crate::type_erased::TypeErased;
 use core::fmt::Debug;
 use core::hash::Hash;
 
@@ -109,7 +110,17 @@ use core::hash::Hash;
 /// [`is_chunk_delim`]: Delimiter::is_chunk_delim
 /// [`is_ident_start_delim`]: Delimiter::is_ident_start_delim
 pub trait Delimiter:
-    Copy + Clone + Debug + Eq + Hash + Ord + PartialEq + PartialOrd + SubsetOf<Self> + Sized
+    Copy
+    + Clone
+    + Debug
+    + Eq
+    + Hash
+    + Ord
+    + PartialEq
+    + PartialOrd
+    + SubsetOf<Self>
+    + Sized
+    + TypeErased<Erased = char>
 {
     /// Whether or not a fragment containing only this type of delimiters would
     /// be considered append-closed.
@@ -266,5 +277,18 @@ pub trait Delimiter:
     #[inline]
     fn is_chunk_delim(c: char) -> bool {
         Self::from_chunk_delim(c).is_some()
+    }
+}
+
+// =============================================================================
+// TRAIT IMPLS
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+impl<D: Delimiter> crate::type_erased::TypeErased for D {
+    type Erased = char;
+    #[inline(always)]
+    fn type_erased(self) -> Self::Erased {
+        self.as_char()
     }
 }

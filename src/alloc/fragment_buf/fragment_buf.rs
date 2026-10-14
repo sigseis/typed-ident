@@ -1596,15 +1596,6 @@ impl<B, D, P> std_alloc::borrow::Borrow<Fragment<B, D, P>> for FragmentBuf<B, D,
 }
 
 // -----------------------------------------------------------------------------
-impl<B, D, P> std_alloc::borrow::ToOwned for Fragment<B, D, P> {
-    type Owned = FragmentBuf<B, D, P>;
-    #[inline]
-    fn to_owned(&self) -> Self::Owned {
-        self.to_fragment_buf()
-    }
-}
-
-// -----------------------------------------------------------------------------
 impl<B: Boundary, D: Delimiter, P: CasedProfile> core::str::FromStr for FragmentBuf<B, D, P> {
     type Err = Error;
     #[inline]
@@ -1684,6 +1675,24 @@ impl<B, D, P> core::cmp::PartialOrd<FragmentBuf<B, D, P>> for &str {
     #[inline]
     fn partial_cmp(&self, rhs: &FragmentBuf<B, D, P>) -> Option<core::cmp::Ordering> {
         (*self).partial_cmp(rhs.as_str())
+    }
+}
+
+// -----------------------------------------------------------------------------
+impl<B: Boundary, D: Delimiter, P: CasedProfile> TryFrom<String> for FragmentBuf<B, D, P> {
+    type Error = crate::Error;
+    #[inline(always)]
+    fn try_from(orig: String) -> Result<Self, Self::Error> {
+        FragmentBuf::from_string(orig)
+    }
+}
+
+// -----------------------------------------------------------------------------
+impl<B, D, P> crate::type_erased::TypeErased for FragmentBuf<B, D, P> {
+    type Erased = String;
+    #[inline(always)]
+    fn type_erased(self) -> Self::Erased {
+        self.into_string()
     }
 }
 

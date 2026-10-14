@@ -813,3 +813,12 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Identifier for Ident<B, D, P> {
         self
     }
 }
+
+// -----------------------------------------------------------------------------
+impl<'a, B, D, P> crate::type_erased::TypeErased for &'a Ident<B, D, P> {
+    type Erased = &'a str;
+    #[inline(always)]
+    fn type_erased(self) -> Self::Erased {
+        self.as_str()
+    }
+}

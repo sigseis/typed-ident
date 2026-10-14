@@ -4,16 +4,15 @@
 
 // -----------------------------------------------------------------------------
 use crate::Segment;
-use crate::syntax::Delimiter;
-use std_alloc::string::String;
+use std_alloc::borrow::ToOwned;
 
 // =============================================================================
 // IMPLS
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl<D> Segment<D, &str> {
-    /// Converts a type-erased segment into an owned representation.
+impl<D: ToOwned, C: ToOwned + ?Sized> Segment<D, &C> {
+    /// Converts a segment into an owned representation.
     ///
     /// # Examples
     ///
@@ -21,87 +20,18 @@ impl<D> Segment<D, &str> {
     /// # use typed_ident::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine)
-    ///     .type_erased_chunk()
-    ///     .into_owned();
-    /// assert_eq!(segment, CamelSegment::Delim(LowLine).type_erased_chunk());
+    /// let segment = CamelSegment::Delim(LowLine).to_owned();
+    /// assert_eq!(segment, Segment::Delim(LowLine));
     ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?)
-    ///     .type_erased_chunk()
-    ///     .into_owned();
-    /// assert_eq!(segment, StringSegment::Chunk(String::from("Upper")));
+    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?).to_owned();
+    /// assert_eq!(segment, Segment::<LowLine, _>::Chunk(CamelChunk::new_boxed("Upper")?));
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
-    #[must_use]
     #[inline]
-    pub fn into_owned(self) -> Segment<D, String> {
+    pub fn to_owned(&self) -> Segment<D::Owned, C::Owned> {
         match self {
-            Segment::Chunk(chunk) => Segment::Chunk(String::from(chunk)),
-            Segment::Delim(delim) => Segment::Delim(delim),
-        }
-    }
-}
-
-// -----------------------------------------------------------------------------
-impl<D: Delimiter> Segment<D, String> {
-    /// Returns the byte length of the string representation of `self`.
-    ///
-    /// For delimiters, this will first cast as a character, then return the
-    /// UTF-8 length of the character. For chunks, the length of the chunk is
-    /// used directly.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine)
-    ///     .type_erased_chunk()
-    ///     .into_owned();
-    /// assert_eq!(segment.len(), 1);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?)
-    ///     .type_erased_chunk()
-    ///     .into_owned();
-    /// assert_eq!(segment.len(), 5);
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    pub fn len(&self) -> usize {
-        match self {
-            Self::Delim(delim) => delim.as_char().len_utf8(),
-            Self::Chunk(chunk) => chunk.len(),
-        }
-    }
-}
-
-// -----------------------------------------------------------------------------
-impl Segment<char, String> {
-    /// Returns the byte length of the string representation of `self`.
-    ///
-    /// For delimiters, this will first cast as a character, then return the
-    /// UTF-8 length of the character. For chunks, the length of the chunk is
-    /// used directly.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::camel::*;
-    /// let segment = CamelSegment::Delim(LowLine)
-    ///     .type_erased()
-    ///     .into_owned();
-    /// assert_eq!(segment.len(), 1);
-    ///
-    /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?)
-    ///     .type_erased()
-    ///     .into_owned();
-    /// assert_eq!(segment.len(), 5);
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    pub fn len(&self) -> usize {
-        match self {
-            Self::Delim(delim) => delim.len_utf8(),
-            Self::Chunk(chunk) => chunk.len(),
+            Segment::Chunk(chunk) => Segment::Chunk((*chunk).to_owned()),
+            Segment::Delim(delim) => Segment::Delim(delim.to_owned()),
         }
     }
 }
