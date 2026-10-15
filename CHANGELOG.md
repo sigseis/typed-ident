@@ -13,11 +13,13 @@ release during this time, including patch releases.
 ### Added
 
 - Added the ability to iterate over words of a fragment; `Words`, `StrWords`, `WordIndices`, `StrWordIndices`.
+- Added `Owned*Segment` variant type aliases for presets.
 - Added `TryFrom<String>` for owned types (such as `Box<Chunk>`, `Box<Fragment>`, and `Box<Ident>`).
 - Loosened the argument requirements for `new` and `new_boxed`.
 
 ### Breaking Changes
 
+- Changed `Fragment` to also return `Box<Fragment>` where appropriate (for consistency with `Ident`).
 - Changed the result types for `To*` conversion traits to support various different result type bindings.
 - Hid the `SliceIndex` type so that it cannot be named by the end-user.
 - Removed `ConvertibleIdentifier` and `FormattableIdentifier`, now you can just use `Identifier`.

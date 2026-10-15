@@ -1,12 +1,12 @@
-//! Presets to set commonly used identifier formats.
+//! Presets to define commonly used identifier formats.
 //!
 //! This module contains multiple submodules, which allows you to narrow-in on a
 //! desired configuration.
 //!
-//! * [`ascii`] - Identifier which use the [`Ascii`](crate::syntax::profile::Ascii) character profile
-//! * [`strict`] - Identifier which use the [`Strict`](crate::syntax::profile::Strict) character profile
-//! * [`unicode`] - Identifier which use the [`Unicode`](crate::syntax::profile::Unicode) character profile
-//! * [`generic`] - Configurations which are generic over their boundary and character profile
+//! * [`ascii`] - Identifiers which use the [`Ascii`](crate::syntax::profile::Ascii) character profile
+//! * [`strict`] - Identifiers which use the [`Strict`](crate::syntax::profile::Strict) character profile
+//! * [`unicode`] - Identifiers which use the [`Unicode`](crate::syntax::profile::Unicode) character profile
+//! * [`generic`] - Identifiers which are generic over their boundary and character profile
 //!
 //! > **NOTE:**
 //! > Since Unicode is the often sought-after character profile, the reference documentation on this page will
@@ -52,6 +52,7 @@ macro_rules! impl_type_aliases {
             ident=$ident:ident,
             module=$module:ident,
             segment=$segment:ident,
+            segment_owned=$segment_owned:ident,
         },
         options=$options:ident,
         case=$case:ident,
@@ -99,6 +100,17 @@ macro_rules! impl_type_aliases {
                     crate::syntax::profile::case::$case<P>
                 >,
             >;
+
+            #[cfg(feature = "alloc")]
+            #[doc = concat!("The owned segment type for [`", stringify!($ident) ,"`].")]
+            pub type $segment_owned<'a, P, O = crate::syntax::boundary::options::$options> = crate::Segment<
+                crate::syntax::delimiter::$delimiter,
+                std_alloc::boxed::Box<crate::Chunk<
+                    crate::syntax::boundary::Standard<O>,
+                    crate::syntax::delimiter::$delimiter,
+                    crate::syntax::profile::case::$case<P>
+                >>,
+            >;
         }
         #[doc(inline)]
         pub use $module::$ident;
@@ -112,6 +124,7 @@ macro_rules! impl_type_aliases {
             ident=$ident:ident,
             module=$module:ident,
             segment=$segment:ident,
+            segment_owned=$segment_owned:ident,
         },
         options=$options:ident,
         case=$case:ident,
@@ -147,6 +160,13 @@ macro_rules! impl_type_aliases {
                 'a,
                 crate::syntax::profile::$profile,
             >;
+
+            #[cfg(feature = "alloc")]
+            #[doc = concat!("The owned segment type for [`", stringify!($ident) ,"`].")]
+            pub type $segment_owned<'a> = crate::presets::generic::$module::$segment_owned<
+                'a,
+                crate::syntax::profile::$profile,
+            >;
         }
         #[doc(inline)]
         pub use $module::$ident;
@@ -163,6 +183,7 @@ macro_rules! impl_type_aliases {
                 ident=CamelIdent,
                 module=camel,
                 segment=CamelSegment,
+                segment_owned=OwnedCamelSegment,
             },
             options=Default,
             case=Mixed,
@@ -233,6 +254,7 @@ macro_rules! impl_type_aliases {
                 ident=CasedCamelIdent,
                 module=cased_camel,
                 segment=CasedCamelSegment,
+                segment_owned=OwnedCasedCamelSegment,
             },
             options=Default,
             case=Camel,
@@ -303,6 +325,7 @@ macro_rules! impl_type_aliases {
                 ident=LowerCamelIdent,
                 module=lower_camel,
                 segment=LowerCamelSegment,
+                segment_owned=OwnedLowerCamelSegment,
             },
             options=Default,
             case=LowerCamel,
@@ -371,6 +394,7 @@ macro_rules! impl_type_aliases {
                 ident=UpperCamelIdent,
                 module=upper_camel,
                 segment=UpperCamelSegment,
+                segment_owned=OwnedUpperCamelSegment,
             },
             options=Default,
             case=UpperCamel,
@@ -439,6 +463,7 @@ macro_rules! impl_type_aliases {
                 ident=HybridIdent,
                 module=hybrid,
                 segment=HybridSegment,
+                segment_owned=OwnedHybridSegment,
             },
             options=Default,
             case=Mixed,
@@ -509,6 +534,7 @@ macro_rules! impl_type_aliases {
                 ident=CasedHybridIdent,
                 module=cased_hybrid,
                 segment=CasedHybridSegment,
+                segment_owned=OwnedCasedHybridSegment,
             },
             options=Default,
             case=Camel,
@@ -579,6 +605,7 @@ macro_rules! impl_type_aliases {
                 ident=LowerHybridIdent,
                 module=lower_hybrid,
                 segment=LowerHybridSegment,
+                segment_owned=OwnedLowerHybridSegment,
             },
             options=Default,
             case=LowerCamel,
@@ -647,6 +674,7 @@ macro_rules! impl_type_aliases {
                 ident=UpperHybridIdent,
                 module=upper_hybrid,
                 segment=UpperHybridSegment,
+                segment_owned=OwnedUpperHybridSegment,
             },
             options=Default,
             case=UpperCamel,
@@ -715,6 +743,7 @@ macro_rules! impl_type_aliases {
                 ident=KebabIdent,
                 module=kebab,
                 segment=KebabSegment,
+                segment_owned=OwnedKebabSegment,
             },
             options=NoBoundaries,
             case=Mixed,
@@ -785,6 +814,7 @@ macro_rules! impl_type_aliases {
                 ident=CasedKebabIdent,
                 module=cased_kebab,
                 segment=CasedKebabSegment,
+                segment_owned=OwnedCasedKebabSegment,
             },
             options=NoBoundaries,
             case=Uniform,
@@ -855,6 +885,7 @@ macro_rules! impl_type_aliases {
                 ident=LowerKebabIdent,
                 module=lower_kebab,
                 segment=LowerKebabSegment,
+                segment_owned=OwnedLowerKebabSegment,
             },
             options=NoBoundaries,
             case=Lower,
@@ -923,6 +954,7 @@ macro_rules! impl_type_aliases {
                 ident=UpperKebabIdent,
                 module=upper_kebab,
                 segment=UpperKebabSegment,
+                segment_owned=OwnedUpperKebabSegment,
             },
             options=NoBoundaries,
             case=Upper,
@@ -991,6 +1023,7 @@ macro_rules! impl_type_aliases {
                 ident=SnakeIdent,
                 module=snake,
                 segment=SnakeSegment,
+                segment_owned=OwnedSnakeSegment,
             },
             options=NoBoundaries,
             case=Mixed,
@@ -1061,6 +1094,7 @@ macro_rules! impl_type_aliases {
                 ident=CasedSnakeIdent,
                 module=cased_snake,
                 segment=CasedSnakeSegment,
+                segment_owned=OwnedCasedSnakeSegment,
             },
             options=NoBoundaries,
             case=Uniform,
@@ -1131,6 +1165,7 @@ macro_rules! impl_type_aliases {
                 ident=LowerSnakeIdent,
                 module=lower_snake,
                 segment=LowerSnakeSegment,
+                segment_owned=OwnedLowerSnakeSegment,
             },
             options=NoBoundaries,
             case=Lower,
@@ -1199,6 +1234,7 @@ macro_rules! impl_type_aliases {
                 ident=UpperSnakeIdent,
                 module=upper_snake,
                 segment=UpperSnakeSegment,
+                segment_owned=OwnedUpperSnakeSegment,
             },
             options=NoBoundaries,
             case=Upper,

@@ -2,69 +2,119 @@
 
 A Rust crate for type-safe identifier validation, inspection, and mutation.
 
-Conforming to:
-
-* [Unicode Standard Annex #31](http://www.unicode.org/reports/tr31/) for Unicode character profiles
-* [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks) for boundary calculation
-
 <div class="warning">
 
-**NOTE:** This crate is currently in alpha. Until the crate enters beta, the crate has no stability promise and may contain breaking changes with every update.
+**Alpha Software:** This crate is currently in alpha. Until the crate enters beta, the crate has no stability promise and may contain breaking changes with every update.
 
 </div>
 
-## Basic Usage
+## Unicode Standards
 
-The most common way to use this crate is through its predefined identifier presets. You can choose the preset that matches the syntax you want to enforce.
+The Unicode-based identifier profiles and boundary calculations follow:
+
+* [Unicode Standard Annex #31](https://www.unicode.org/reports/tr31/)
+  for identifier character profiles
+* [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)
+  for identifier boundary calculation
+
+
+## Core Features
+
+The most common way to use this crate is through its predefined presets.
+
+You can choose the preset that matches the syntax you want to enforce.
 
 ```rust
 use typed_ident::fmt::AsLowerSnake;
-use typed_ident::presets::unicode::UpperCamelIdent;
+use typed_ident::presets::unicode::{CamelIdent, CasedCamelIdent, UpperCamelIdent};
 
 // Validate the format of input to see that it matches expectations.
-let identifier = UpperCamelIdent::new("HTTPServer")?;
+let upper_camel = UpperCamelIdent::new("HTTPServer")?;
 
-// Look at all of the segments of the identifier.
+// Inspect all of the delimiters and words of the identifier.
 println!("identifier segments:");
-for segment in identifier.segments() {
+for segment in upper_camel.segments() {
     println!("* {segment:?}"); // [Chunk("HTTP"), Chunk("Server")]
 }
 
-// Convert to a different displayable format.
-let lower_snake = identifier.as_lower_snake();
-println!("as lower-snake: {lower_snake}"); // "http_server"
+// Interpret as a different displayable format ("http_server").
+// (This simply reformats for display purposes, no allocation.)
+println!("as lower_snake: {}", upper_camel.as_lower_snake());
 
-// Create a decorated identifier (requires "alloc" feature).
-let decorated = identifier.with_circumfix("__", "__")?;
-println!("with decoration: {decorated}"); // "__HTTPServer__"
+// Zero-cost cast to any format that represents a superset.
+// (This does not do any work, so it's basically a type cast.)
+let cased_camel: &CasedCamelIdent = upper_camel.cast();
+let mixed_camel: &CamelIdent = upper_camel.cast();
 # Ok::<(), typed_ident::Error>(())
 ```
 
-If you know the general shape of the identifier, but not the casing, less-specific presets are also available.
+See the [`presets`] module documentation for other predefined identifier formats.
+
+See the [`syntax`] module documentation if you want to build a custom identifier formats.
+
+## Alloc Features
+
+By enabling the `alloc` feature, you can use functionality to safely mutate identifiers.
+
+Identifiers are validated throughout mutation to ensure they continue to satisfy the format requirements.
 
 ```rust
-use typed_ident::presets::unicode::CamelIdent;
+use typed_ident::convert::ToLowerKebab;
+use typed_ident::presets::unicode::{LowerKebabIdent, UpperCamelIdent};
+let upper_camel = UpperCamelIdent::new("HTTPServer")?;
 
-// Examples of camel identifiers:
-assert!(CamelIdent::new("iAm_123").is_ok());     // Delimiters         (allowed)
-assert!(CamelIdent::new("iAm_lower").is_ok());   // Consistent Chunks  (allowed)
-assert!(CamelIdent::new("iAm_Mixed").is_ok());   // Mixed Chunks       (allowed)
-assert!(CamelIdent::new("UpperCamel").is_ok());  // Upper Camel        (allowed)
+// Convert to a different identifier preset format.
+let lower_kebab: String = upper_camel.to_lower_kebab()?;
+assert_eq!(lower_kebab, "http-server");
 
-// Examples of non-camel identifiers:
-assert!(CamelIdent::new("").is_err());           // Empty              (disallowed)
-assert!(CamelIdent::new("2").is_err());          // Invalid Start      (disallowed)
-assert!(CamelIdent::new("kebab-case").is_err()); // Hyphen Delimiter   (disallowed)
+// The conversion result adapts to the target variable.
+let lower_kebab: Box<LowerKebabIdent> = upper_camel.to_lower_kebab()?;
+assert_eq!(lower_kebab, "http-server");
+
+// Attach a new word to the end of an identifier.
+let lower_kebab_joined = lower_kebab.join("context")?;
+assert_eq!(lower_kebab_joined, "http-server-context");
+
+// Decorate an identifier with some affixed strings.
+let decorated = upper_camel.with_circumfix("__", "__")?;
+assert_eq!(decorated, "__HTTPServer__");
 # Ok::<(), typed_ident::Error>(())
 ```
 
-See the [`presets`] module documentation for a guided tour of different predefined identifier formats.
+## Main Types
 
-See the [`syntax`] module documentation if you want to build your own custom identifier formats.
+The presets are type aliases to more complex generic types provided by this crate.
+
+| **Type**        | **Brief Description**                                                            |
+|-----------------|----------------------------------------------------------------------------------|
+| [`Ident`]       | An immutable, syntax-validated UTF-8 string slice representing an identifier.    |
+| [`Fragment`]    | An immutable slice of an identifier, which itself may not be an identifier.      |
+| [`FragmentBuf`] | A mutable, owned buffer for constructing or modifying fragments and identifiers. |
+| [`Chunk`]       | An immutable slice of a [`Fragment`] which contains no delimiters.               |
+| [`Segment`]     | A single chunk or delimiter from an [`Ident`] or [`Fragment`].                   |
+
+> **HINT:** You almost always want to start with an `Ident`, usually through some predefined identifier [`presets`].
+
+There is no `IdentBuf` type. Since you can clear a buffer, and since an empty string is not a valid identifier, it's too easy for mutable buffers to form invalid identifiers. You should use `FragmentBuf` to build an identifier from nothing, and use one of its helper functions to fallibly convert to an `Ident` of some form.
+
+For an owned, dynamically-produced `Ident`; use `Box<Ident>` (requires "alloc" feature).
+
+* [`Ident::to_boxed_ident`] to construct a boxed identifier from an immutable identifier reference
+* [`Ident::new_boxed`] to fallibly construct a boxed identifier from a plain string buffer
+* [`FragmentBuf::into_boxed_ident`] to fallibly construct a boxed identifier from a fragment buffer
+
+[`Chunk`]: crate::Chunk
+[`Fragment`]: crate::Fragment
+[`FragmentBuf`]: crate::FragmentBuf
+[`FragmentBuf::into_boxed_ident`]: crate::FragmentBuf::into_boxed_ident
+[`Ident`]: crate::Ident
+[`Ident::new_boxed`]: crate::Ident::new_boxed
+[`Ident::to_boxed_ident`]: crate::Ident::to_boxed_ident
+[`Segment`]: crate::Segment
 
 ## When To Use
 
-`typed-ident` is intended for values that represent programming identifiers and must obey a defined identifier syntax.
+`typed-ident` is intended for use with programming identifiers that must obey a defined syntax.
 
 Use it when you need to:
 
@@ -82,135 +132,97 @@ Typical use cases include:
 * Schema, API, or serialization code that generates fields, types, or methods
 * Refactoring and rename tools
 
-For ordinary strings that only need case conversion, use a general-purpose crate such as [`convert_case`](https://crates.io/crates/convert_case/).
-
-For URLs, REST paths, filesystem paths, or other domain-specific syntax, use a crate that understands that syntax instead.
-
-## Core Types
-
-The predefined presets are configurations of more general types provided by this crate.
-
-| **Type**        | **Brief Description**                                                            |
-|-----------------|----------------------------------------------------------------------------------|
-| [`Ident`]       | An immutable, syntax-validated UTF-8 string slice representing an identifier.    |
-| [`Fragment`]    | An immutable slice of an identifier, which itself may not be an identifier.      |
-| [`FragmentBuf`] | A mutable, owned buffer for constructing or modifying fragments and identifiers. |
-| [`Chunk`]       | An immutable slice of a [`Fragment`] which contains no delimiters.               |
-| [`Segment`]     | A single chunk or delimiter from an [`Ident`] or [`Fragment`].                   |
-
-> **HINT:** You almost always want to start with an `Ident`, usually through some predefined identifier [`presets`].
-
-There is no `IdentBuf` type. This is because a mutable identifier is able to be made invalid by clearing the buffer, and enforcing the buffer is non-empty makes such a type difficult to use.
-
-For an owned `Ident`, use `Box<Ident>` (these require enabling the "alloc" feature).
-
-* [`Ident::to_boxed_ident`] to construct a boxed identifier from an immutable identifier reference
-* [`Ident::new_boxed`] to fallibly construct a boxed identifier from a plain string buffer
-* [`FragmentBuf::into_boxed_ident`] to fallibly construct a boxed identifier from a fragment buffer
-
-[`Chunk`]: crate::Chunk
-[`Fragment`]: crate::Fragment
-[`FragmentBuf`]: crate::FragmentBuf
-[`FragmentBuf::into_boxed_ident`]: crate::FragmentBuf::into_boxed_ident
-[`Ident`]: crate::Ident
-[`Ident::new_boxed`]: crate::Ident::new_boxed
-[`Ident::to_boxed_ident`]: crate::Ident::to_boxed_ident
-[`Segment`]: crate::Segment
+For ordinary string conversion, use a general-purpose crate such as [`convert_case`](https://crates.io/crates/convert_case/).
 
 # Crate Details
 
-## Boundary Definition
+## Identifier Parts
 
-Though the boundary implementation can be customized, this crate provides a configurable predefined implementation with defaults based on [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks).
+Identifiers can be loosely defined as having the following parts:
 
-This means that predefined identifiers will create the following segment boundaries.
+- **Chunks** which are the parts of the identifier which satisfy some character profile.
+- **Delimiters** which are additional valid characters that force separation between chunks.
+- **Words** which are the largest subslices of a chunk that contain no obvious boundaries.
 
-* A **delimiter boundary** places a boundary before and after any delimiter defined by the identifier
-* A **camel boundary** places a boundary after a lowercase or non-Greek titlecase letter, followed by an uppercase or titlecase letter
-* A **hat boundary** places a boundary before an uppercase or titlecase letter followed by a lowercase letter, or before a non-Greek titlecase letter
+**Example:**
 
-> **NOTE:** UTS #55 distinguishes Greek and non-Greek titlecase characters when determining identifier chunks. Greek titlecase characters are treated as visually uppercase (`ᾈ`, `ᾨ`, `ῌ`, `ᾚ`, etc), while non-Greek titlecase characters are treated as beginning uppercase and continuing lowercase within the same scalar value (`ǅ`, `ǈ`, `ǋ`, `ǲ`, etc).
-
-```rust
-# use typed_ident::*;
-# use typed_ident::presets::unicode::*;
-// A camel boundary splits `Camel` from `Boundary`.
-let segments: Vec<_> = CamelIdent::new("CamelBoundary")?
-    .segments()
-    .type_erased()
-    .collect();
-assert_eq!(segments, [
-    StrSegment::Chunk("Camel"),
-    StrSegment::Chunk("Boundary")
-]);
-
-// A hat boundary splits `HAT` from `Boundary`.
-let segments: Vec<_> = CamelIdent::new("HATBoundary")?
-    .segments()
-    .type_erased()
-    .collect();
-assert_eq!(segments, [
-    StrSegment::Chunk("HAT"),
-    StrSegment::Chunk("Boundary")
-]);
-
-// A delimiter boundary splits `delimiter` from `_`, and `_` from `boundary`.
-let segments: Vec<_> = CamelIdent::new("delimiter_boundary")?
-    .segments()
-    .type_erased()
-    .collect();
-assert_eq!(segments, [
-    StrSegment::Chunk("delimiter"),
-    StrSegment::Delim('_'),
-    StrSegment::Chunk("boundary")
-]);
-# Ok::<(), typed_ident::Error>(())
+```text
+                 Chunk    Chunk
+                ___|___   __|__
+               /       \ /     \
+Identifier -> "SQLServer_context"
+               \_/\____/|\_____/
+                |    |  |   |
+              Word Word |  Word
+                        |
+                    Delimiter
 ```
 
-See the [`boundary`] module documentation for information on configuring this predefined boundary implementation, or how to create your own boundary implementation.
+## Boundary Definition
 
+**A boundary says how a single chunk should break into words.**
+
+Boundaries are used in types like [`CamelIdent`] and [`HybridIdent`], which prefer using casing to separate words instead of solely relying on delimiters (in comparison to [`KebabIdent`] and [`SnakeIdent`]).
+
+This crate provides a configurable [`Standard`] implementation with defaults based on [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks). The provided implementation can be configured if you disagree with the defaults.
+
+See the [`boundary`] module documentation for information on configuring the provided boundary implementation, or how to create your own boundary implementation.
+
+[`CamelIdent`]: crate::presets::unicode::CamelIdent
+[`HybridIdent`]: crate::presets::unicode::HybridIdent
+[`KebabIdent`]: crate::presets::unicode::KebabIdent
+[`SnakeIdent`]: crate::presets::unicode::SnakeIdent
+[`Standard`]: crate::syntax::boundary::Standard
 [`boundary`]: crate::syntax::boundary
+
+## Delimiter Types
+
+**Delimiters are special characters that *force* word separation.**
+
+You don't always need to be aware of these types, just know that they are ways to configure identifiers to say what a valid syntax may be. For most presets, the types [`LowLine`] (`_`) and [`HyphenMinus`] (`-`) are used.
+
+It is possible to say an identifier allows no valid delimiter ([`NotDelimited`]), but it is of the opinion of the author of this crate that you avoid that unless dealing with some already set syntax. Having a special character which is able to force word separation in otherwise ambiguous cases is very important.
+
+See the [`delimiter`] module documentation for information for more provided delimiter types, or how to create your own delimiter types.
+
+[`HyphenMinus`]: crate::syntax::delimiter::HyphenMinus
+[`LowLine`]: crate::syntax::delimiter::LowLine
+[`NotDelimited`]: crate::syntax::delimiter::NotDelimited
+[`delimiter`]: crate::syntax::delimiter
 
 ## Character Profiles
 
-Though the character profile can be customized, this crate provides a predefined Unicode character profile based on [Unicode Standard Annex #31](http://www.unicode.org/reports/tr31/). It also provides an ASCII profile that restrict the Unicode profile to only ASCII characters.
+**Character profiles define the set of characters that are valid within a chunk.**
 
-A character profile must be combined with a case profile to form a **cased profile**, which is then usable for identifier validation.
+This crate provides a predefined [`Unicode`] character profile based on [Unicode Standard Annex #31](http://www.unicode.org/reports/tr31/). It also provides an [`Ascii`] profile that restrict the Unicode profile to only ASCII characters.
 
-* A **mixed** profile allows any casing supported by the character profile
-* A **lower** profile allows only lowercase and uncased characters
-* An **upper** profile allows only uppercase, uncased, and Greek titlecase characters
-* A **lower-camel** profile allows only lowercase and uncased for the first character after a delimiter
-* An **upper-camel** profile allows only uppercase, uncased, and titlecase for the first character after a delimiter
+A character profile on its own is not enough to define a valid identifier syntax, it needs to be adapted by a case adapter to limit the character profile to a subset of characters based on casing rules. The [`Mixed`] case adapter says not to limit by casing at all, but other adapters (like [`Lower`] or [`Upper`]) will limit the valid characters by their casing as named.
 
-> **NOTE:** The specific handling of titlecase here comes from how [UTS #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks) defines where boundaries are introduced. For consistency, we either consider a titlecase character entirely visually uppercase (Greek), or that it visually start uppercase but ends lowercase (non-Greek).
+See the [`profile`] module documentation for other provided case profiles, or how to create your own case and character profiles.
 
-See the [`profile`] module documentation for information on other less-common predefined case profiles, or how to create your own case and character profile implementations.
-
+[`Ascii`]: crate::syntax::profile::chars::Ascii
+[`Lower`]: crate::syntax::profile::case::Lower
+[`Mixed`]: crate::syntax::profile::case::Mixed
+[`Unicode`]: crate::syntax::profile::chars::Unicode
+[`Upper`]: crate::syntax::profile::case::Upper
 [`profile`]: crate::syntax::profile
-
-## Identifier "Words"
-
-Common terminology used in this crate is calling a specific kind of slice of a chunk a "word". This is slightly non-specific terminology, but it's succinct so it is often used regardless.
-
-When we refer to a "word", it's really a non-empty chunk which has been made to contain no boundaries (as defined by the [`Boundary`] definition on the chunk). Commonly this is the largest slice of a chunk that satisfies this requirement, but it doesn't have to be.
-
-In that sense, this is not a linguistic word, but more like an "identifier word", or an "identifier chunk word". A specific definition of words useful for identifier syntax inspection.
-
-[`Boundary`]: crate::syntax::boundary::Boundary
 
 ## Normalization
 
-This crate does not provide utilities for [Unicode normalization](https://www.unicode.org/faq/normalization.html).
+This crate *does not* provide utilities for [Unicode normalization](https://www.unicode.org/faq/normalization.html).
 
-Normalization is optional, but if canonical-equivalent spellings should be treated identically, normalize the input before validation.
+Normalization is optional, but it can be useful to normalize text before processing them as identifiers, especially if the input is from some text that you or the rust compiler has no control over (like user provided text from a command-line tool, for instance).
 
-**NFC** *(for storage and general use)*
+A brief explanation of the different forms is provided for those who are unfamiliar with it.
 
-NFC composes canonically equivalent sequences into a standard canonical form. It is commonly useful for storing and comparing text when canonical equivalence should be treated as equality. It does not resolve case differences, compatibility equivalences, or visually confusable characters.
+**NFC Normalized** *(for storage and general use)*
 
-**NFKC** *(for compatibility normalization)*
+NFC composes canonically equivalent sequences into a standard canonical form. It is commonly useful for storing and comparing text when canonical equivalence should be treated as equality. It *does not* resolve case differences, compatibility equivalences, or visually confusable characters.
 
-NFKC converts text to a canonical form while also removing compatibility distinctions, such as mapping full-width `１` to ASCII `1`. Because this can discard distinctions that may matter, it should be used only when compatibility equivalence is desired.
+For example, NFC would map `CaféPatron` to `CaféPatron` - these appear identical, but are different on a binary level (and thus would not satisfy an equality check).
 
-For caseless, compatibility-insensitive matching, use Unicode’s `NFKC_Casefold` operation, preferably through a library API that implements it directly.
+**NFKC Normalized** *(for compatibility normalization)*
+
+NFKC converts text to a canonical form while also removing compatibility distinctions. Because this can discard distinctions that may matter, it should be used only when compatibility equivalence is desired. For caseless, compatibility-insensitive matching, use Unicode’s `NFKC_Casefold` operation, preferably through a library API that implements it directly.
+
+For example, NFKC would map `Magic⑧Ball` to `Magic8Ball` - this demonstrates the obvious visual lossiness.

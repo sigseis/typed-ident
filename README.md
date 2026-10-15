@@ -22,36 +22,59 @@ You can choose the preset that matches the syntax you want to enforce.
 
 ```rust
 use typed_ident::fmt::AsLowerSnake;
-use typed_ident::presets::unicode::UpperCamelIdent;
+use typed_ident::presets::unicode::*;
 
 // Validate the format of input to see that it matches expectations.
-let identifier = UpperCamelIdent::new("HTTPServer")?;
+let upper_camel = UpperCamelIdent::new("HTTPServer")?;
 
-// Look at all of the segments of the identifier.
+// Inspect all of the delimiters and words of the identifier.
 println!("identifier segments:");
-for segment in identifier.segments() {
+for segment in upper_camel.segments() {
     println!("* {segment:?}"); // [Chunk("HTTP"), Chunk("Server")]
 }
 
-// Convert to a different displayable format.
-let lower_snake = identifier.as_lower_snake();
-println!("as lower-snake: {lower_snake}"); // "http_server"
+// Interpret as a different displayable format ("http_server").
+// (This simply reformats for display purposes, no allocation.)
+println!("as lower_snake: {}", upper_camel.as_lower_snake());
 
-// Create a decorated identifier (requires "alloc" feature).
-let decorated = identifier.with_circumfix("__", "__")?;
-println!("with decoration: {decorated}"); // "__HTTPServer__"
+// Zero-cost cast to any format that represents a superset.
+// (This does not do any work, so it's basically a type cast.)
+let cased_camel: &CasedCamelIdent = upper_camel.cast();
+let mixed_camel: &CamelIdent = upper_camel.cast();
+
+// ---------------------------------------------------------------------
+// Mutation functionality (requires "alloc" feature).
+// ---------------------------------------------------------------------
+use typed_ident::convert::ToLowerKebab;
+
+// Convert to a different identifier preset format.
+let lower_kebab: String = upper_camel.to_lower_kebab()?;
+assert_eq!(lower_kebab, "http-server");
+
+// The conversion result adapts to the target variable.
+let lower_kebab: Box<LowerKebabIdent> = upper_camel.to_lower_kebab()?;
+assert_eq!(lower_kebab, "http-server");
+
+// Attach a new word to the end of an identifier.
+let lower_kebab_joined = lower_kebab.join("context")?;
+assert_eq!(lower_kebab_joined, "http-server-context");
+
+// Decorate an identifier with some affixed strings.
+let decorated = upper_camel.with_circumfix("__", "__")?;
+assert_eq!(decorated, "__HTTPServer__");
 ```
 
 Once constructed, identifiers can be inspected, converted, and mutated through
-their methods while preserving the type's validity guarantees.
+their methods while preserving the type's validity guarantees. See the
+[full documentation](https://docs.rs/typed-ident) for more information.
 
 If the provided presets do not match your requirements, you can
 [define your own syntax](https://docs.rs/typed-ident/latest/typed_ident/syntax/index.html).
 
 ## When to Use
 
-`typed-ident` is intended for values that represent programming identifiers and
-must obey a defined identifier syntax.
+`typed-ident` is intended for use with programming identifiers that must obey a
+defined syntax.
 
 Use it when you need to:
 
@@ -71,11 +94,8 @@ Typical use cases include:
 * Schema, API, or serialization code that generates fields, types, or methods
 * Refactoring and rename tools
 
-For ordinary strings that only need case conversion, use a general-purpose crate
-such as [`convert_case`](https://crates.io/crates/convert_case/).
-
-For URLs, REST paths, filesystem paths, or other domain-specific syntax, use a
-crate that understands that syntax instead.
+For ordinary string conversion, use a general-purpose crate such as
+[`convert_case`](https://crates.io/crates/convert_case/).
 
 ## Changelog
 

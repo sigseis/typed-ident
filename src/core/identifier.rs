@@ -407,6 +407,7 @@ pub trait Identifier {
     #[inline]
     fn cast<B2, D2, P2>(&self) -> &Ident<B2, D2, P2>
     where
+        B2: crate::syntax::Boundary,
         Self::Delimiter: crate::syntax::SubsetOf<D2>,
         Self::Profile: crate::syntax::SubsetOf<P2>,
     {

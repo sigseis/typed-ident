@@ -7,7 +7,7 @@ There is only one provided boundary implementation, but it is configurable.
 
 ## Customizing Boundary Rules
 
-There's a few ways to customize how identifying chunk boundaries works.
+There're a few ways to customize how identifying chunk boundaries works.
 
 1. Provide a different [`Options`] type to the [`Standard`] type.
 2. Create your own type which implements the [`Boundary`] trait.

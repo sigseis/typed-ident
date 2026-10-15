@@ -361,7 +361,7 @@ impl<D, C> Segment<D, C> {
     /// Converts the segment to a type-erased representation.
     ///
     /// The `Delim` variant will be converted to a `char`, and the `Chunk`
-    /// variant will be converted to a `&str`.
+    /// variant will be converted to a `&str` or `String`.
     ///
     /// # Examples
     ///
@@ -421,8 +421,8 @@ impl<D, C> Segment<D, C> {
 
     /// Converts a segment's chunk to a type-erased representation.
     ///
-    /// The `Chunk` variant will be converted to a `&str`, but the delimiter
-    /// will remain strongly-typed.
+    /// The `Chunk` variant will be converted to a `&str` or `String`, but the
+    /// delimiter will remain strongly-typed.
     ///
     /// # Examples
     ///

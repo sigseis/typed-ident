@@ -19,11 +19,6 @@ use std_alloc::string::String;
 
 /// A dynamic, growable [`Fragment`].
 ///
-/// This type can either be constructed directly, or can be returned as a result
-/// from some operation on another chunk, fragment, or identifier which may not
-/// leave it in the original checked format (like removing part of an identifier
-/// and ending up with something which is not validly an identifier any more).
-///
 /// This allows you to build a fragment dynamically, instead of having to get a
 /// fragment from an identifier slice. Every operation performed to mutate a
 /// fragment will be checked to ensure that the result is still a valid
@@ -74,7 +69,6 @@ use std_alloc::string::String;
 /// use typed_ident::syntax::{boundary, delimiter, profile};
 ///
 /// // An ASCII fragment using the uppercase ASCII profile.
-/// // Any ASCII punctuation is rejected as delimiters.
 /// type CustomFragmentBuf = FragmentBuf<
 ///     boundary::Standard,
 ///     delimiter::AsciiPunctuation,
@@ -123,44 +117,6 @@ pub struct FragmentBuf<B, D, P> {
 
 // -----------------------------------------------------------------------------
 impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
-    /// Attempts to represent the current fragment buffer as an [`Ident`].
-    ///
-    /// This may fail - a fragment isn't obviously a valid identifier, plus the
-    /// fragment could be empty (which is never a valid identifier).
-    ///
-    /// # Errors
-    ///
-    /// Returns [`Error`] if the fragment does not satisfy the identifier
-    /// character requirements. If the fragment is empty, this will return an
-    /// `Empty` error kind. If an invalid character is found then a
-    /// `InvalidFormat` error kind is returned, with [`byte_offset`] set to the
-    /// byte index for the first invalid character.
-    ///
-    /// [`Error`]: crate::Error
-    /// [`byte_offset`]: crate::Error::byte_offset
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::*;
-    /// # use presets::unicode::hybrid::HybridFragmentBuf;
-    /// let mut buffer = HybridFragmentBuf::new();
-    /// assert!(buffer.as_ident().is_err()); // Empty
-    /// buffer.push('2')?;
-    /// assert!(buffer.as_ident().is_err()); // Invalid start character
-    ///
-    /// buffer.clear();
-    /// buffer.push('a')?;
-    /// assert!(buffer.as_ident().is_ok()); // Valid!
-    /// # Ok::<(), Error>(())
-    /// ```
-    #[inline]
-    pub fn as_ident(&self) -> Result<&Ident<B, D, P>, Error> {
-        Ident::from_fragment(self.as_fragment())
-    }
-
     /// Constructs a fragment buffer, initializing the contents to a provided
     /// string slice (attempting first to convert the string slice to a valid
     /// fragment).
@@ -170,7 +126,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     /// # Errors
     ///
     /// Returns [`Error`] if the fragment does not satisfy the character
-    /// requirements. If an invalid character is found then a `InvalidFormat`
+    /// requirements. If an invalid character is found then an `InvalidFormat`
     /// error kind is returned, with [`byte_offset`] set to the byte index for
     /// the first invalid character.
     ///
@@ -207,7 +163,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     /// # Errors
     ///
     /// Returns [`Error`] if the fragment does not satisfy the character
-    /// requirements. If an invalid character is found then a `InvalidFormat`
+    /// requirements. If an invalid character is found then an `InvalidFormat`
     /// error kind is returned, with [`byte_offset`] set to the byte index for
     /// the first invalid character.
     ///
@@ -270,23 +226,21 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     ///
     /// // Inserting at the beginning is ~prepend.
     /// let mut example = buffer.clone();
-    /// assert!(example.insert(0, 'V').is_ok());
-    /// assert!(example.insert(0, '_').is_ok());
-    /// assert_eq!(example, "_VUpperCamel");
+    /// assert!(example.insert(0, "HAT").is_ok());
+    /// assert_eq!(example, "HATUpperCamel");
     ///
     /// // Inserting at the end is ~append.
     /// let mut example = buffer.clone();
-    /// example.push('_')?;
-    /// assert!(example.insert(example.len(), 'i').is_err());
-    /// assert!(example.insert(example.len(), 'V').is_ok());
-    /// assert_eq!(example, "UpperCamel_V");
+    /// assert!(example.insert(example.len(),"lower").is_ok());
+    /// assert!(example.insert(example.len(),"Camel").is_ok());
+    /// assert_eq!(example, "UpperCamellowerCamel");
     ///
     /// // Inserting in the middle can be tricky, as your insertions
     /// // may invalidate the buffer's invariants in surprising ways.
     /// let mut example = buffer.clone();
-    /// assert!(example.insert(2, '_').is_err()); // "Up_perCamel" != UpperCamel casing
-    /// assert!(example.insert(5, '_').is_ok());
-    /// assert_eq!(example, "Upper_Camel");
+    /// assert!(example.insert(2,"HAT_").is_err()); // "UpHAT_perCamel" != UpperCamel casing
+    /// assert!(example.insert(5,"HAT").is_ok());
+    /// assert_eq!(example, "UpperHATCamel");
     /// # Ok::<(), Error>(())
     /// ```
     #[inline]
@@ -301,62 +255,9 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     /// Attempts to insert a fragment into the buffer, preserving chunk
     /// boundaries by conditionally inserting delimiters where needed.
     ///
-    /// This is a convenience function for cases when the delimiter value can be
-    /// deduced by the `Default` trait. For more information on this operation,
-    /// see the [`insert_bounded_with`] method.
-    ///
-    /// [`insert_bounded_with`]: Self::insert_bounded_with
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::*;
-    /// # use typed_ident::presets::unicode::upper_camel::*;
-    /// let mut buffer = UpperCamelFragmentBuf::from_str("UpperCamel")?;
-    ///
-    /// // Inserting at the beginning is ~prepend.
-    /// let mut example = buffer.clone();
-    /// assert!(example.insert_bounded(0, 'V').is_ok()); // Bounded because of `HAT` rules.
-    /// assert!(example.insert_bounded(0, 'V').is_ok()); // But another `V` would not be.
-    /// assert_eq!(example, "V_VUpperCamel");
-    ///
-    /// // Inserting at the end is ~append.
-    /// let mut example = buffer.clone();
-    /// assert!(example.insert_bounded(example.len(), 'i').is_err()); // "UpperCamel_i" != UpperCamel casing
-    /// assert!(example.insert_bounded(example.len(), 'V').is_ok()); // Because of `CAMEL` boundary.
-    /// assert_eq!(example, "UpperCamelV");
-    ///
-    /// // Inserting in the middle can be tricky, as your insertions
-    /// // may invalidate the buffer's invariants in surprising ways.
-    /// let mut example = buffer.clone();
-    /// assert!(example.insert_bounded(2, 'V').is_err()); // "Up_V_perCamel" != UpperCamel casing
-    /// assert!(example.insert_bounded(5, 'V').is_ok()); // Surprisingly a `CAMEL` & `HAT` boundary.
-    /// assert_eq!(example, "UpperVCamel");
-    /// # Ok::<(), Error>(())
-    /// ```
-    #[inline]
-    pub fn insert_bounded<F>(&mut self, idx: usize, fragment: F) -> Result<(), Error>
-    where
-        D: Default,
-        F: IntoIntermediate<B, D, P>,
-    {
-        self.insert_bounded_with(idx, fragment, Default::default())
-    }
-
-    /// Attempts to insert a fragment into the buffer, preserving chunk
-    /// boundaries by conditionally inserting delimiters where needed.
-    ///
     /// This function takes anything that can be represented as an intermediate
     /// fragment. That means it can take a `&str`, `char`, `Fragment`, `Chunk`,
     /// `Identifier`, or `Segment`.
-    ///
-    /// If you're working with a fragment format which has only a single valid
-    /// delimiter value, you should instead be able to use the
-    /// [`insert_bounded`] method, and should prefer that.
-    ///
-    /// [`insert_bounded`]: Self::insert_bounded
     ///
     /// # Preserving Chunk Boundaries
     ///
@@ -407,51 +308,74 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     ///
     /// ```
     /// # use typed_ident::*;
+    /// # use typed_ident::presets::unicode::upper_camel::*;
+    /// let mut buffer = UpperCamelFragmentBuf::from_str("UpperCamel")?;
+    ///
+    /// // Inserting at the beginning is ~prepend.
+    /// let mut example = buffer.clone();
+    /// assert!(example.insert_bounded(0, "HAT").is_ok()); // Bounded because of `HAT` rules.
+    /// assert!(example.insert_bounded(0, "HAT").is_ok()); // But another would not be.
+    /// assert_eq!(example, "HAT_HATUpperCamel");
+    ///
+    /// // Inserting at the end is ~append.
+    /// let mut example = buffer.clone();
+    /// assert!(example.insert_bounded(example.len(), "lower").is_err()); // "UpperCamel_lower" != UpperCamel casing
+    /// assert!(example.insert_bounded(example.len(), "Camel").is_ok()); // Because of `CAMEL` boundary.
+    /// assert_eq!(example, "UpperCamelCamel");
+    ///
+    /// // Inserting in the middle can be tricky, as your insertions
+    /// // may invalidate the buffer's invariants in surprising ways.
+    /// let mut example = buffer.clone();
+    /// assert!(example.insert_bounded(2, "HAT").is_err()); // "UpHAT_perCamel" != UpperCamel casing
+    /// assert!(example.insert_bounded(5, "HAT").is_ok()); // Surprisingly a `CAMEL` & `HAT` boundary.
+    /// assert_eq!(example, "UpperHATCamel");
+    /// # Ok::<(), Error>(())
+    /// ```
+    #[inline]
+    pub fn insert_bounded<F>(&mut self, idx: usize, fragment: F) -> Result<(), Error>
+    where
+        D: Default,
+        F: IntoIntermediate<B, D, P>,
+    {
+        self.insert_bounded_with(idx, fragment, Default::default())
+    }
+
+    /// Attempts to insert a fragment into the buffer, preserving chunk
+    /// boundaries by conditionally inserting delimiters where needed.
+    ///
+    /// This function is identical to [`insert_bounded`], except that you can
+    /// specify the delimiter to use. This may be needed in cases where there
+    /// can be more than one delimiter, and as such there is no default.
+    ///
+    /// [`insert_bounded`]: Self::insert_bounded
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// # use typed_ident::presets::unicode::upper_camel::*;
     /// let mut buffer = UpperCamelFragmentBuf::from_str("UpperCamel")?;
     ///
     /// // Inserting at the beginning is ~prepend.
     /// let mut example = buffer.clone();
-    /// assert!(example.insert_bounded_with(
-    ///     0,
-    ///     UpperCamelFragment::new("HAT")?,
-    ///     LowLine,
-    /// ).is_ok()); // Bounded because of `HAT` rules.
-    /// assert!(example.insert_bounded_with(
-    ///     0,
-    ///     UpperCamelFragment::new("HAT")?,
-    ///     LowLine,
-    /// ).is_ok()); // But another would not be.
+    /// assert!(example.insert_bounded_with(0, "HAT", LowLine).is_ok()); // Bounded because of `HAT` rules.
+    /// assert!(example.insert_bounded_with(0, "HAT", LowLine).is_ok()); // But another would not be.
     /// assert_eq!(example, "HAT_HATUpperCamel");
     ///
     /// // Inserting at the end is ~append.
     /// let mut example = buffer.clone();
-    /// assert!(example.insert_bounded_with(
-    ///     example.len(),
-    ///     UpperCamelFragment::new("lower")?,
-    ///     LowLine,
-    /// ).is_err()); // "UpperCamel_lower" != UpperCamel casing
-    /// assert!(example.insert_bounded_with(
-    ///     example.len(),
-    ///     UpperCamelFragment::new("Camel")?,
-    ///     LowLine,
-    /// ).is_ok()); // Because of `CAMEL` boundary.
+    /// assert!(example.insert_bounded_with(example.len(), "lower", LowLine).is_err()); // "UpperCamel_lower" != UpperCamel casing
+    /// assert!(example.insert_bounded_with(example.len(), "Camel", LowLine).is_ok()); // Because of `CAMEL` boundary.
     /// assert_eq!(example, "UpperCamelCamel");
     ///
     /// // Inserting in the middle can be tricky, as your insertions
     /// // may invalidate the buffer's invariants in surprising ways.
     /// let mut example = buffer.clone();
-    /// assert!(example.insert_bounded_with(
-    ///     2,
-    ///     UpperCamelFragment::new("HAT")?,
-    ///     LowLine,
-    /// ).is_err()); // "UpHAT_perCamel" != UpperCamel casing
-    /// assert!(example.insert_bounded_with(
-    ///     5,
-    ///     UpperCamelFragment::new("HAT")?,
-    ///     LowLine,
-    /// ).is_ok()); // Surprisingly a `CAMEL` & `HAT` boundary.
+    /// assert!(example.insert_bounded_with(2, "HAT", LowLine).is_err()); // "UpHAT_perCamel" != UpperCamel casing
+    /// assert!(example.insert_bounded_with(5, "HAT", LowLine).is_ok()); // Surprisingly a `CAMEL` & `HAT` boundary.
     /// assert_eq!(example, "UpperHATCamel");
     /// # Ok::<(), Error>(())
     /// ```
@@ -468,62 +392,9 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     /// boundaries by ensuring a delimiter is present on each side (where
     /// needed).
     ///
-    /// This is a convenience function for cases when the delimiter value can be
-    /// deduced by the `Default` trait. For more information on this operation,
-    /// see the [`insert_delimited_with`] method.
-    ///
-    /// [`insert_delimited_with`]: Self::insert_delimited_with
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::*;
-    /// # use typed_ident::presets::unicode::upper_camel::*;
-    /// let mut buffer = UpperCamelFragmentBuf::from_str("UpperCamel")?;
-    ///
-    /// // Inserting at the beginning is ~prepend.
-    /// let mut example = buffer.clone();
-    /// assert!(example.insert_delimited(0, 'V').is_ok());
-    /// assert_eq!(example, "V_UpperCamel");
-    ///
-    /// // Inserting at the end is ~append.
-    /// let mut example = buffer.clone();
-    /// assert!(example.insert_delimited(example.len(), 'i').is_err()); // "UpperCamel_i" != UpperCamel casing
-    /// assert!(example.insert_delimited(example.len(), 'V').is_ok());
-    /// assert_eq!(example, "UpperCamel_V");
-    ///
-    /// // Inserting in the middle can be tricky, as your insertions
-    /// // may invalidate the buffer's invariants in surprising ways.
-    /// let mut example = buffer.clone();
-    /// assert!(example.insert_delimited(2, 'V').is_err()); // "Up_V_perCamel" != UpperCamel casing
-    /// assert!(example.insert_delimited(5, 'V').is_ok());
-    /// assert_eq!(example, "Upper_V_Camel");
-    /// # Ok::<(), Error>(())
-    /// ```
-    #[inline]
-    pub fn insert_delimited<F>(&mut self, idx: usize, fragment: F) -> Result<(), Error>
-    where
-        D: Default,
-        F: IntoIntermediate<B, D, P>,
-    {
-        self.insert_delimited_with(idx, fragment, D::default())
-    }
-
-    /// Attempts to insert a fragment into the buffer, preserving chunk
-    /// boundaries by ensuring a delimiter is present on each side (where
-    /// needed).
-    ///
     /// This function takes anything that can be represented as an intermediate
     /// fragment. That means it can take a `&str`, `char`, `Fragment`, `Chunk`,
     /// `Identifier`, or `Segment`.
-    ///
-    /// If you're working with a fragment format which has only a single valid
-    /// delimiter value, you should instead be able to use the
-    /// [`insert_delimited`] method, and should prefer that.
-    ///
-    /// [`insert_delimited`]: Self::insert_delimited
     ///
     /// # Preserving Chunk Boundaries
     ///
@@ -563,46 +434,73 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     ///
     /// ```
     /// # use typed_ident::*;
+    /// # use typed_ident::presets::unicode::upper_camel::*;
+    /// let mut buffer = UpperCamelFragmentBuf::from_str("UpperCamel")?;
+    ///
+    /// // Inserting at the beginning is ~prepend.
+    /// let mut example = buffer.clone();
+    /// assert!(example.insert_delimited(0, "HAT").is_ok());
+    /// assert_eq!(example, "HAT_UpperCamel");
+    ///
+    /// // Inserting at the end is ~append.
+    /// let mut example = buffer.clone();
+    /// assert!(example.insert_delimited(example.len(), "lower").is_err()); // "UpperCamel_lower" != UpperCamel casing
+    /// assert!(example.insert_delimited(example.len(), "Camel").is_ok());
+    /// assert_eq!(example, "UpperCamel_Camel");
+    ///
+    /// // Inserting in the middle can be tricky, as your insertions
+    /// // may invalidate the buffer's invariants in surprising ways.
+    /// let mut example = buffer.clone();
+    /// assert!(example.insert_delimited(2, "HAT").is_err()); // "Up_HAT_perCamel" != UpperCamel casing
+    /// assert!(example.insert_delimited(5, "HAT").is_ok());
+    /// assert_eq!(example, "Upper_HAT_Camel");
+    /// # Ok::<(), Error>(())
+    /// ```
+    #[inline]
+    pub fn insert_delimited<F>(&mut self, idx: usize, fragment: F) -> Result<(), Error>
+    where
+        D: Default,
+        F: IntoIntermediate<B, D, P>,
+    {
+        self.insert_delimited_with(idx, fragment, D::default())
+    }
+
+    /// Attempts to insert a fragment into the buffer, preserving chunk
+    /// boundaries by ensuring a delimiter is present on each side (where
+    /// needed).
+    ///
+    /// This function is identical to [`insert_delimited`], except that you can
+    /// specify the delimiter to use. This may be needed in cases where there
+    /// can be more than one delimiter, and as such there is no default.
+    ///
+    /// [`insert_delimited`]: Self::insert_delimited
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::*;
     /// # use typed_ident::syntax::delimiter::*;
     /// # use presets::unicode::upper_camel::*;
     /// let mut buffer = UpperCamelFragmentBuf::from_str("UpperCamel")?;
     ///
     /// // Inserting at the beginning is ~prepend.
     /// let mut example = buffer.clone();
-    /// assert!(example.insert_delimited_with(
-    ///     0,
-    ///     UpperCamelFragment::new("HAT")?,
-    ///     LowLine,
-    /// ).is_ok());
+    /// assert!(example.insert_delimited_with(0, "HAT", LowLine).is_ok());
     /// assert_eq!(example, "HAT_UpperCamel");
     ///
     /// // Inserting at the end is ~append.
     /// let mut example = buffer.clone();
-    /// assert!(example.insert_delimited_with(
-    ///     example.len(),
-    ///     UpperCamelFragment::new("lower")?,
-    ///     LowLine,
-    /// ).is_err()); // "UpperCamel_lower" != UpperCamel casing
-    /// assert!(example.insert_delimited_with(
-    ///     example.len(),
-    ///     UpperCamelFragment::new("Camel")?,
-    ///     LowLine,
-    /// ).is_ok());
+    /// assert!(example.insert_delimited_with(example.len(), "lower", LowLine).is_err()); // "UpperCamel_lower" != UpperCamel casing
+    /// assert!(example.insert_delimited_with(example.len(), "Camel", LowLine).is_ok());
     /// assert_eq!(example, "UpperCamel_Camel");
     ///
     /// // Inserting in the middle can be tricky, as your insertions
     /// // may invalidate the buffer's invariants in surprising ways.
     /// let mut example = buffer.clone();
-    /// assert!(example.insert_delimited_with(
-    ///     2,
-    ///     UpperCamelFragment::new("HAT")?,
-    ///     LowLine,
-    /// ).is_err()); // "Up_HAT_perCamel" != UpperCamel casing
-    /// assert!(example.insert_delimited_with(
-    ///     5,
-    ///     UpperCamelFragment::new("HAT")?,
-    ///     LowLine,
-    /// ).is_ok());
+    /// assert!(example.insert_delimited_with(2, "HAT", LowLine).is_err()); // "Up_HAT_perCamel" != UpperCamel casing
+    /// assert!(example.insert_delimited_with(5, "HAT", LowLine).is_ok());
     /// assert_eq!(example, "Upper_HAT_Camel");
     /// # Ok::<(), Error>(())
     /// ```
@@ -629,7 +527,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     ///
     /// Returns [`Error`] if the fragment does not satisfy the identifier
     /// character requirements. If the fragment is empty, this will return an
-    /// `Empty` error kind. If an invalid character is found then a
+    /// `EmptyIdent` error kind. If an invalid character is found then a
     /// `InvalidFormat` error kind is returned, with [`byte_offset`] set to the
     /// byte index for the first invalid character.
     ///
@@ -690,15 +588,15 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     /// # use typed_ident::presets::unicode::upper_camel::*;
     /// let mut buffer = UpperCamelFragmentBuf::new();
     ///
-    /// // You can only push characters that are valid at the given position.
-    /// assert!(buffer.push('O').is_ok());
-    /// assert!(buffer.push('k').is_ok());
-    /// assert_eq!(buffer, "Ok");
+    /// // You can only push strings that are valid at the given position.
+    /// assert!(buffer.push("Ok").is_ok());
+    /// assert!(buffer.push("computer").is_ok());
+    /// assert_eq!(buffer, "Okcomputer");
     ///
     /// // But you have to be mindful of the format to avoid pushing
     /// // invalid characters. Most commonly, after delimiters.
     /// buffer.push('_')?;
-    /// assert!(buffer.push('i').is_err());
+    /// assert!(buffer.push("invalid").is_err());
     /// # Ok::<(), Error>(())
     /// ```
     #[inline]
@@ -717,69 +615,9 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     /// Attempts to push a fragment onto the buffer, preserving chunk boundaries
     /// by conditionally inserting delimiters if needed.
     ///
-    /// This is a convenience function for cases when the delimiter value can be
-    /// deduced by the `Default` trait. For more information on this operation,
-    /// see the [`push_bounded_with`] method.
-    ///
-    /// [`push_bounded_with`]: Self::push_bounded_with
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::upper_camel::*;
-    /// let mut buffer = UpperCamelFragmentBuf::new();
-    ///
-    /// // If there's no data at the start, there's nothing to bound against.
-    /// assert!(buffer.push_bounded('O').is_ok());
-    /// assert_eq!(buffer, "O");
-    ///
-    /// // But the very next bounded push would need to bound the contents.
-    /// // As such, you cannot select an invalid character.
-    /// assert!(buffer.push_bounded('k').is_err()); // "O_k" != UpperCamel casing
-    /// assert!(buffer.push_bounded('K').is_ok());
-    /// assert_eq!(buffer, "O_K");
-    ///
-    /// // This won't add a delimiter if the chunks are already bounded.
-    /// assert!(buffer.push('o').is_ok()); // Regular push to get a lowercase.
-    /// assert!(buffer.push_bounded('K').is_ok()); // A `CAMEL` boundary char.
-    /// assert_eq!(buffer, "O_KoK");
-    ///
-    /// // If there's already a delimiter, another would not be inserted.
-    /// assert!(buffer.push(LowLine).is_ok());
-    /// assert!(buffer.push_bounded('K').is_ok());
-    /// assert_eq!(buffer, "O_KoK_K");
-    /// # Ok::<(), Error>(())
-    /// ```
-    #[inline]
-    pub fn push_bounded<F>(&mut self, fragment: F) -> Result<(), Error>
-    where
-        D: Default,
-        F: IntoIntermediate<B, D, P>,
-    {
-        self.insert_bounded(self.len(), fragment).map_err(|e| {
-            e.with_error_kind(match e.error_kind() {
-                ErrorKind::FailedInsert => ErrorKind::FailedPush,
-                other => other,
-            })
-        })
-    }
-
-    /// Attempts to push a fragment into the buffer, preserving chunk boundaries
-    /// by conditionally inserting delimiters if needed.
-    ///
     /// This function takes anything that can be represented as an intermediate
     /// fragment. That means it can take a `&str`, `char`, `Fragment`, `Chunk`,
     /// `Identifier`, or `Segment`.
-    ///
-    /// If you're working with a fragment format which has only a single valid
-    /// delimiter value, you should instead be able to use the
-    /// [`push_bounded`] method, and should prefer that.
-    ///
-    /// [`push_bounded`]: Self::push_bounded
     ///
     /// # Preserving Chunk Boundaries
     ///
@@ -829,24 +667,74 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     /// let mut buffer = UpperCamelFragmentBuf::new();
     ///
     /// // If there's no data at the start, there's nothing to bound against.
-    /// assert!(buffer.push_bounded_with('O', LowLine).is_ok());
-    /// assert_eq!(buffer, "O");
+    /// assert!(buffer.push_bounded("Ok").is_ok());
     ///
     /// // But the very next bounded push would need to bound the contents.
-    /// // As such, you cannot select an invalid character.
-    /// assert!(buffer.push_bounded_with('k', LowLine).is_err()); // "O_k" != UpperCamel casing
-    /// assert!(buffer.push_bounded_with('K', LowLine).is_ok());
-    /// assert_eq!(buffer, "O_K");
+    /// // As such, you cannot select an invalid string.
+    /// assert!(buffer.push_bounded("computer").is_err()); // "Ok_computer" != UpperCamel casing
+    /// assert!(buffer.push_bounded("Computer").is_ok());
+    /// assert_eq!(buffer, "OkComputer");
     ///
-    /// // This won't add a delimiter if the chunks are already bounded.
-    /// assert!(buffer.push('o').is_ok()); // Regular push to get a lowercase.
-    /// assert!(buffer.push_bounded_with('K', LowLine).is_ok()); // A `CAMEL` boundary char.
-    /// assert_eq!(buffer, "O_KoK");
+    /// // Some pushes may require a delimiter.
+    /// assert!(buffer.push_bounded("2fast").is_ok());
+    /// assert_eq!(buffer, "OkComputer_2fast");
     ///
     /// // If there's already a delimiter, another would not be inserted.
     /// assert!(buffer.push(LowLine).is_ok());
-    /// assert!(buffer.push_bounded_with('K', LowLine).is_ok());
-    /// assert_eq!(buffer, "O_KoK_K");
+    /// assert!(buffer.push_bounded("2furious").is_ok());
+    /// assert_eq!(buffer, "OkComputer_2fast_2furious");
+    /// # Ok::<(), Error>(())
+    /// ```
+    #[inline]
+    pub fn push_bounded<F>(&mut self, fragment: F) -> Result<(), Error>
+    where
+        D: Default,
+        F: IntoIntermediate<B, D, P>,
+    {
+        self.insert_bounded(self.len(), fragment).map_err(|e| {
+            e.with_error_kind(match e.error_kind() {
+                ErrorKind::FailedInsert => ErrorKind::FailedPush,
+                other => other,
+            })
+        })
+    }
+
+    /// Attempts to push a fragment into the buffer, preserving chunk boundaries
+    /// by conditionally inserting delimiters if needed.
+    ///
+    /// This function is identical to [`push_bounded`], except that you can
+    /// specify the delimiter to use. This may be needed in cases where there
+    /// can be more than one delimiter, and as such there is no default.
+    ///
+    /// [`push_bounded`]: Self::push_bounded
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::*;
+    /// # use typed_ident::syntax::delimiter::*;
+    /// # use typed_ident::presets::unicode::upper_camel::*;
+    /// let mut buffer = UpperCamelFragmentBuf::new();
+    ///
+    /// // If there's no data at the start, there's nothing to bound against.
+    /// assert!(buffer.push_bounded_with("Ok", LowLine).is_ok());
+    ///
+    /// // But the very next bounded push would need to bound the contents.
+    /// // As such, you cannot select an invalid string.
+    /// assert!(buffer.push_bounded_with("computer", LowLine).is_err()); // "Ok_computer" != UpperCamel casing
+    /// assert!(buffer.push_bounded_with("Computer", LowLine).is_ok());
+    /// assert_eq!(buffer, "OkComputer");
+    ///
+    /// // Some pushes may require a delimiter.
+    /// assert!(buffer.push_bounded_with("2fast", LowLine).is_ok());
+    /// assert_eq!(buffer, "OkComputer_2fast");
+    ///
+    /// // If there's already a delimiter, another would not be inserted.
+    /// assert!(buffer.push(LowLine).is_ok());
+    /// assert!(buffer.push_bounded_with("2furious", LowLine).is_ok());
+    /// assert_eq!(buffer, "OkComputer_2fast_2furious");
     /// # Ok::<(), Error>(())
     /// ```
     #[inline]
@@ -866,64 +754,9 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     /// Attempts to push a fragment into the buffer, preserving chunk boundaries
     /// by ensuring a delimiter is present on the left side (if needed).
     ///
-    /// This is a convenience function for cases when the delimiter value can be
-    /// deduced by the `Default` trait. For more information on this operation,
-    /// see the [`push_delimited_with`] method.
-    ///
-    /// [`push_delimited_with`]: Self::push_delimited_with
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::*;
-    /// # use typed_ident::syntax::delimiter::*;
-    /// # use typed_ident::presets::unicode::upper_camel::*;
-    /// let mut buffer = UpperCamelFragmentBuf::new();
-    ///
-    /// // If there's no data at the start, there's nothing to delimit against.
-    /// assert!(buffer.push_delimited('O').is_ok());
-    /// assert_eq!(buffer, "O");
-    ///
-    /// // But the very next delimited push would need to delimit the contents.
-    /// // As such, you cannot select an invalid character.
-    /// assert!(buffer.push_delimited('k').is_err()); // "O_k" != UpperCamel casing
-    /// assert!(buffer.push_delimited('K').is_ok());
-    /// assert_eq!(buffer, "O_K");
-    ///
-    /// // If there's already a delimiter, another would not be inserted.
-    /// assert!(buffer.push(LowLine).is_ok());
-    /// assert!(buffer.push_delimited('K').is_ok());
-    /// assert_eq!(buffer, "O_K_K");
-    /// # Ok::<(), Error>(())
-    /// ```
-    #[inline]
-    pub fn push_delimited<F>(&mut self, fragment: F) -> Result<(), Error>
-    where
-        D: Default,
-        F: IntoIntermediate<B, D, P>,
-    {
-        self.insert_delimited(self.len(), fragment).map_err(|e| {
-            e.with_error_kind(match e.error_kind() {
-                ErrorKind::FailedInsert => ErrorKind::FailedPush,
-                other => other,
-            })
-        })
-    }
-
-    /// Attempts to push a fragment into the buffer, preserving chunk boundaries
-    /// by ensuring a delimiter is present on the left side (if needed).
-    ///
     /// This function takes anything that can be represented as an intermediate
     /// fragment. That means it can take a `&str`, `char`, `Fragment`, `Chunk`,
     /// `Identifier`, or `Segment`.
-    ///
-    /// If you're working with a fragment format which has only a single valid
-    /// delimiter value, you should instead be able to use the
-    /// [`push_delimited`] method, and should prefer that.
-    ///
-    /// [`push_delimited`]: Self::push_delimited
     ///
     /// # Preserving Chunk Boundaries
     ///
@@ -960,19 +793,66 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> FragmentBuf<B, D, P> {
     /// let mut buffer = UpperCamelFragmentBuf::new();
     ///
     /// // If there's no data at the start, there's nothing to delimit against.
-    /// assert!(buffer.push_delimited_with('O', LowLine).is_ok());
-    /// assert_eq!(buffer, "O");
+    /// assert!(buffer.push_delimited("Ok").is_ok());
     ///
     /// // But the very next delimited push would need to delimit the contents.
-    /// // As such, you cannot select an invalid character.
-    /// assert!(buffer.push_delimited_with('k', LowLine).is_err()); // "O_k" != UpperCamel casing
-    /// assert!(buffer.push_delimited_with('K', LowLine).is_ok());
-    /// assert_eq!(buffer, "O_K");
+    /// // As such, you cannot select an invalid string.
+    /// assert!(buffer.push_delimited("computer").is_err()); // "Ok_computer" != UpperCamel casing
+    /// assert!(buffer.push_delimited("Computer").is_ok());
+    /// assert_eq!(buffer, "Ok_Computer");
     ///
     /// // If there's already a delimiter, another would not be inserted.
     /// assert!(buffer.push(LowLine).is_ok());
-    /// assert!(buffer.push_delimited_with('K', LowLine).is_ok());
-    /// assert_eq!(buffer, "O_K_K");
+    /// assert!(buffer.push_delimited("2fast2furious").is_ok());
+    /// assert_eq!(buffer, "Ok_Computer_2fast2furious");
+    /// # Ok::<(), Error>(())
+    /// ```
+    #[inline]
+    pub fn push_delimited<F>(&mut self, fragment: F) -> Result<(), Error>
+    where
+        D: Default,
+        F: IntoIntermediate<B, D, P>,
+    {
+        self.insert_delimited(self.len(), fragment).map_err(|e| {
+            e.with_error_kind(match e.error_kind() {
+                ErrorKind::FailedInsert => ErrorKind::FailedPush,
+                other => other,
+            })
+        })
+    }
+
+    /// Attempts to push a fragment into the buffer, preserving chunk boundaries
+    /// by ensuring a delimiter is present on the left side (if needed).
+    ///
+    /// This function is identical to [`push_delimited`], except that you can
+    /// specify the delimiter to use. This may be needed in cases where there
+    /// can be more than one delimiter, and as such there is no default.
+    ///
+    /// [`push_delimited`]: Self::push_delimited
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::*;
+    /// # use typed_ident::syntax::delimiter::*;
+    /// # use typed_ident::presets::unicode::upper_camel::*;
+    /// let mut buffer = UpperCamelFragmentBuf::new();
+    ///
+    /// // If there's no data at the start, there's nothing to delimit against.
+    /// assert!(buffer.push_delimited_with("Ok", LowLine).is_ok());
+    ///
+    /// // But the very next delimited push would need to delimit the contents.
+    /// // As such, you cannot select an invalid string.
+    /// assert!(buffer.push_delimited_with("computer", LowLine).is_err()); // "Ok_computer" != UpperCamel casing
+    /// assert!(buffer.push_delimited_with("Computer", LowLine).is_ok());
+    /// assert_eq!(buffer, "Ok_Computer");
+    ///
+    /// // If there's already a delimiter, another would not be inserted.
+    /// assert!(buffer.push(LowLine).is_ok());
+    /// assert!(buffer.push_delimited_with("2fast2furious", LowLine).is_ok());
+    /// assert_eq!(buffer, "Ok_Computer_2fast2furious");
     /// # Ok::<(), Error>(())
     /// ```
     #[inline]
@@ -1247,7 +1127,7 @@ impl<B, D, P> FragmentBuf<B, D, P> {
     /// # use typed_ident::presets::unicode::hybrid::*;
     /// let mut buffer = HybridFragmentBuf::from_str("example")?;
     /// let boxed: Box<HybridFragment> = buffer.into_boxed_fragment();
-    /// assert_eq!(boxed.as_ref(), "example");
+    /// assert_eq!(boxed, "example");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use]

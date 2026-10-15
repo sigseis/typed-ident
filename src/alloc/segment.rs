@@ -21,10 +21,10 @@ impl<D: ToOwned, C: ToOwned + ?Sized> Segment<D, &C> {
     /// # use typed_ident::syntax::delimiter::*;
     /// # use typed_ident::presets::unicode::camel::*;
     /// let segment = CamelSegment::Delim(LowLine).to_owned();
-    /// assert_eq!(segment, Segment::Delim(LowLine));
+    /// assert_eq!(segment, OwnedCamelSegment::Delim(LowLine));
     ///
     /// let segment = CamelSegment::Chunk(CamelChunk::new("Upper")?).to_owned();
-    /// assert_eq!(segment, Segment::<LowLine, _>::Chunk(CamelChunk::new_boxed("Upper")?));
+    /// assert_eq!(segment, OwnedCamelSegment::Chunk(CamelChunk::new_boxed("Upper")?));
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]

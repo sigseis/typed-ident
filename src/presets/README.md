@@ -23,7 +23,7 @@ To break down the selection process, you can first start by considering the gene
 | [`SnakeIdent`]  | Low Line (`_`)         | ...explicitly using delimiters    | ...all characters                 |
 
 > **NOTE:**
-> For alternate-casing identifier formats, delimiters can be used if separation of words through casing is not possible (like with uncased letters, symbols, etc).
+> For identifiers that prefer separation by casing, delimiters may be used if casing cannot be used for word separation (like with uncased letters, symbols, etc).
 
 **Then, select a case profile based on the case restrictions you want...**
 
@@ -50,12 +50,12 @@ assert!(CasedCamelIdent::new("lowerCamel").is_ok());
 assert!(CasedCamelIdent::new("UpperCamel").is_ok());
 assert!(CasedCamelIdent::new("lowerCamel_UpperCamel").is_err());
 
-// A lower-cased camel identifier requires that it's lowerCamelCase
+// A lower-camel identifier requires that it's lowerCamelCase
 assert!(LowerCamelIdent::new("lowerCamel").is_ok());
 assert!(LowerCamelIdent::new("UpperCamel").is_err());
 assert!(LowerCamelIdent::new("lowerCamel_UpperCamel").is_err());
 
-// An upper-cased camel identifier requires that it's UpperCamelCase
+// An upper-camel identifier requires that it's UpperCamelCase
 assert!(UpperCamelIdent::new("lowerCamel").is_err());
 assert!(UpperCamelIdent::new("UpperCamel").is_ok());
 assert!(UpperCamelIdent::new("lowerCamel_UpperCamel").is_err());

@@ -19,41 +19,11 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// Returns a heap-allocated fragment, joined with the original fragment in
     /// a way that preserves chunk boundaries.
     ///
-    /// This is a convenience function for cases when the delimiter value can be
-    /// deduced by the `Default` trait. For more information on this operation,
-    /// see the [`join_with`] method.
-    ///
-    /// [`join_with`]: Self::join_with
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let fragment = LowerSnakeFragment::new("snake")?;
-    /// let fragment = fragment.join("fragment")?;
-    /// assert_eq!(fragment, "snake_fragment");
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use = "this function returns an allocated fragment, it does not mutate the original"]
-    #[inline]
-    pub fn join<F>(&self, fragment: F) -> Result<FragmentBuf<B, D, P>, Error>
-    where
-        D: Default,
-        F: IntoIntermediate<B, D, P>,
-    {
-        self.join_with(fragment, D::default())
-    }
-
-    /// Returns a heap-allocated fragment, joined with the original fragment in
-    /// a way that preserves chunk boundaries.
-    ///
     /// This function takes anything that can be represented as an intermediate
     /// fragment. That means it can take a `&str`, `char`, `Fragment`, `Chunk`,
     /// `Identifier`, or `Segment`.
     ///
-    /// If you're working with an fragment format which has only a single valid
+    /// If you're working with a fragment format which has only a single valid
     /// delimiter value, you should instead be able to use the [`join`] method,
     /// and should prefer that.
     ///
@@ -99,6 +69,36 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// Basic Usage:
     ///
     /// ```
+    /// # use typed_ident::presets::unicode::lower_snake::*;
+    /// let fragment = LowerSnakeFragment::new("snake")?;
+    /// let fragment = fragment.join("fragment")?;
+    /// assert_eq!(fragment, "snake_fragment");
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use = "this function returns an allocated fragment, it does not mutate the original"]
+    #[inline]
+    pub fn join<F>(&self, fragment: F) -> Result<Box<Self>, Error>
+    where
+        D: Default,
+        F: IntoIntermediate<B, D, P>,
+    {
+        self.join_with(fragment, D::default())
+    }
+
+    /// Returns a heap-allocated fragment, joined with the original fragment in
+    /// a way that preserves chunk boundaries.
+    ///
+    /// This function is identical to [`join`], except that you can specify the
+    /// delimiter to use. This may be needed in cases where there can be more
+    /// than one delimiter, and as such there is no default.
+    ///
+    /// [`join`]: Self::join
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
     /// # use typed_ident::syntax::delimiter::LowLine;
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// let fragment = LowerSnakeFragment::new("snake")?;
@@ -108,7 +108,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// ```
     #[must_use = "this function returns an allocated fragment, it does not mutate the original"]
     #[inline]
-    pub fn join_with<F>(&self, fragment: F, delim: D) -> Result<FragmentBuf<B, D, P>, Error>
+    pub fn join_with<F>(&self, fragment: F, delim: D) -> Result<Box<Self>, Error>
     where
         F: IntoIntermediate<B, D, P>,
     {
@@ -118,15 +118,15 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
         buffer
             .push_bounded_with(fragment, delim)
             .map_err(|_| Error::new(ErrorKind::FailedJoin))?;
-        Ok(buffer)
+        Ok(buffer.into_boxed_fragment())
     }
 
-    /// Converts a string into a boxed fragment if its valid.
+    /// Converts a string into a boxed fragment if it's valid.
     ///
     /// # Errors
     ///
     /// Returns [`Error`] if the fragment does not satisfy the character
-    /// requirements. If an invalid character is found then a `InvalidFormat`
+    /// requirements. If an invalid character is found then an `InvalidFormat`
     /// error kind is returned, with [`byte_offset`] set to the byte index for
     /// the first invalid character.
     ///
@@ -140,8 +140,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// ```
     /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let fragment: Box<LowerSnakeFragment> =
-    ///     Fragment::new_boxed(String::from("snake_fragment"))?;
+    /// let fragment: Box<LowerSnakeFragment> = Fragment::new_boxed("snake_fragment")?;
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
@@ -187,29 +186,35 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// ```
     /// # use typed_ident::syntax::delimiter::LowLine;
     /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let fragment = LowerSnakeFragment::new("example_snake_identifier")?;
+    /// let fragment = LowerSnakeFragment::new("example_snake_fragment")?;
     /// let fragment = fragment.replace("snake", "serpent")?;
-    /// assert_eq!(fragment, "example_serpent_identifier");
+    /// assert_eq!(fragment, "example_serpent_fragment");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "this function returns an allocated fragment, it does not mutate the original"]
     #[inline]
-    pub fn replace<M, F>(&self, from: M, to: F) -> Result<FragmentBuf<B, D, P>, Error>
+    pub fn replace<M, F>(&self, from: M, to: F) -> Result<Box<Self>, Error>
     where
         M: crate::pattern::Pattern,
         F: IntoIntermediate<B, D, P>,
     {
         let to = to.into_intermediate()?;
-        FragmentBuf::from_string(from.replace(self.as_str(), to.as_ref()))
+        Fragment::new_boxed(from.replace(self.as_str(), to.as_ref()))
             .map_err(|_| Error::new(ErrorKind::FailedReplace))
     }
 
     /// Returns a heap-allocated fragment with the provided prefix and suffix
     /// attached to the original fragment.
     ///
+    /// Unlike [`join`], this function will *NOT* ensure that words remain
+    /// separated after affixing. The values provided will be affixed verbatim.
+    /// This is often useful for providing quick decoration like `"__"`.
+    ///
     /// The affixes provided to this function takes anything that can be
     /// represented as an intermediate fragment. That means it can take a
     /// `&str`, `char`, `Fragment`, `Chunk`, `Identifier`, or `Segment`.
+    ///
+    /// [`join`]: Self::join
     ///
     /// # Errors
     ///
@@ -242,11 +247,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// ```
     #[must_use = "this function returns an allocated fragment, it does not mutate the original"]
     #[inline]
-    pub fn with_circumfix<F1, F2>(
-        &self,
-        prefix: F1,
-        suffix: F2,
-    ) -> Result<FragmentBuf<B, D, P>, Error>
+    pub fn with_circumfix<F1, F2>(&self, prefix: F1, suffix: F2) -> Result<Box<Self>, Error>
     where
         F1: IntoIntermediate<B, D, P>,
         F2: IntoIntermediate<B, D, P>,
@@ -257,16 +258,22 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
         let suffix = suffix
             .into_intermediate()
             .map_err(|e| e.with_error_kind(ErrorKind::InvalidSuffix))?;
-        FragmentBuf::from_string(format!("{prefix}{self}{suffix}"))
+        Fragment::new_boxed(format!("{prefix}{self}{suffix}"))
             .map_err(|_| Error::new(ErrorKind::FailedCircumfixing))
     }
 
     /// Returns a heap-allocated fragment with the provided prefix attached to
     /// the original fragment.
     ///
-    /// The prefix provided to this function takes anything that can be
+    /// Unlike [`join`], this function will *NOT* ensure that words remain
+    /// separated after affixing. The values provided will be affixed verbatim.
+    /// This is often useful for providing quick decoration like `"__"`.
+    ///
+    /// The affixes provided to this function takes anything that can be
     /// represented as an intermediate fragment. That means it can take a
     /// `&str`, `char`, `Fragment`, `Chunk`, `Identifier`, or `Segment`.
+    ///
+    /// [`join`]: Self::join
     ///
     /// # Errors
     ///
@@ -297,23 +304,29 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// ```
     #[must_use = "this function returns an allocated fragment, it does not mutate the original"]
     #[inline]
-    pub fn with_prefix<F>(&self, prefix: F) -> Result<FragmentBuf<B, D, P>, Error>
+    pub fn with_prefix<F>(&self, prefix: F) -> Result<Box<Self>, Error>
     where
         F: IntoIntermediate<B, D, P>,
     {
         let prefix = prefix
             .into_intermediate()
             .map_err(|e| e.with_error_kind(ErrorKind::InvalidPrefix))?;
-        FragmentBuf::from_string(format!("{prefix}{self}"))
+        Fragment::new_boxed(format!("{prefix}{self}"))
             .map_err(|_| Error::new(ErrorKind::FailedPrefixing))
     }
 
     /// Returns a heap-allocated fragment with the provided suffix attached to
     /// the original fragment.
     ///
-    /// The suffix provided to this function takes anything that can be
+    /// Unlike [`join`], this function will *NOT* ensure that words remain
+    /// separated after affixing. The values provided will be affixed verbatim.
+    /// This is often useful for providing quick decoration like `"__"`.
+    ///
+    /// The affixes provided to this function takes anything that can be
     /// represented as an intermediate fragment. That means it can take a
     /// `&str`, `char`, `Fragment`, `Chunk`, `Identifier`, or `Segment`.
+    ///
+    /// [`join`]: Self::join
     ///
     /// # Errors
     ///
@@ -344,14 +357,14 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// ```
     #[must_use = "this function returns an allocated fragment, it does not mutate the original"]
     #[inline]
-    pub fn with_suffix<F>(&self, suffix: F) -> Result<FragmentBuf<B, D, P>, Error>
+    pub fn with_suffix<F>(&self, suffix: F) -> Result<Box<Self>, Error>
     where
         F: IntoIntermediate<B, D, P>,
     {
         let suffix = suffix
             .into_intermediate()
             .map_err(|e| e.with_error_kind(ErrorKind::InvalidSuffix))?;
-        FragmentBuf::from_string(format!("{self}{suffix}"))
+        Fragment::new_boxed(format!("{self}{suffix}"))
             .map_err(|_| Error::new(ErrorKind::FailedSuffixing))
     }
 }
@@ -375,7 +388,7 @@ impl<B, D, P> Fragment<B, D, P> {
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// # use typed_ident::presets::unicode::lower_camel::*;
     /// // Compilable Cast:
-    /// let original = LowerSnakeFragment::new_boxed(String::from("apple"))?;
+    /// let original = LowerSnakeFragment::new_boxed("apple")?;
     /// let converted: Box<LowerCamelFragment> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -384,7 +397,7 @@ impl<B, D, P> Fragment<B, D, P> {
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// # use typed_ident::presets::unicode::lower_camel::*;
     /// // Bad Cast (Fails Compilation):
-    /// let original = LowerCamelFragment::new_boxed(String::from("apple"))?;
+    /// let original = LowerCamelFragment::new_boxed("apple")?;
     /// let converted: Box<LowerSnakeFragment> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -395,7 +408,7 @@ impl<B, D, P> Fragment<B, D, P> {
     /// # use typed_ident::presets::ascii::lower_snake as ascii;
     /// # use typed_ident::presets::unicode::lower_snake as unicode;
     /// // Compilable Cast:
-    /// let original = ascii::LowerSnakeFragment::new_boxed(String::from("apple"))?;
+    /// let original = ascii::LowerSnakeFragment::new_boxed("apple")?;
     /// let converted: Box<unicode::LowerSnakeFragment> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -404,7 +417,7 @@ impl<B, D, P> Fragment<B, D, P> {
     /// # use typed_ident::presets::ascii::lower_snake as ascii;
     /// # use typed_ident::presets::unicode::lower_snake as unicode;
     /// // Bad Cast (Fails Compilation):
-    /// let original = unicode::LowerSnakeFragment::new_boxed(String::from("apple"))?;
+    /// let original = unicode::LowerSnakeFragment::new_boxed("apple")?;
     /// let converted: Box<ascii::LowerSnakeFragment> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -415,7 +428,7 @@ impl<B, D, P> Fragment<B, D, P> {
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// # use typed_ident::presets::unicode::hybrid::*;
     /// // Compilable Cast:
-    /// let original = LowerSnakeFragment::new_boxed(String::from("apple"))?;
+    /// let original = LowerSnakeFragment::new_boxed("apple")?;
     /// let converted: Box<HybridFragment> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -424,7 +437,7 @@ impl<B, D, P> Fragment<B, D, P> {
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// # use typed_ident::presets::unicode::hybrid::*;
     /// // Bad Cast (Fails Compilation):
-    /// let original = HybridFragment::new_boxed(String::from("apple"))?;
+    /// let original = HybridFragment::new_boxed("apple")?;
     /// let converted: Box<LowerSnakeFragment> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -432,6 +445,7 @@ impl<B, D, P> Fragment<B, D, P> {
     #[inline(always)]
     pub fn convert<B2, D2, P2>(self: Box<Self>) -> Box<Fragment<B2, D2, P2>>
     where
+        B2: crate::syntax::Boundary,
         D: crate::syntax::SubsetOf<D2>,
         P: crate::syntax::SubsetOf<P2>,
     {
@@ -447,8 +461,7 @@ impl<B, D, P> Fragment<B, D, P> {
     /// ```
     /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let fragment: Box<LowerSnakeFragment> =
-    ///     Fragment::new_boxed(String::from("snake_fragment"))?;
+    /// let fragment: Box<LowerSnakeFragment> = Fragment::new_boxed("snake_fragment")?;
     /// let fragment: Box<str> = fragment.into_boxed_str();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -461,7 +474,7 @@ impl<B, D, P> Fragment<B, D, P> {
         unsafe { Box::from_raw(Box::into_raw(self) as *mut str) }
     }
 
-    /// Converts a boxed identifier into a fragment buffer.
+    /// Converts a boxed fragment into a fragment buffer.
     ///
     /// # Examples
     ///
@@ -470,8 +483,7 @@ impl<B, D, P> Fragment<B, D, P> {
     /// ```
     /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let fragment: Box<LowerSnakeFragment> =
-    ///     Fragment::new_boxed(String::from("snake_fragment"))?;
+    /// let fragment: Box<LowerSnakeFragment> = Fragment::new_boxed("snake_fragment")?;
     /// let buffer: LowerSnakeFragmentBuf = fragment.into_fragment_buf();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -481,7 +493,7 @@ impl<B, D, P> Fragment<B, D, P> {
         FragmentBuf::from_string_unchecked(self.into_string())
     }
 
-    /// Converts a boxed identifier into a string.
+    /// Converts a boxed fragment into a string.
     ///
     /// # Examples
     ///
@@ -490,8 +502,7 @@ impl<B, D, P> Fragment<B, D, P> {
     /// ```
     /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let fragment: Box<LowerSnakeFragment> =
-    ///     Fragment::new_boxed(String::from("snake_fragment"))?;
+    /// let fragment: Box<LowerSnakeFragment> = Fragment::new_boxed("snake_fragment")?;
     /// let buffer: String = fragment.into_string();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -501,7 +512,7 @@ impl<B, D, P> Fragment<B, D, P> {
         self.into_boxed_str().into()
     }
 
-    /// Converts a string into a boxed identifier, bypassing checks.
+    /// Converts a string into a boxed fragment, bypassing checks.
     #[must_use]
     #[inline]
     pub(crate) fn new_boxed_unchecked(string: String) -> Box<Self> {
@@ -603,4 +614,10 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> TryFrom<String> for Box<Fragmen
     fn try_from(orig: String) -> Result<Self, Self::Error> {
         Fragment::new_boxed(orig)
     }
+}
+
+// -----------------------------------------------------------------------------
+impl_boxed_slice_traits! {
+    name=Fragment,
+    index_target=Fragment,
 }
