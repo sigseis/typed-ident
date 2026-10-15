@@ -54,7 +54,7 @@ impl<'a, B: Boundary + 'a, D: Delimiter + 'a, P: CasedProfile + 'a> IntoIntermed
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: 'a, D: Delimiter + 'a, P: CasedProfile + 'a> IntoIntermediate<B, D, P>
+impl<'a, B: Boundary + 'a, D: Delimiter + 'a, P: CasedProfile + 'a> IntoIntermediate<B, D, P>
     for &'a Fragment<B, D, P>
 {
     type Intermediate = &'a Fragment<B, D, P>;
@@ -66,7 +66,7 @@ impl<'a, B: 'a, D: Delimiter + 'a, P: CasedProfile + 'a> IntoIntermediate<B, D, 
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: 'a, D: Delimiter + 'a, P: CasedProfile + 'a> IntoIntermediate<B, D, P>
+impl<'a, B: Boundary + 'a, D: Delimiter + 'a, P: CasedProfile + 'a> IntoIntermediate<B, D, P>
     for &'a Chunk<B, D, P>
 {
     type Intermediate = &'a Fragment<B, D, P>;
@@ -78,7 +78,7 @@ impl<'a, B: 'a, D: Delimiter + 'a, P: CasedProfile + 'a> IntoIntermediate<B, D, 
 }
 
 // -----------------------------------------------------------------------------
-impl<'a, B: 'a, D: Delimiter + 'a, P: CasedProfile + 'a> IntoIntermediate<B, D, P>
+impl<'a, B: Boundary + 'a, D: Delimiter + 'a, P: CasedProfile + 'a> IntoIntermediate<B, D, P>
     for &'a Ident<B, D, P>
 {
     type Intermediate = &'a Fragment<B, D, P>;

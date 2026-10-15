@@ -8,22 +8,22 @@ pub enum ErrorKind {
     /// An identifier was flagged as invalid because it was empty.
     EmptyIdent,
 
-    /// Failed to affix some prefix and suffix onto a chunk, fragment, or
+    /// Failed to affix some prefix and/or suffix onto a chunk, fragment, or
     /// identifier.
     FailedCircumfixing,
 
-    /// Failed to insert a value into a buffer because it would invalidate the
+    /// Failed to insert a value into another because it would invalidate the
     /// chunk, fragment, or identifier.
     FailedInsert,
 
-    /// Failed to join a value with a buffer because it would invalidate the
+    /// Failed to join a value with another because it would invalidate the
     /// chunk, fragment, or identifier.
     FailedJoin,
 
-    /// Failed to prefix a fragment onto a chunk, fragment, or identifier.
+    /// Failed to prefix a value onto a chunk, fragment, or identifier.
     FailedPrefixing,
 
-    /// Failed to push a value onto a buffer because it would invalidate the
+    /// Failed to push a value onto another because it would invalidate the
     /// chunk, fragment, or identifier.
     FailedPush,
 
@@ -35,13 +35,13 @@ pub enum ErrorKind {
     /// fragment, or identifier.
     FailedReplace,
 
-    /// Failed to suffix a fragment onto a chunk, fragment, or identifier.
+    /// Failed to suffix a value onto a chunk, fragment, or identifier.
     FailedSuffixing,
 
     /// Attempted to interpret a string slice as a delimiter, but it was not one.
     InvalidDelimiter,
 
-    /// Contained characters that did not satisfy the profile.
+    /// Contained characters that did not satisfy the profile for this type.
     InvalidFormat,
 
     /// Contained characters that did not satisfy the profile for the prefix.

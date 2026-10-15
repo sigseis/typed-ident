@@ -14,7 +14,7 @@ use std_alloc::string::String;
 
 // -----------------------------------------------------------------------------
 impl<B: Boundary, D: Delimiter, P: CasedProfile> Chunk<B, D, P> {
-    /// Converts a string into a boxed chunk if its valid.
+    /// Converts a string into a boxed chunk if it's valid.
     ///
     /// # Examples
     ///
@@ -23,8 +23,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Chunk<B, D, P> {
     /// ```
     /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let ident: Box<LowerSnakeChunk> =
-    ///     Chunk::new_boxed(String::from("snake"))?;
+    /// let ident: Box<LowerSnakeChunk> = Chunk::new_boxed("snake")?;
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
@@ -57,7 +56,7 @@ impl<B, D, P> Chunk<B, D, P> {
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// # use typed_ident::presets::unicode::lower_camel::*;
     /// // Compilable Cast:
-    /// let original = LowerSnakeChunk::new_boxed(String::from("apple"))?;
+    /// let original = LowerSnakeChunk::new_boxed("apple")?;
     /// let converted: Box<LowerCamelChunk> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -66,7 +65,7 @@ impl<B, D, P> Chunk<B, D, P> {
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// # use typed_ident::presets::unicode::lower_camel::*;
     /// // Bad Cast (Fails Compilation):
-    /// let original = LowerCamelChunk::new_boxed(String::from("apple"))?;
+    /// let original = LowerCamelChunk::new_boxed("apple")?;
     /// let converted: Box<LowerSnakeChunk> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -77,7 +76,7 @@ impl<B, D, P> Chunk<B, D, P> {
     /// # use typed_ident::presets::ascii::lower_snake as ascii;
     /// # use typed_ident::presets::unicode::lower_snake as unicode;
     /// // Compilable Cast:
-    /// let original = ascii::LowerSnakeChunk::new_boxed(String::from("apple"))?;
+    /// let original = ascii::LowerSnakeChunk::new_boxed("apple")?;
     /// let converted: Box<unicode::LowerSnakeChunk> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -86,7 +85,7 @@ impl<B, D, P> Chunk<B, D, P> {
     /// # use typed_ident::presets::ascii::lower_snake as ascii;
     /// # use typed_ident::presets::unicode::lower_snake as unicode;
     /// // Bad Cast (Fails Compilation):
-    /// let original = unicode::LowerSnakeChunk::new_boxed(String::from("apple"))?;
+    /// let original = unicode::LowerSnakeChunk::new_boxed("apple")?;
     /// let converted: Box<ascii::LowerSnakeChunk> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -97,7 +96,7 @@ impl<B, D, P> Chunk<B, D, P> {
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// # use typed_ident::presets::unicode::hybrid::*;
     /// // Compilable Cast:
-    /// let original = LowerSnakeChunk::new_boxed(String::from("apple"))?;
+    /// let original = LowerSnakeChunk::new_boxed("apple")?;
     /// let converted: Box<HybridChunk> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -106,7 +105,7 @@ impl<B, D, P> Chunk<B, D, P> {
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// # use typed_ident::presets::unicode::hybrid::*;
     /// // Bad Cast (Fails Compilation):
-    /// let original = HybridChunk::new_boxed(String::from("apple"))?;
+    /// let original = HybridChunk::new_boxed("apple")?;
     /// let converted: Box<LowerSnakeChunk> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -114,6 +113,7 @@ impl<B, D, P> Chunk<B, D, P> {
     #[inline(always)]
     pub fn convert<B2, D2, P2>(self: Box<Self>) -> Box<Chunk<B2, D2, P2>>
     where
+        B2: crate::syntax::Boundary,
         D: crate::syntax::SubsetOf<D2>,
         P: crate::syntax::SubsetOf<P2>,
     {
@@ -129,8 +129,7 @@ impl<B, D, P> Chunk<B, D, P> {
     /// ```
     /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let ident: Box<LowerSnakeChunk> =
-    ///     Chunk::new_boxed(String::from("snake"))?;
+    /// let ident: Box<LowerSnakeChunk> = Chunk::new_boxed("snake")?;
     /// let ident: Box<str> = ident.into_boxed_str();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -152,8 +151,7 @@ impl<B, D, P> Chunk<B, D, P> {
     /// ```
     /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let ident: Box<LowerSnakeChunk> =
-    ///     Chunk::new_boxed(String::from("snake"))?;
+    /// let ident: Box<LowerSnakeChunk> = Chunk::new_boxed("snake")?;
     /// let buffer: LowerSnakeFragmentBuf = ident.into_fragment_buf();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -172,8 +170,7 @@ impl<B, D, P> Chunk<B, D, P> {
     /// ```
     /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let ident: Box<LowerSnakeChunk> =
-    ///     Chunk::new_boxed(String::from("snake"))?;
+    /// let ident: Box<LowerSnakeChunk> = Chunk::new_boxed("snake")?;
     /// let ident: String = ident.into_string();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -285,4 +282,10 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> TryFrom<String> for Box<Chunk<B
     fn try_from(orig: String) -> Result<Self, Self::Error> {
         Chunk::new_boxed(orig)
     }
+}
+
+// -----------------------------------------------------------------------------
+impl_boxed_slice_traits! {
+    name=Chunk,
+    index_target=Chunk,
 }

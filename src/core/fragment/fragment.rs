@@ -12,12 +12,12 @@ mod tests;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-use crate::Error;
 use crate::fragment::{
     CharIndices, Chars, ChunkedSegmentIndices, ChunkedSegments, MatchIndices, Matches,
     RMatchIndices, RMatches, SegmentIndices, Segments, WordIndices, Words,
 };
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
+use crate::{Error, Ident};
 use core::marker::PhantomData;
 
 // =============================================================================
@@ -76,7 +76,6 @@ use core::marker::PhantomData;
 /// use typed_ident::syntax::{boundary, delimiter, profile};
 ///
 /// // An ASCII fragment using the uppercase ASCII profile.
-/// // Any ASCII punctuation is rejected as delimiters.
 /// type CustomFragment = Fragment<
 ///     boundary::Standard,
 ///     delimiter::AsciiPunctuation,
@@ -89,24 +88,31 @@ use core::marker::PhantomData;
 ///
 /// # Type Conversion
 ///
-/// There's a few ways to convert between types depending on what you want to
+/// There's several ways to convert between types depending on what you want to
 /// accomplish. These type conversions ***DO NOT*** reformat or change the input
-/// string. They just produce a new type of the target fragment syntax.
+/// string. They just produce a new type of the target identifier syntax.
 ///
-/// | **I Have a...**   | **I Want a...**   | **Method**                | **Validation Cost**  | **Allocation Cost** |
-/// |-------------------|-------------------|---------------------------|----------------------|---------------------|
-/// | `&Fragment<A..>`  | `&Fragment<B..>`  | [`cast`]  / [`as_ref`]    | None                 | None                |
-/// | `&Fragment<A..>`  | `&Fragment<B..>`  | [`try_cast`]              | Same as [`new`]      | None                |
+/// | **I Have...**   | **I Want...**      | **Method**                   | **Runtime Cost** |
+/// |-----------------|--------------------|------------------------------|------------------|
+/// | `&Fragment`     | `&Fragment<B>`     | [`cast`] / [`as_ref`]        | None             |
+/// | `&Fragment`     | `&Fragment<B>`     | [`try_cast`]                 | Same as [`new`]  |
+/// | `&Fragment`     | `Box<Fragment>`    | [`to_boxed_fragment`]        | Allocation cost  |
+/// | `Box<Fragment>` | `Box<Fragment<B>>` | [`convert`]                  | None             |
+/// | `Box<Fragment>` | `Box<Fragment<B>>` | [`try_convert`]              | Same as [`new`]  |
+/// | `Box<Fragment>` | `&Fragment`        | [`as_fragment`] / [`as_ref`] | None             |
 ///
+/// > **NOTE:** When specified, `<B>` represents a complete list of alternate
+/// > generic parameters provided to this type. So the methods in question can
+/// > change generic type parameters provided to `Fragment`.
+///
+/// [`as_fragment`]: Fragment::as_fragment
 /// [`as_ref`]: Fragment::as_ref
 /// [`cast`]: Fragment::cast
+/// [`convert`]: Fragment::convert
 /// [`new`]: Fragment::new
+/// [`to_boxed_fragment`]: Fragment::to_boxed_fragment
 /// [`try_cast`]: Fragment::try_cast
-///
-/// This type contains fewer conversion functions than [`Ident`], because it's
-/// less common to need as much functionality with a `Fragment`. However, it
-/// might be nice to have common conversion functions regardless, so follow
-/// issue [#19](https://github.com/sigseis/typed-ident/issues/19) to track this.
+/// [`try_convert`]: Fragment::try_convert
 ///
 /// # Type Parameters
 ///
@@ -154,6 +160,39 @@ impl<'a, B: 'a, D: 'a, P: 'a> Fragment<B, D, P> {
 
 // -----------------------------------------------------------------------------
 impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
+    /// Attempts to represent the current fragment as an [`Ident`].
+    ///
+    /// This may fail - a fragment isn't obviously a valid identifier, plus the
+    /// fragment could be empty (which is never a valid identifier).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error`] if the fragment does not satisfy the identifier
+    /// character requirements. If the fragment is empty, this will return an
+    /// `EmptyIdent` error kind. If an invalid character is found then a
+    /// `InvalidFormat` error kind is returned, with [`byte_offset`] set to the
+    /// byte index for the first invalid character.
+    ///
+    /// [`Error`]: crate::Error
+    /// [`byte_offset`]: crate::Error::byte_offset
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::*;
+    /// # use presets::unicode::hybrid::*;
+    /// assert!(HybridFragment::new("")?.as_ident().is_err());     // Empty
+    /// assert!(HybridFragment::new("2")?.as_ident().is_err());    // Invalid start
+    /// assert!(HybridFragment::new("valid")?.as_ident().is_ok()); // Valid!
+    /// # Ok::<(), Error>(())
+    /// ```
+    #[inline]
+    pub fn as_ident(&self) -> Result<&Ident<B, D, P>, Error> {
+        Ident::from_fragment(self)
+    }
+
     /// Converts a string slice to a fragment.
     ///
     /// A fragment is made of a string slice ([`&str`]), this function converts
@@ -166,7 +205,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// # Errors
     ///
     /// Returns [`Error`] if the fragment does not satisfy the character
-    /// requirements. If an invalid character is found then a `InvalidFormat`
+    /// requirements. If an invalid character is found then an `InvalidFormat`
     /// error kind is returned, with [`byte_offset`] set to the byte index for
     /// the first invalid character.
     ///
@@ -329,8 +368,6 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// word*. An identifier word is a non-empty chunk of an identifier which
     /// contains no boundaries (no natural split points).
     ///
-    /// See the [`core`] module documentation for more information.
-    ///
     /// # Examples
     ///
     /// Basic Usage:
@@ -363,9 +400,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// * The `Chunk` variant is of type [`Chunk<'_, B, D, P>`].
     ///
     /// This is similar to [`chunked_segments`], except that it will also break
-    /// chunks based on the configured [`Boundary`] type parameter.
-    ///
-    /// See the [`core`] module documentation for details on what a word is.
+    /// chunks based on the configured [`Boundary`] type parameter. Meaning, it
+    /// returns "identifier words" instead of chunks.
     ///
     /// [`Segment`]: crate::Segment
     /// [`Chunk<'_, B, D, P>`]: crate::Chunk
@@ -431,8 +467,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     ///
     /// This is similar to [`chunked_segment_indices`], except that it will also
     /// break chunks based on the configured [`Boundary`] type parameter.
-    ///
-    /// See the [`core`] module documentation for details on what a word is.
+    /// Meaning, it returns "identifier words" instead of chunks.
     ///
     /// [`Segment`]: crate::Segment
     /// [`chunked_segment_indices`]: Self::chunked_segment_indices
@@ -501,8 +536,6 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// to only produce the word-delimited chunks of the fragment. As such, this
     /// will skip any delimiter segments.
     ///
-    /// See the [`core`] module documentation for more information.
-    ///
     /// [`segments`]: Self::segments
     ///
     /// # Examples
@@ -534,8 +567,6 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// This is effectively the same as filter-mapping a [`segment_indices`]
     /// iterator to only produce the word-delimited chunks of the fragment. As
     /// such, this will skip any delimiter segments.
-    ///
-    /// See the [`core`] module documentation for more information.
     ///
     /// [`segment_indices`]: Self::segment_indices
     ///
@@ -686,6 +717,24 @@ impl<B, D: Delimiter, P> Fragment<B, D, P> {
 
 // -----------------------------------------------------------------------------
 impl<B, D, P> Fragment<B, D, P> {
+    /// Returns the fragment as a reference.
+    ///
+    /// This method exists for convenience use when dealing with `Box<Fragment>`
+    /// types. That way there's a simple way to get the underlying reference.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use typed_ident::presets::unicode::lower_snake::*;
+    /// let fragment = LowerSnakeFragment::new_boxed("apple")?;
+    /// assert_eq!(fragment.as_fragment(), LowerSnakeFragment::new("apple")?);
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[inline(always)]
+    pub const fn as_fragment(&self) -> &Fragment<B, D, P> {
+        self
+    }
+
     /// Returns a string slice representation of the fragment.
     ///
     /// # Examples

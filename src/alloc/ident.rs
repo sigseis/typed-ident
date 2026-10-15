@@ -19,24 +19,41 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// Returns a heap-allocated identifier, joined with the original identifier
     /// in a way that preserves chunk boundaries.
     ///
+    /// This function takes anything that can be represented as an intermediate
+    /// fragment. That means it can take a `&str`, `char`, `Fragment`, `Chunk`,
+    /// `Identifier`, or `Segment`.
+    ///
+    /// # Preserving Chunk Boundaries
+    ///
     /// At the end of the operation, the total number of chunked segments
-    /// present in the fragment will be equal to the sum of each fragment,
+    /// present in the identifier will be equal to the sum of each fragment,
     /// potentially plus one additional fragment in the case where we needed to
     /// join using a delimiter to preserve chunk boundaries.
     ///
-    /// This call is identical to [`join_with`] with the default delimiter.
+    /// Whether or not a delimiter is needed is found using the [`Boundary`]
+    /// trait. The general strategy for joining looks like this:
     ///
-    /// [`join_with`]: Self::join_with
+    /// 1. The string is joined on the end of the current fragment.
+    /// 2. [`Boundary::has_boundary_at`] is called with the old fragment length
+    ///    to ensure there's still a boundary between the end of the original
+    ///    fragment and the joined fragment.
+    /// 3. If there's no boundary, the `delim` character is inserted at that
+    ///    location to force a boundary.
+    ///
+    /// The goal of any joining operation is *not to merge chunks*.
     ///
     /// # Errors
     ///
-    /// Returns `Err` if the fragment formed from the combination of `self` and
-    /// `fragment` is invalid. If invalid, an [`Error`] is returned with the
-    /// [`error_kind`] set to `FailedLeftJoin`.
+    /// Returns [`Error`] if the intermediate fragment provided is invalid, or
+    /// if the combination of `self` and `fragment` cannot produce a valid
+    /// result.
     ///
-    /// The value [`byte_offset`] will *NOT* be set from this function. None of
-    /// the individual characters are invalid, it's just that the combination of
-    /// joining the fragments themselves is invalid.
+    /// If the intermediate fragment is invalid, then the `InvalidFormat` error
+    /// kind will be returned, with the [`byte_offset`] set to the first invalid
+    /// character of the intermediate fragment.
+    ///
+    /// If the join operation itself failed, then the `FailedJoin` error kind
+    /// is returned, without setting the `byte_offset`.
     ///
     /// [`Error`]: crate::Error
     /// [`error_kind`]: crate::Error::error_kind
@@ -49,10 +66,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// ```
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// let ident = LowerSnakeIdent::new("snake")?;
-    /// let ident = ident.join(
-    ///     LowerSnakeFragment::new("ident")?,
-    /// )?;
-    /// assert_eq!(ident.as_ref(), "snake_ident");
+    /// let ident = ident.join("ident")?;
+    /// assert_eq!(ident, "snake_ident");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "this function returns an allocated identifier, it does not mutate the original"]
@@ -68,24 +83,11 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// Returns a heap-allocated identifier, joined with the original identifier
     /// in a way that preserves chunk boundaries.
     ///
-    /// At the end of the operation, the total number of chunked segments
-    /// present in the identifier will be equal to the sum of each fragment,
-    /// potentially plus one additional fragment in the case where we needed to
-    /// join using a delimiter to preserve chunk boundaries.
+    /// This function is identical to [`join`], except that you can specify the
+    /// delimiter to use. This may be needed in cases where there can be more
+    /// than one delimiter, and as such there is no default.
     ///
-    /// # Errors
-    ///
-    /// Returns `Err` if the fragment formed from the combination of `self` and
-    /// `fragment` is invalid. If invalid, an [`Error`] is returned with the
-    /// [`error_kind`] set to `FailedLeftJoin`.
-    ///
-    /// The value [`byte_offset`] will *NOT* be set from this function. None of
-    /// the individual characters are invalid, it's just that the combination of
-    /// joining the fragments themselves is invalid.
-    ///
-    /// [`Error`]: crate::Error
-    /// [`error_kind`]: crate::Error::error_kind
-    /// [`byte_offset`]: crate::Error::byte_offset
+    /// [`join`]: Self::join
     ///
     /// # Examples
     ///
@@ -95,11 +97,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// # use typed_ident::syntax::delimiter::LowLine;
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// let ident = LowerSnakeIdent::new("snake")?;
-    /// let ident = ident.join_with(
-    ///     LowerSnakeFragment::new("ident")?,
-    ///     LowLine,
-    /// )?;
-    /// assert_eq!(ident.as_ref(), "snake_ident");
+    /// let ident = ident.join_with("ident", LowLine)?;
+    /// assert_eq!(ident, "snake_ident");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "this function returns an allocated identifier, it does not mutate the original"]
@@ -117,7 +116,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
         ident.into_boxed_ident()
     }
 
-    /// Converts a string into a boxed identifier if its valid.
+    /// Converts a string into a boxed identifier if it's valid.
     ///
     /// # Examples
     ///
@@ -126,8 +125,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// ```
     /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let ident: Box<LowerSnakeIdent> =
-    ///     Ident::new_boxed(String::from("snake_ident"))?;
+    /// let ident: Box<LowerSnakeIdent> = Ident::new_boxed("snake_ident")?;
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[inline]
@@ -143,16 +141,29 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// Returns a heap-allocated identifier with the provided prefix and suffix
     /// attached to the original identifier.
     ///
+    /// Unlike [`join`], this function will *NOT* ensure that words remain
+    /// separated after affixing. The values provided will be affixed verbatim.
+    /// This is often useful for providing quick decoration like `"__"`.
+    ///
+    /// The affixes provided to this function takes anything that can be
+    /// represented as an intermediate fragment. That means it can take a
+    /// `&str`, `char`, `Fragment`, `Chunk`, `Identifier`, or `Segment`.
+    ///
+    /// [`join`]: Self::join
+    ///
     /// # Errors
     ///
-    /// Returns `Err` if the fragment formed from the combination of `prefix`,
-    /// `self`, and `suffix` is invalid. If invalid, an [`Error`] is returned
-    /// with the [`error_kind`] set either to `InvalidPrefix` or `InvalidSuffix`
-    /// (depending on which has caused the failure).
+    /// Returns [`Error`] if the intermediate fragments provided are invalid, or
+    /// if the combination of `prefix`, `self`, and `fragment` cannot produce a
+    /// valid result.
     ///
-    /// The value [`byte_offset`] will *NOT* be set from this function. None of
-    /// the individual characters are invalid, it's just that the combination of
-    /// joining the fragments themselves is invalid.
+    /// If an intermediate fragment is invalid, then either `InvalidPrefix` or
+    /// `InvalidSuffix` error kind will be returned (depending on which had the
+    /// format error), with the [`byte_offset`] set to the first invalid
+    /// character of the intermediate fragment.
+    ///
+    /// If the affixing operation itself failed, then the `FailedCircumfixing`
+    /// error kind is returned, without setting the `byte_offset`.
     ///
     /// [`Error`]: crate::Error
     /// [`error_kind`]: crate::Error::error_kind
@@ -165,11 +176,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// ```
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// let ident = LowerSnakeIdent::new("snake")?;
-    /// let ident = ident.with_circumfix(
-    ///     LowerSnakeFragment::new("lower_")?,
-    ///     LowerSnakeFragment::new("_ident")?,
-    /// )?;
-    /// assert_eq!(ident.as_ref(), "lower_snake_ident");
+    /// let ident = ident.with_circumfix("lower_", "_ident")?;
+    /// assert_eq!(ident, "lower_snake_ident");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "this function returns an allocated identifier, it does not mutate the original"]
@@ -186,21 +194,33 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
             .into_intermediate()
             .map_err(|e| e.with_error_kind(ErrorKind::InvalidSuffix))?;
         Ident::new_boxed(format!("{prefix}{self}{suffix}"))
-            .map_err(|_| Error::new(ErrorKind::FailedJoin))
+            .map_err(|_| Error::new(ErrorKind::FailedCircumfixing))
     }
 
     /// Returns a heap-allocated identifier with the provided prefix attached to
     /// the original identifier.
     ///
+    /// Unlike [`join`], this function will *NOT* ensure that words remain
+    /// separated after affixing. The values provided will be affixed verbatim.
+    /// This is often useful for providing quick decoration like `"__"`.
+    ///
+    /// The affixes provided to this function takes anything that can be
+    /// represented as an intermediate fragment. That means it can take a
+    /// `&str`, `char`, `Fragment`, `Chunk`, `Identifier`, or `Segment`.
+    ///
+    /// [`join`]: Self::join
+    ///
     /// # Errors
     ///
-    /// Returns `Err` if the fragment formed from the combination of `prefix`
-    /// and `self` is invalid. If invalid, an [`Error`] is returned with the
-    /// [`error_kind`] set to `InvalidPrefix`.
+    /// Returns [`Error`] if the intermediate fragment provided is invalid, or
+    /// if the combination of `prefix` and `self` cannot produce a valid result.
     ///
-    /// The value [`byte_offset`] will *NOT* be set from this function. None of
-    /// the individual characters are invalid, it's just that the combination of
-    /// joining the fragments themselves is invalid.
+    /// If the intermediate fragment is invalid, then the error kind will be
+    /// `InvalidPrefix`, with the [`byte_offset`] set to the first invalid
+    /// character of the intermediate fragment.
+    ///
+    /// If the affixing operation itself failed, then the `FailedPrefixing`
+    /// error kind is returned, without setting the `byte_offset`.
     ///
     /// [`Error`]: crate::Error
     /// [`error_kind`]: crate::Error::error_kind
@@ -213,10 +233,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// ```
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// let ident = LowerSnakeIdent::new("snake")?;
-    /// let ident = ident.with_prefix(
-    ///     LowerSnakeFragment::new("lower_")?,
-    /// )?;
-    /// assert_eq!(ident.as_ref(), "lower_snake");
+    /// let ident = ident.with_prefix("lower_")?;
+    /// assert_eq!(ident, "lower_snake");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "this function returns an allocated identifier, it does not mutate the original"]
@@ -228,21 +246,34 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
         let prefix = prefix
             .into_intermediate()
             .map_err(|e| e.with_error_kind(ErrorKind::InvalidPrefix))?;
-        Ident::new_boxed(format!("{prefix}{self}")).map_err(|_| Error::new(ErrorKind::FailedJoin))
+        Ident::new_boxed(format!("{prefix}{self}"))
+            .map_err(|_| Error::new(ErrorKind::FailedPrefixing))
     }
 
     /// Returns a heap-allocated identifier with the provided suffix attached to
     /// the original identifier.
     ///
+    /// Unlike [`join`], this function will *NOT* ensure that words remain
+    /// separated after affixing. The values provided will be affixed verbatim.
+    /// This is often useful for providing quick decoration like `"__"`.
+    ///
+    /// The affixes provided to this function takes anything that can be
+    /// represented as an intermediate fragment. That means it can take a
+    /// `&str`, `char`, `Fragment`, `Chunk`, `Identifier`, or `Segment`.
+    ///
+    /// [`join`]: Self::join
+    ///
     /// # Errors
     ///
-    /// Returns `Err` if the fragment formed from the combination of `self` and
-    /// `suffix` is invalid. If invalid, an [`Error`] is returned with the
-    /// [`error_kind`] set to `InvalidPrefix`.
+    /// Returns [`Error`] if the intermediate fragment provided is invalid, or
+    /// if the combination of `self` and `suffix` cannot produce a valid result.
     ///
-    /// The value [`byte_offset`] will *NOT* be set from this function. None of
-    /// the individual characters are invalid, it's just that the combination of
-    /// joining the fragments themselves is invalid.
+    /// If the intermediate fragment is invalid, then the error kind will be
+    /// `InvalidSuffix`, with the [`byte_offset`] set to the first invalid
+    /// character of the intermediate fragment.
+    ///
+    /// If the affixing operation itself failed, then the `FailedSuffixing`
+    /// error kind is returned, without setting the `byte_offset`.
     ///
     /// [`Error`]: crate::Error
     /// [`error_kind`]: crate::Error::error_kind
@@ -255,10 +286,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     /// ```
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// let ident = LowerSnakeIdent::new("snake")?;
-    /// let ident = ident.with_suffix(
-    ///     LowerSnakeFragment::new("_ident")?,
-    /// )?;
-    /// assert_eq!(ident.as_ref(), "snake_ident");
+    /// let ident = ident.with_suffix("_ident")?;
+    /// assert_eq!(ident, "snake_ident");
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
     #[must_use = "this function returns an allocated identifier, it does not mutate the original"]
@@ -270,7 +299,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
         let suffix = suffix
             .into_intermediate()
             .map_err(|e| e.with_error_kind(ErrorKind::InvalidSuffix))?;
-        Ident::new_boxed(format!("{self}{suffix}")).map_err(|_| Error::new(ErrorKind::FailedJoin))
+        Ident::new_boxed(format!("{self}{suffix}"))
+            .map_err(|_| Error::new(ErrorKind::FailedSuffixing))
     }
 }
 
@@ -293,7 +323,7 @@ impl<B, D, P> Ident<B, D, P> {
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// # use typed_ident::presets::unicode::lower_camel::*;
     /// // Compilable Cast:
-    /// let original = LowerSnakeIdent::new_boxed(String::from("apple"))?;
+    /// let original = LowerSnakeIdent::new_boxed("apple")?;
     /// let converted: Box<LowerCamelIdent> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -302,7 +332,7 @@ impl<B, D, P> Ident<B, D, P> {
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// # use typed_ident::presets::unicode::lower_camel::*;
     /// // Bad Cast (Fails Compilation):
-    /// let original = LowerCamelIdent::new_boxed(String::from("apple"))?;
+    /// let original = LowerCamelIdent::new_boxed("apple")?;
     /// let converted: Box<LowerSnakeIdent> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -313,7 +343,7 @@ impl<B, D, P> Ident<B, D, P> {
     /// # use typed_ident::presets::ascii::lower_snake as ascii;
     /// # use typed_ident::presets::unicode::lower_snake as unicode;
     /// // Compilable Cast:
-    /// let original = ascii::LowerSnakeIdent::new_boxed(String::from("apple"))?;
+    /// let original = ascii::LowerSnakeIdent::new_boxed("apple")?;
     /// let converted: Box<unicode::LowerSnakeIdent> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -322,7 +352,7 @@ impl<B, D, P> Ident<B, D, P> {
     /// # use typed_ident::presets::ascii::lower_snake as ascii;
     /// # use typed_ident::presets::unicode::lower_snake as unicode;
     /// // Bad Cast (Fails Compilation):
-    /// let original = unicode::LowerSnakeIdent::new_boxed(String::from("apple"))?;
+    /// let original = unicode::LowerSnakeIdent::new_boxed("apple")?;
     /// let converted: Box<ascii::LowerSnakeIdent> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -333,7 +363,7 @@ impl<B, D, P> Ident<B, D, P> {
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// # use typed_ident::presets::unicode::hybrid::*;
     /// // Compilable Cast:
-    /// let original = LowerSnakeIdent::new_boxed(String::from("apple"))?;
+    /// let original = LowerSnakeIdent::new_boxed("apple")?;
     /// let converted: Box<HybridIdent> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -342,7 +372,7 @@ impl<B, D, P> Ident<B, D, P> {
     /// # use typed_ident::presets::unicode::lower_snake::*;
     /// # use typed_ident::presets::unicode::hybrid::*;
     /// // Bad Cast (Fails Compilation):
-    /// let original = HybridIdent::new_boxed(String::from("apple"))?;
+    /// let original = HybridIdent::new_boxed("apple")?;
     /// let converted: Box<LowerSnakeIdent> = original.convert();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -350,10 +380,30 @@ impl<B, D, P> Ident<B, D, P> {
     #[inline(always)]
     pub fn convert<B2, D2, P2>(self: Box<Self>) -> Box<Ident<B2, D2, P2>>
     where
+        B2: crate::syntax::Boundary,
         D: crate::syntax::SubsetOf<D2>,
         P: crate::syntax::SubsetOf<P2>,
     {
         Ident::new_boxed_unchecked(self.into_string())
+    }
+
+    /// Converts a boxed identifier into a boxed fragment.
+    ///
+    /// # Examples
+    ///
+    /// Basic Usage:
+    ///
+    /// ```
+    /// # use typed_ident::*;
+    /// # use typed_ident::presets::unicode::lower_snake::*;
+    /// let ident: Box<LowerSnakeIdent> = Ident::new_boxed("snake_ident")?;
+    /// let ident: Box<LowerSnakeFragment> = ident.into_boxed_fragment();
+    /// # Ok::<(), typed_ident::Error>(())
+    /// ```
+    #[must_use]
+    #[inline]
+    pub fn into_boxed_fragment(self: Box<Self>) -> Box<Fragment<B, D, P>> {
+        Fragment::new_boxed_unchecked(self.into_string())
     }
 
     /// Converts a boxed identifier into a boxed string slice.
@@ -365,8 +415,7 @@ impl<B, D, P> Ident<B, D, P> {
     /// ```
     /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let ident: Box<LowerSnakeIdent> =
-    ///     Ident::new_boxed(String::from("snake_ident"))?;
+    /// let ident: Box<LowerSnakeIdent> = Ident::new_boxed("snake_ident")?;
     /// let ident: Box<str> = ident.into_boxed_str();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -388,8 +437,7 @@ impl<B, D, P> Ident<B, D, P> {
     /// ```
     /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let ident: Box<LowerSnakeIdent> =
-    ///     Ident::new_boxed(String::from("snake_ident"))?;
+    /// let ident: Box<LowerSnakeIdent> = Ident::new_boxed("snake_ident")?;
     /// let buffer: LowerSnakeFragmentBuf = ident.into_fragment_buf();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -408,8 +456,7 @@ impl<B, D, P> Ident<B, D, P> {
     /// ```
     /// # use typed_ident::*;
     /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let ident: Box<LowerSnakeIdent> =
-    ///     Ident::new_boxed(String::from("snake_ident"))?;
+    /// let ident: Box<LowerSnakeIdent> = Ident::new_boxed("snake_ident")?;
     /// let ident: String = ident.into_string();
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -447,25 +494,6 @@ impl<B, D, P> Ident<B, D, P> {
     #[inline]
     pub fn to_boxed_ident(&self) -> Box<Self> {
         Ident::new_boxed_unchecked(String::from(self.as_str()))
-    }
-
-    /// Converts an identifier into a fragment buffer.
-    ///
-    /// # Examples
-    ///
-    /// Basic Usage:
-    ///
-    /// ```
-    /// # use typed_ident::*;
-    /// # use typed_ident::presets::unicode::lower_snake::*;
-    /// let ident: &LowerSnakeIdent = Ident::new("snake_ident")?;
-    /// let buffer: LowerSnakeFragmentBuf = ident.to_fragment_buf();
-    /// # Ok::<(), typed_ident::Error>(())
-    /// ```
-    #[must_use]
-    #[inline]
-    pub fn to_fragment_buf(&self) -> FragmentBuf<B, D, P> {
-        FragmentBuf::from_fragment(self)
     }
 
     /// Attempts a fallible convert into a different boxed type-configured
@@ -521,4 +549,10 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> TryFrom<String> for Box<Ident<B
     fn try_from(orig: String) -> Result<Self, Self::Error> {
         Ident::new_boxed(orig)
     }
+}
+
+// -----------------------------------------------------------------------------
+impl_boxed_slice_traits! {
+    name=Ident,
+    index_target=Fragment,
 }

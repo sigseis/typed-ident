@@ -16,6 +16,7 @@ macro_rules! impl_typed_slice_common {
             ///
             /// This function will be able to be called, if:
             ///
+            /// * `Target::B: Boundary`, *and...*
             /// * `Source::D: SubsetOf<Target::D>`, *and...*
             /// * `Source::P: SubsetOf<Target::P>`
             ///
@@ -105,6 +106,7 @@ macro_rules! impl_typed_slice_common {
             #[inline(always)]
             pub const fn cast<B2, D2, P2>(&self) -> &$name<B2, D2, P2>
             where
+                B2: crate::syntax::Boundary,
                 D: crate::syntax::SubsetOf<D2>,
                 P: crate::syntax::SubsetOf<P2>,
             {

@@ -6,6 +6,7 @@ macro_rules! impl_typed_slice_traits {
         // ---------------------------------------------------------------------
         impl<'a, B1, B2, D1, D2, P1, P2> AsRef<crate::Fragment<B2, D2, P2>> for $name<B1, D1, P1>
         where
+            B2: crate::syntax::Boundary,
             D1: crate::syntax::Delimiter + crate::syntax::SubsetOf<D2>,
             P1: crate::syntax::CasedProfile + crate::syntax::SubsetOf<P2>,
         {

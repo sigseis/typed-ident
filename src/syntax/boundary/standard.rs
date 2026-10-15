@@ -27,6 +27,45 @@ use core::num::NonZero;
 /// This type is configurable over [`Options`] types, but it assumes the
 /// [`Default`] options when another options type is not provided.
 ///
+/// It's probably easiest explained by showing simple examples.
+///
+/// ```rust
+/// # use typed_ident::*;
+/// # use typed_ident::presets::unicode::*;
+/// // A camel boundary splits `Camel` from `Boundary`.
+/// let segments: Vec<_> = CamelIdent::new("CamelBoundary")?
+///     .segments()
+///     .type_erased()
+///     .collect();
+/// assert_eq!(segments, [
+///     StrSegment::Chunk("Camel"),
+///     StrSegment::Chunk("Boundary")
+/// ]);
+///
+/// // A hat boundary splits `HAT` from `Boundary`.
+/// let segments: Vec<_> = CamelIdent::new("HATBoundary")?
+///     .segments()
+///     .type_erased()
+///     .collect();
+/// assert_eq!(segments, [
+///     StrSegment::Chunk("HAT"),
+///     StrSegment::Chunk("Boundary")
+/// ]);
+///
+/// // A delimiter boundary is implied present on all identifiers.
+/// // This is not defined by `Standard`, it's here for demonstration.
+/// let segments: Vec<_> = CamelIdent::new("delimiter_boundary")?
+///     .segments()
+///     .type_erased()
+///     .collect();
+/// assert_eq!(segments, [
+///     StrSegment::Chunk("delimiter"),
+///     StrSegment::Delim('_'),
+///     StrSegment::Chunk("boundary")
+/// ]);
+/// # Ok::<(), typed_ident::Error>(())
+/// ```
+///
 /// For a description of how boundaries are formed in this implementation, see
 /// the [`boundary`](crate::syntax::boundary#configuring-the-standard-implementation)
 /// module documentation.

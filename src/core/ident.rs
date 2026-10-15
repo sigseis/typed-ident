@@ -39,7 +39,7 @@ use crate::{Chunk, Error, Fragment, Identifier, Segment};
 ///
 /// // Owned (`Box<LowerSnakeIdent>`) (requires `alloc` feature)
 /// let owned = ident.to_boxed_ident(); // From pre-validated reference
-/// let owned = LowerSnakeIdent::new_boxed(String::from("lower_snake"))?;
+/// let owned = LowerSnakeIdent::new_boxed("lower_snake")?;
 /// # Ok::<(), typed_ident::Error>(())
 /// ```
 ///
@@ -63,11 +63,9 @@ use crate::{Chunk, Error, Fragment, Identifier, Segment};
 /// # Ok::<(), typed_ident::Error>(())
 /// ```
 ///
-/// See this [root documentation] to understand how this type relates to
-/// other types (such as [`Fragment`] and [`Chunk`]), as well as additional
+/// See the [`crate`] documentation to understand how this type relates to other
+/// types (such as [`Fragment`] and [`Chunk`]), as well as additional
 /// information for how to use these types effectively.
-///
-/// [root documentation]: crate
 ///
 /// # Type Conversion
 ///
@@ -75,14 +73,18 @@ use crate::{Chunk, Error, Fragment, Identifier, Segment};
 /// accomplish. These type conversions ***DO NOT*** reformat or change the input
 /// string. They just produce a new type of the target identifier syntax.
 ///
-/// | **I Have a...**   | **I Want a...**   | **Method**                | **Validation Cost**  | **Allocation Cost** |
-/// |-------------------|-------------------|---------------------------|----------------------|---------------------|
-/// | `&Ident<A..>`     | `&Ident<B..>`     | [`cast`]  / [`as_ref`]    | None                 | None                |
-/// | `&Ident<A..>`     | `&Ident<B..>`     | [`try_cast`]              | Same as [`new`]      | None                |
-/// | `&Ident`          | `Box<Ident>`      | [`to_boxed_ident`]        | None                 | `O(strlen)`         |
-/// | `&Box<Ident>`     | `&Ident`          | [`as_ident`] / [`as_ref`] | None                 | None                |
-/// | `Box<Ident<A..>>` | `Box<Ident<B..>>` | [`convert`]               | None                 | None                |
-/// | `Box<Ident<A..>>` | `Box<Ident<B..>>` | [`try_convert`]           | Same as [`new`]      | None                |
+/// | **I Have...** | **I Want...**   | **Method**                | **Runtime Cost** |
+/// |---------------|-----------------|---------------------------|------------------|
+/// | `&Ident`      | `&Ident<B>`     | [`cast`] / [`as_ref`]     | None             |
+/// | `&Ident`      | `&Ident<B>`     | [`try_cast`]              | Same as [`new`]  |
+/// | `&Ident`      | `Box<Ident>`    | [`to_boxed_ident`]        | Allocation cost  |
+/// | `Box<Ident>`  | `Box<Ident<B>>` | [`convert`]               | None             |
+/// | `Box<Ident>`  | `Box<Ident<B>>` | [`try_convert`]           | Same as [`new`]  |
+/// | `Box<Ident>`  | `&Ident`        | [`as_ident`] / [`as_ref`] | None             |
+///
+/// > **NOTE:** When specified, `<B>` represents a complete list of alternate
+/// > generic parameters provided to this type. So the methods in question can
+/// > change generic type parameters provided to `Ident`.
 ///
 /// [`as_ident`]: Ident::as_ident
 /// [`as_ref`]: Ident::as_ref
@@ -172,7 +174,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     ///
     /// Returns [`Error`] if the fragment does not satisfy the character
     /// requirements. If the fragment is empty, this will return an `Empty`
-    /// error kind. If an invalid character is found then a `InvalidFormat`
+    /// error kind. If an invalid character is found then an `InvalidFormat`
     /// error kind is returned, with [`byte_offset`] set to the byte index for
     /// the first invalid character.
     ///
@@ -233,7 +235,7 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Ident<B, D, P> {
     ///
     /// Returns [`Error`] if the identifier does not satisfy the character
     /// requirements. If the identifier is empty, this will return an `Empty`
-    /// error kind. If an invalid character is found then a `InvalidFormat`
+    /// error kind. If an invalid character is found then an `InvalidFormat`
     /// error kind is returned, with [`byte_offset`] set to the byte index for
     /// the first invalid character.
     ///
@@ -499,7 +501,7 @@ impl<B, D, P> Ident<B, D, P> {
     ///
     /// ```
     /// # use typed_ident::presets::unicode::upper_camel::*;
-    /// let ident = UpperCamelIdent::new_boxed(String::from("ExampleIdent"))?;
+    /// let ident = UpperCamelIdent::new_boxed("ExampleIdent")?;
     /// assert_eq!(ident.as_ident(), UpperCamelIdent::new("ExampleIdent")?);
     /// # Ok::<(), typed_ident::Error>(())
     /// ```
@@ -536,6 +538,7 @@ impl<B, D, P> Ident<B, D, P> {
     ///
     /// This function will be able to be called, if:
     ///
+    /// * `Target::B: Boundary`, *and...*
     /// * `Source::D: SubsetOf<Target::D>`, *and...*
     /// * `Source::P: SubsetOf<Target::P>`
     ///
@@ -626,6 +629,7 @@ impl<B, D, P> Ident<B, D, P> {
     #[inline(always)]
     pub const fn cast<B2, D2, P2>(&self) -> &Ident<B2, D2, P2>
     where
+        B2: crate::syntax::Boundary,
         D: crate::syntax::SubsetOf<D2>,
         P: crate::syntax::SubsetOf<P2>,
     {
@@ -748,6 +752,7 @@ impl_typed_slice_cmp! {
 impl<B1: Boundary, D1: Delimiter, P1: CasedProfile, B2, D2, P2> AsRef<Ident<B2, D2, P2>>
     for Ident<B1, D1, P1>
 where
+    B2: crate::syntax::Boundary,
     D1: crate::syntax::SubsetOf<D2>,
     P1: crate::syntax::SubsetOf<P2>,
 {
