@@ -6,20 +6,6 @@ This project welcomes contributions from everyone in the form of suggestions, bu
 
 When submitting a bug report or feature request, please use the GitHub Issues board.
 
-Start with a template of the following format:
-
-```markdown
-# Summary
-
-(A brief 1~2 line summary of what is being requested.)
-
-# Details
-
-(Additional detail to clarify the request or provide additional context.)
-```
-
-You may add other sections as you see fit.
-
 If the issue is a `bug`, please provide as much detail for your issue as possible, specifically include what you expected, what happened, and why that was counter to your expectation.
 
 If possible, please also provide a minimal sample reproduction of the bug. Ideally your code sample would be in the form of a small codeblock, as if it would be a unit test that would not pass currently (does not have to compile, just a rough "a bug of this form" kind of thing). For some tips on how to approach this, read about how to produce a [Minimal, Complete, and Verifiable example](https://stackoverflow.com/help/minimal-reproducible-example).
@@ -33,7 +19,7 @@ If the issue is `documentation`, pointing to the file in question, and the relev
 Before working on a pull request, please read this:
 
 * **No pull request will even be considered if it didn't originate from a triaged issue!**
-* **If a work item is already assigned that means someone is already working on it - we will not accept other's work!**
+* **If a work item is already assigned that means someone is already working on it - do not steal work items!**
 
 This is to avoid having others do a bunch of work all for us to say "no, thank you".
 
@@ -55,21 +41,10 @@ cargo install cargo-hack
 rustup +nightly component add miri
 ```
 
-Then, you can run this command (this may take some time):
+Then, you can run this script (this may take some time):
 
 ```shell
-cargo fmt &&
-    cargo clippy --all-targets --all-features -- -D warnings &&
-    cargo hack check --feature-powerset &&
-    cargo hack build --feature-powerset &&
-    cargo +nightly rustdoc --all-features -- --cfg docsrs &&
-    cargo hack test --feature-powerset --lib &&
-    cargo test --doc --all-features &&
-    cargo test --all-features --test '*' &&
-    cargo +nightly miri test --all-features --lib &&
-    cargo +nightly miri test --all-features --doc &&
-    # We exclude integration tests because they take forever to run under Miri.
-    cargo +nightly docs-rs
+./scripts/test.sh
 ```
 
 If you have made a foundational change, you might want to run A/B comparisons with the [benchmark tests](./benches/README.md).
@@ -90,14 +65,24 @@ cargo install tarpaulin
 
 Then you can run the coverage testing via:
 
-```bash
-cargo tarpaulin \
-    --all-features --doc --tests \
-    --out html \
-    --output-dir target \
-    --include-files 'typed-ident/src/*'
+```shell
+./scripts/coverage.sh
 ```
 
 After running your tests, you can find the HTML output at:
 
 * `${TARGET}/tarpaulin-report.html`
+
+### Publishing a New Version
+
+Releases can be published by using the following script:
+
+```shell
+./scripts/release.sh --dry-run
+```
+
+Fix any issues that have arisen, then...
+
+```shell
+./scripts/release.sh
+```
