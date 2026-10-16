@@ -10,6 +10,8 @@ release during this time, including patch releases.
 
 ## [Unreleased]
 
+## [0.0.3]
+
 ### Added
 
 - Added the ability to iterate over words of a fragment; `Words`, `StrWords`, `WordIndices`, `StrWordIndices`.
@@ -58,5 +60,6 @@ release during this time, including patch releases.
 - Published the initial version of the crate.
 
 [Unreleased]: https://github.com/sigseis/typed-ident/compare/v0.0.2...HEAD
+[0.0.3]: https://github.com/sigseis/typed-ident/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/sigseis/typed-ident/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/sigseis/typed-ident/releases/tag/v0.0.1
