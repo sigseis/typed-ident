@@ -91,7 +91,7 @@ fi
 if [[ $DRY_RUN == true ]]; then
     cargo package -p typed-ident --list --allow-dirty
     cargo package -p typed-ident --allow-dirty
-    cargo publish -p typed-ident --dry-run
+    cargo publish -p typed-ident --dry-run --allow-dirty
     echo "dry run enabled - skipping publish step"
     exit 0
 else
