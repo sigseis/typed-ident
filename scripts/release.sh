@@ -72,7 +72,7 @@ if git rev-parse -q --verify "refs/tags/$TARGET_TAG" >/dev/null; then
 fi
 
 # First-pass allowing a dirty git repo - we'll commit soon.
-./scripts/test.sh
+./scripts/test.sh --check
 cargo package -p typed-ident --list --allow-dirty
 cargo package -p typed-ident --allow-dirty
 

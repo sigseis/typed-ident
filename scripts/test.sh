@@ -4,8 +4,21 @@ set -euo pipefail
 # Run from the directory as the repository root.
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
+# Check for the --check flag (only flag we plan on supporting).
+CHECK=false
+if [[ ${1-} == --check ]]; then
+    CHECK=true
+elif [[ $# -gt 0 ]]; then
+    echo "usage: $0 [--check]" >&2
+    exit 2
+fi
+
 # Run all of the tests and formatting operations.
-cargo fmt
+if [[ $CHECK == true ]]; then
+    cargo fmt --check
+else
+    cargo fmt
+fi
 cargo clippy --all-targets --all-features -- -D warnings
 cargo hack check --feature-powerset
 cargo hack build --feature-powerset
