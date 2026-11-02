@@ -1,7 +1,13 @@
+// =============================================================================
+// MACROS
+// =============================================================================
+
+// -----------------------------------------------------------------------------
 macro_rules! impl_typed_slice_traits {
     (
         name=$name:ident,
         index_target=$index_target:ident,
+        others=[$($others:ident),* $(,)?],
     ) => {
         // ---------------------------------------------------------------------
         impl<'a, B1, B2, D1, D2, P1, P2> AsRef<crate::Fragment<B2, D2, P2>> for $name<B1, D1, P1>
@@ -65,12 +71,22 @@ macro_rules! impl_typed_slice_traits {
         }
 
         // ---------------------------------------------------------------------
-        impl<'a, B, D, P> core::cmp::PartialEq<$name<B, D, P>> for str {
+        impl<B, D, P> core::cmp::PartialEq<$name<B, D, P>> for str {
             #[inline]
             fn eq(&self, rhs: &$name<B, D, P>) -> bool {
                 self == rhs.as_str()
             }
         }
+
+        // ---------------------------------------------------------------------
+        $(
+        impl<B1, B2, D1, D2, P1, P2> core::cmp::PartialEq<$others<B1, D1, P1>> for $name<B2, D2, P2> {
+            #[inline]
+            fn eq(&self, rhs: &$others<B1, D1, P1>) -> bool {
+                self.as_str() == rhs.as_str()
+            }
+        }
+        )*
 
         // ---------------------------------------------------------------------
         impl<B, D, P> core::cmp::PartialOrd<str> for $name<B, D, P> {
@@ -87,6 +103,16 @@ macro_rules! impl_typed_slice_traits {
                 self.partial_cmp(rhs.as_str())
             }
         }
+
+        // ---------------------------------------------------------------------
+        $(
+        impl<B1, B2, D1, D2, P1, P2> core::cmp::PartialOrd<$others<B1, D1, P1>> for $name<B2, D2, P2> {
+            #[inline]
+            fn partial_cmp(&self, rhs: &$others<B1, D1, P1>) -> Option<core::cmp::Ordering> {
+                self.as_str().partial_cmp(rhs.as_str())
+            }
+        }
+        )*
 
         // ---------------------------------------------------------------------
         impl<B, D, P> core::convert::AsRef<str> for $name<B, D, P> {
@@ -143,44 +169,47 @@ macro_rules! impl_typed_slice_traits {
             }
         }
 
+        // ---------------------------------------------------------------------
         #[cfg(feature = "alloc")]
-        mod alloc {
-            use super::*;
-
-            // -----------------------------------------------------------------
-            impl<B, D, P> core::cmp::PartialEq<std_alloc::string::String> for $name<B, D, P> {
-                #[inline]
-                fn eq(&self, rhs: &std_alloc::string::String) -> bool {
-                    self.as_str() == rhs.as_str()
-                }
+        impl<B, D, P> core::cmp::PartialEq<std_alloc::string::String> for $name<B, D, P> {
+            #[inline]
+            fn eq(&self, rhs: &std_alloc::string::String) -> bool {
+                self.as_str() == rhs.as_str()
             }
+        }
 
-            // -----------------------------------------------------------------
-            impl<B, D, P> core::cmp::PartialOrd<$name<B, D, P>> for std_alloc::string::String {
-                #[inline]
-                fn partial_cmp(&self, rhs: &$name<B, D, P>) -> Option<core::cmp::Ordering> {
-                    self.as_str().partial_cmp(rhs.as_str())
-                }
+        // ---------------------------------------------------------------------
+        #[cfg(feature = "alloc")]
+        impl<B, D, P> core::cmp::PartialOrd<$name<B, D, P>> for std_alloc::string::String {
+            #[inline]
+            fn partial_cmp(&self, rhs: &$name<B, D, P>) -> Option<core::cmp::Ordering> {
+                self.as_str().partial_cmp(rhs.as_str())
             }
+        }
 
-            // -----------------------------------------------------------------
-            impl<B, D, P> core::cmp::PartialOrd<std_alloc::string::String> for $name<B, D, P> {
-                #[inline]
-                fn partial_cmp(
-                    &self,
-                    rhs: &std_alloc::string::String,
-                ) -> Option<core::cmp::Ordering> {
-                    self.as_str().partial_cmp(rhs.as_str())
-                }
+        // ---------------------------------------------------------------------
+        #[cfg(feature = "alloc")]
+        impl<B, D, P> core::cmp::PartialOrd<std_alloc::string::String> for $name<B, D, P> {
+            #[inline]
+            fn partial_cmp(&self, rhs: &std_alloc::string::String) -> Option<core::cmp::Ordering> {
+                self.as_str().partial_cmp(rhs.as_str())
             }
+        }
 
-            // -----------------------------------------------------------------
-            impl<B, D, P> core::cmp::PartialEq<$name<B, D, P>> for std_alloc::string::String {
-                #[inline]
-                fn eq(&self, rhs: &$name<B, D, P>) -> bool {
-                    self.as_str() == rhs.as_str()
-                }
+        // ---------------------------------------------------------------------
+        #[cfg(feature = "alloc")]
+        impl<B, D, P> core::cmp::PartialEq<$name<B, D, P>> for std_alloc::string::String {
+            #[inline]
+            fn eq(&self, rhs: &$name<B, D, P>) -> bool {
+                self.as_str() == rhs.as_str()
             }
         }
     };
 }
+
+// =============================================================================
+// EXPORTS
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+pub(crate) use impl_typed_slice_traits;

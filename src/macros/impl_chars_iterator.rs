@@ -1,3 +1,8 @@
+// =============================================================================
+// MACROS
+// =============================================================================
+
+// -----------------------------------------------------------------------------
 macro_rules! impl_chars_iterator {
     (
         @common
@@ -129,7 +134,7 @@ macro_rules! impl_chars_iterator {
             }
         }
 
-        impl_chars_iterator! {
+        crate::macros::impl_chars_iterator! {
             @common
             name=$name,
             over=Chunk,
@@ -141,7 +146,7 @@ macro_rules! impl_chars_iterator {
         over=Fragment,
         function=$function:ident,
     ) => {
-        impl_chars_iterator! {
+        crate::macros::impl_chars_iterator! {
             @common
             name=$name,
             over=Fragment,
@@ -149,3 +154,10 @@ macro_rules! impl_chars_iterator {
         }
     };
 }
+
+// =============================================================================
+// EXPORTS
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+pub(crate) use impl_chars_iterator;

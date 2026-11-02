@@ -146,14 +146,20 @@ mod traits {
     #[test]
     #[cfg(feature = "unicode")]
     fn as_ref_chunk() -> Result<(), Error> {
-        test_as_ref_comprehensive!(Chunk as Chunk);
+        crate::macros::test_as_ref! {
+            from=Chunk,
+            into=Chunk,
+        }
         Ok(())
     }
 
     #[test]
     #[cfg(feature = "unicode")]
     fn as_ref_fragment() -> Result<(), Error> {
-        test_as_ref_comprehensive!(Chunk as Fragment);
+        crate::macros::test_as_ref! {
+            from=Chunk,
+            into=Fragment,
+        }
         Ok(())
     }
 

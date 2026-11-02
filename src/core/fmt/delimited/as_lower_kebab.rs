@@ -11,7 +11,7 @@ use crate::fmt::delimited::{Canonical, Decorated};
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl_displayable_type! {
+crate::macros::impl_displayable_type! {
     name=LowerKebab,
     over=Canonical,
     upper=false,
@@ -25,7 +25,7 @@ impl_displayable_type! {
 }
 
 // -----------------------------------------------------------------------------
-impl_displayable_type! {
+crate::macros::impl_displayable_type! {
     name=LowerKebabDecorated,
     over=Decorated,
     upper=false,

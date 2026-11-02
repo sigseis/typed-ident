@@ -258,6 +258,12 @@ impl<B, D, P> Chunk<B, D, P> {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+crate::macros::impl_boxed_slice_traits! {
+    name=Chunk,
+    index_target=Chunk,
+}
+
+// -----------------------------------------------------------------------------
 impl<B, D, P> crate::type_erased::TypeErased for Box<Chunk<B, D, P>> {
     type Erased = String;
     #[inline(always)]
@@ -282,10 +288,4 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> TryFrom<String> for Box<Chunk<B
     fn try_from(orig: String) -> Result<Self, Self::Error> {
         Chunk::new_boxed(orig)
     }
-}
-
-// -----------------------------------------------------------------------------
-impl_boxed_slice_traits! {
-    name=Chunk,
-    index_target=Chunk,
 }

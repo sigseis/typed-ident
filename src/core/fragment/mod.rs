@@ -24,21 +24,21 @@ mod words;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl_chars_iterator! {
+crate::macros::impl_chars_iterator! {
     name=Chars,
     over=Fragment,
     function=chars,
 }
 
 // -----------------------------------------------------------------------------
-impl_char_indices_iterator! {
+crate::macros::impl_char_indices_iterator! {
     name=CharIndices,
     over=Fragment,
     function=char_indices,
 }
 
 // -----------------------------------------------------------------------------
-impl_matches_iterator! {
+crate::macros::impl_matches_iterator! {
     name=Matches,
     over=Fragment,
     function=matches,
@@ -53,7 +53,7 @@ impl_matches_iterator! {
 }
 
 // -----------------------------------------------------------------------------
-impl_matches_iterator! {
+crate::macros::impl_matches_iterator! {
     name=RMatches,
     over=Fragment,
     function=rmatches,
@@ -68,7 +68,7 @@ impl_matches_iterator! {
 }
 
 // -----------------------------------------------------------------------------
-impl_match_indices_iterator! {
+crate::macros::impl_match_indices_iterator! {
     name=MatchIndices,
     over=Fragment,
     function=match_indices,
@@ -83,7 +83,7 @@ impl_match_indices_iterator! {
 }
 
 // -----------------------------------------------------------------------------
-impl_match_indices_iterator! {
+crate::macros::impl_match_indices_iterator! {
     name=RMatchIndices,
     over=Fragment,
     function=rmatch_indices,

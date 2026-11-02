@@ -70,7 +70,10 @@ mod traits {
     #[test]
     #[cfg(feature = "unicode")]
     fn as_ref_fragment() -> Result<(), Error> {
-        test_as_ref_comprehensive!(Fragment as Fragment);
+        crate::macros::test_as_ref! {
+            from=Fragment,
+            into=Fragment,
+        }
         Ok(())
     }
 

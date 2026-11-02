@@ -16,7 +16,7 @@ use crate::chunk::{
     CharIndices, Chars, MatchIndices, Matches, RMatchIndices, RMatches, WordIndices, Words,
 };
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
-use crate::{Error, ErrorKind, Fragment};
+use crate::{Error, ErrorKind, Fragment, Ident};
 
 // =============================================================================
 // TYPES
@@ -377,7 +377,7 @@ impl<B, D, P> Chunk<B, D, P> {
 }
 
 // -----------------------------------------------------------------------------
-impl_typed_slice_common! {
+crate::macros::impl_typed_slice_functions! {
     name=Chunk,
     name_lowercase=chunk,
 }
@@ -385,6 +385,13 @@ impl_typed_slice_common! {
 // =============================================================================
 // TRAIT IMPLS
 // =============================================================================
+
+// -----------------------------------------------------------------------------
+crate::macros::impl_typed_slice_traits! {
+    name=Chunk,
+    index_target=Chunk,
+    others=[Fragment, Ident],
+}
 
 // -----------------------------------------------------------------------------
 impl<B, D, P> Default for &Chunk<B, D, P> {
@@ -448,10 +455,4 @@ impl<'a, B, D, P> crate::type_erased::TypeErased for &'a Chunk<B, D, P> {
     fn type_erased(self) -> Self::Erased {
         self.as_str()
     }
-}
-
-// -----------------------------------------------------------------------------
-impl_typed_slice_cmp! {
-    name=Chunk,
-    against=Fragment,
 }

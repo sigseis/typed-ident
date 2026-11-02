@@ -17,7 +17,7 @@ use crate::fragment::{
     RMatchIndices, RMatches, SegmentIndices, Segments, WordIndices, Words,
 };
 use crate::syntax::{Boundary, CasedProfile, Delimiter};
-use crate::{Error, Ident};
+use crate::{Chunk, Error, Ident};
 use core::marker::PhantomData;
 
 // =============================================================================
@@ -954,6 +954,23 @@ impl<B, D, P> Fragment<B, D, P> {
 }
 
 // -----------------------------------------------------------------------------
+crate::macros::impl_typed_slice_functions! {
+    name=Fragment,
+    name_lowercase=fragment,
+}
+
+// =============================================================================
+// TRAIT IMPLS
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+crate::macros::impl_typed_slice_traits! {
+    name=Fragment,
+    index_target=Fragment,
+    others=[Chunk, Ident],
+}
+
+// -----------------------------------------------------------------------------
 impl<'a, B: Boundary, D: Delimiter, P: CasedProfile> core::convert::TryFrom<&'a str>
     for &'a Fragment<B, D, P>
 {
@@ -980,10 +997,4 @@ impl<'a, B, D, P> crate::type_erased::TypeErased for &'a Fragment<B, D, P> {
     fn type_erased(self) -> Self::Erased {
         self.as_str()
     }
-}
-
-// -----------------------------------------------------------------------------
-impl_typed_slice_common! {
-    name=Fragment,
-    name_lowercase=fragment,
 }

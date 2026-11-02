@@ -30,14 +30,14 @@ pub use unit_delimiter::*;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl_ascii_flat_line_delimiter! {
+crate::macros::impl_ascii_flat_line_delimiter! {
     name=LowLine,
     char='_',
     docs="A delimiter which is the ASCII character LOW LINE (`_`).",
 }
 
 // -----------------------------------------------------------------------------
-impl_ascii_flat_line_delimiter! {
+crate::macros::impl_ascii_flat_line_delimiter! {
     name=HyphenMinus,
     char='-',
     docs="A delimiter which is the ASCII character HYPHEN-MINUS (`-`).",

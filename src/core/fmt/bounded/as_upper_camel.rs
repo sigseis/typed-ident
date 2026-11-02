@@ -12,7 +12,7 @@ use crate::syntax::boundary::Standard;
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl_displayable_type! {
+crate::macros::impl_displayable_type! {
     name=UpperCamel,
     over=Canonical,
     upper=true,
@@ -26,7 +26,7 @@ impl_displayable_type! {
 }
 
 // -----------------------------------------------------------------------------
-impl_displayable_type! {
+crate::macros::impl_displayable_type! {
     name=UpperCamelDecorated,
     over=Decorated,
     upper=true,
@@ -40,7 +40,7 @@ impl_displayable_type! {
 }
 
 // -----------------------------------------------------------------------------
-impl_displayable_type! {
+crate::macros::impl_displayable_type! {
     name=UpperCamelDelimited,
     over=Delimited,
     upper=true,

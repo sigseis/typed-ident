@@ -590,6 +590,12 @@ impl<B, D, P> Fragment<B, D, P> {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+crate::macros::impl_boxed_slice_traits! {
+    name=Fragment,
+    index_target=Fragment,
+}
+
+// -----------------------------------------------------------------------------
 impl<B, D, P> crate::type_erased::TypeErased for Box<Fragment<B, D, P>> {
     type Erased = String;
     #[inline(always)]
@@ -614,10 +620,4 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> TryFrom<String> for Box<Fragmen
     fn try_from(orig: String) -> Result<Self, Self::Error> {
         Fragment::new_boxed(orig)
     }
-}
-
-// -----------------------------------------------------------------------------
-impl_boxed_slice_traits! {
-    name=Fragment,
-    index_target=Fragment,
 }

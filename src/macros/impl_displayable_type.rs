@@ -1,10 +1,8 @@
-/// Implements a new-type pattern for a provided formatter.
-///
-/// It's beneficial to dedupe the types for this, but I don't want people taking
-/// a dependency on the fact that two separate identifier formats happen to
-/// share the same formatting type.
-///
-/// So we wrap them in a new-type to avoid that.
+// =============================================================================
+// MACROS
+// =============================================================================
+
+// -----------------------------------------------------------------------------
 macro_rules! impl_displayable_type {
     (
         name=$name:ident,
@@ -25,3 +23,10 @@ macro_rules! impl_displayable_type {
         }
     };
 }
+
+// =============================================================================
+// EXPORTS
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+pub(crate) use impl_displayable_type;

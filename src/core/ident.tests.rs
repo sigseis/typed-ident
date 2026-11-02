@@ -68,13 +68,19 @@ mod traits {
 
     #[test]
     fn as_ref_fragment() -> Result<(), Error> {
-        test_as_ref_comprehensive!(Ident as Fragment);
+        crate::macros::test_as_ref! {
+            from=Ident,
+            into=Fragment,
+        }
         Ok(())
     }
 
     #[test]
     fn as_ref_ident() -> Result<(), Error> {
-        test_as_ref_comprehensive!(Ident as Ident);
+        crate::macros::test_as_ref! {
+            from=Ident,
+            into=Ident,
+        }
         Ok(())
     }
 }

@@ -525,6 +525,12 @@ impl<B, D, P> Ident<B, D, P> {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+crate::macros::impl_boxed_slice_traits! {
+    name=Ident,
+    index_target=Fragment,
+}
+
+// -----------------------------------------------------------------------------
 impl<B, D, P> crate::type_erased::TypeErased for Box<Ident<B, D, P>> {
     type Erased = String;
     #[inline(always)]
@@ -549,10 +555,4 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> TryFrom<String> for Box<Ident<B
     fn try_from(orig: String) -> Result<Self, Self::Error> {
         Ident::new_boxed(orig)
     }
-}
-
-// -----------------------------------------------------------------------------
-impl_boxed_slice_traits! {
-    name=Ident,
-    index_target=Fragment,
 }

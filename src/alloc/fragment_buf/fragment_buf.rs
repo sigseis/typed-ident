@@ -1449,6 +1449,13 @@ impl<B, D, P> FragmentBuf<B, D, P> {
 // =============================================================================
 
 // -----------------------------------------------------------------------------
+crate::macros::impl_typed_slice_traits! {
+    name=FragmentBuf,
+    index_target=Fragment,
+    others=[Chunk, Ident],
+}
+
+// -----------------------------------------------------------------------------
 impl<'a, B, D, P> core::convert::From<&'a Fragment<B, D, P>> for FragmentBuf<B, D, P> {
     #[inline]
     fn from(orig: &'a Fragment<B, D, P>) -> Self {
@@ -1574,28 +1581,4 @@ impl<B, D, P> crate::type_erased::TypeErased for FragmentBuf<B, D, P> {
     fn type_erased(self) -> Self::Erased {
         self.into_string()
     }
-}
-
-// -----------------------------------------------------------------------------
-impl_typed_slice_traits! {
-    name=FragmentBuf,
-    index_target=Fragment,
-}
-
-// -----------------------------------------------------------------------------
-impl_typed_slice_cmp! {
-    name=FragmentBuf,
-    against=Chunk,
-}
-
-// -----------------------------------------------------------------------------
-impl_typed_slice_cmp! {
-    name=FragmentBuf,
-    against=Fragment,
-}
-
-// -----------------------------------------------------------------------------
-impl_typed_slice_cmp! {
-    name=FragmentBuf,
-    against=Ident,
 }

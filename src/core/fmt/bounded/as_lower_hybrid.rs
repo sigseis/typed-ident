@@ -13,7 +13,7 @@ use crate::syntax::delimiter::{AsciiFlatLine, Delimiter};
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-impl_displayable_type! {
+crate::macros::impl_displayable_type! {
     name=LowerHybrid,
     over=Canonical,
     upper=false,
@@ -27,7 +27,7 @@ impl_displayable_type! {
 }
 
 // -----------------------------------------------------------------------------
-impl_displayable_type! {
+crate::macros::impl_displayable_type! {
     name=LowerHybridDecorated,
     over=Decorated,
     upper=false,
@@ -41,7 +41,7 @@ impl_displayable_type! {
 }
 
 // -----------------------------------------------------------------------------
-impl_displayable_type! {
+crate::macros::impl_displayable_type! {
     name=LowerHybridDelimited,
     over=Delimited,
     upper=false,
