@@ -204,6 +204,17 @@ macro_rules! impl_typed_slice_traits {
                 self.as_str() == rhs.as_str()
             }
         }
+
+        // ---------------------------------------------------------------------
+        #[cfg(feature = "serde")]
+        impl<B, D, P> serde::Serialize for $name<B, D, P> {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
+                serializer.serialize_str(self.as_str())
+            }
+        }
     };
 }
 

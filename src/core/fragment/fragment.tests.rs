@@ -118,6 +118,127 @@ mod traits {
     }
 
     #[test]
+    #[cfg(all(feature = "alloc", feature = "serde"))]
+    fn serde_boxed_valid() {
+        use std_alloc::boxed::Box;
+        for test in VALID.iter().copied() {
+            // It's a valid value, so we should be able to construct it.
+            let value = FragmentUnderTest::new_boxed(test).unwrap();
+
+            // Validate that it serializes as expected.
+            let json_value = serde_json::to_value(&value).unwrap();
+            let serialized = serde_json::to_string(&json_value).unwrap();
+            assert_eq!(json_value.as_str(), Some(test));
+
+            // Validate that it deserializes as expected.
+            let deserialized: Box<FragmentUnderTest> = serde_json::from_str(&serialized).unwrap();
+            assert_eq!(deserialized, value);
+        }
+    }
+
+    #[test]
+    #[cfg(all(feature = "alloc", feature = "serde"))]
+    fn serde_boxed_invalid() {
+        use std_alloc::boxed::Box;
+        use std_alloc::string::ToString;
+        for test in INVALID.iter().copied() {
+            // Validate that it serializes as expected.
+            let json_value = serde_json::to_value(test).unwrap();
+            let serialized = serde_json::to_string(&json_value).unwrap();
+            assert_eq!(json_value.as_str(), Some(test));
+
+            // This is an invalid value, so it should fail deserialization.
+            let deserialized: Result<Box<FragmentUnderTest>, serde_json::Error> =
+                serde_json::from_str(&serialized);
+            let error = deserialized.unwrap_err().to_string();
+            assert!(
+                error.starts_with("invalid format: at byte offset"),
+                "actual error: {error}"
+            );
+        }
+    }
+
+    #[test]
+    #[cfg(all(feature = "alloc", feature = "serde"))]
+    fn serde_cow_valid() {
+        use std_alloc::borrow::Cow;
+        for test in VALID.iter().copied() {
+            // It's a valid value, so we should be able to construct it.
+            let value = Cow::Borrowed(FragmentUnderTest::new(test).unwrap());
+
+            // Validate that it serializes as expected.
+            let json_value = serde_json::to_value(&value).unwrap();
+            let serialized = serde_json::to_string(&json_value).unwrap();
+            assert_eq!(json_value.as_str(), Some(test));
+
+            // Validate that it deserializes as expected.
+            let deserialized: Cow<FragmentUnderTest> = serde_json::from_str(&serialized).unwrap();
+            assert_eq!(deserialized, value);
+        }
+    }
+
+    #[test]
+    #[cfg(all(feature = "alloc", feature = "serde"))]
+    fn serde_cow_invalid() {
+        use std_alloc::borrow::Cow;
+        use std_alloc::string::ToString;
+        for test in INVALID.iter().copied() {
+            // Validate that it serializes as expected.
+            let json_value = serde_json::to_value(test).unwrap();
+            let serialized = serde_json::to_string(&json_value).unwrap();
+            assert_eq!(json_value.as_str(), Some(test));
+
+            // This is an invalid value, so it should fail deserialization.
+            let deserialized: Result<Cow<FragmentUnderTest>, serde_json::Error> =
+                serde_json::from_str(&serialized);
+            let error = deserialized.unwrap_err().to_string();
+            assert!(
+                error.starts_with("invalid format: at byte offset"),
+                "actual error: {error}"
+            );
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "serde")]
+    fn serde_ref_valid() {
+        for test in VALID.iter().copied() {
+            // It's a valid value, so we should be able to construct it.
+            let value = FragmentUnderTest::new(test).unwrap();
+
+            // Validate that it serializes as expected.
+            let json_value = serde_json::to_value(value).unwrap();
+            let serialized = serde_json::to_string(&json_value).unwrap();
+            assert_eq!(json_value.as_str(), Some(test));
+
+            // Validate that it deserializes as expected.
+            let deserialized: &FragmentUnderTest = serde_json::from_str(&serialized).unwrap();
+            assert_eq!(deserialized, value);
+        }
+    }
+
+    #[test]
+    #[cfg(all(feature = "alloc", feature = "serde"))]
+    fn serde_ref_invalid() {
+        use std_alloc::string::ToString;
+        for test in INVALID.iter().copied() {
+            // Validate that it serializes as expected.
+            let json_value = serde_json::to_value(test).unwrap();
+            let serialized = serde_json::to_string(&json_value).unwrap();
+            assert_eq!(json_value.as_str(), Some(test));
+
+            // This is an invalid value, so it should fail deserialization.
+            let deserialized: Result<&FragmentUnderTest, serde_json::Error> =
+                serde_json::from_str(&serialized);
+            let error = deserialized.unwrap_err().to_string();
+            assert!(
+                error.starts_with("invalid format: at byte offset"),
+                "actual error: {error}"
+            );
+        }
+    }
+
+    #[test]
     fn str_partial_ord_fragment() -> Result<(), Error> {
         let fragment = FragmentUnderTest::new("abc")?;
         assert!("abc" <= fragment);

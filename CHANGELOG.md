@@ -10,6 +10,11 @@ release during this time, including patch releases.
 
 ## [Unreleased]
 
+### Added
+
+- Added `Error` trait impl to `Error` and `SyntaxError` types.
+- Added a new `serde` feature that enables `Deserialize` and `Serialize` on most types.
+
 ## [0.0.3]
 
 ### Added

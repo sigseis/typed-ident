@@ -185,4 +185,43 @@ mod traits {
         assert_eq!(AsciiFlatLine::HyphenMinus.to_string(), "-");
         assert_eq!(AsciiFlatLine::LowLine.to_string(), "_");
     }
+
+    #[test]
+    #[cfg(feature = "serde")]
+    fn serde_valid() {
+        for (value, string) in [
+            (AsciiFlatLine::HyphenMinus, "-"),
+            (AsciiFlatLine::LowLine, "_"),
+        ] {
+            // Validate that it serializes as expected.
+            let json_value = serde_json::to_value(value).unwrap();
+            let serialized = serde_json::to_string(&json_value).unwrap();
+            assert_eq!(json_value.as_str(), Some(string));
+
+            // Validate that it deserializes as expected.
+            let deserialized: AsciiFlatLine = serde_json::from_str(&serialized).unwrap();
+            assert_eq!(deserialized, value);
+        }
+    }
+
+    #[test]
+    #[cfg(all(feature = "alloc", feature = "serde"))]
+    fn serde_invalid() {
+        use std_alloc::string::ToString;
+        for (test, string) in [('?', "?"), ('!', "!"), ('A', "A")] {
+            // Validate that it serializes as expected.
+            let json_value = serde_json::to_value(test).unwrap();
+            let serialized = serde_json::to_string(&json_value).unwrap();
+            assert_eq!(json_value.as_str(), Some(string));
+
+            // This is an invalid value, so it should fail deserialization.
+            let deserialized: Result<AsciiFlatLine, serde_json::Error> =
+                serde_json::from_str(&serialized);
+            let error = deserialized.unwrap_err().to_string();
+            assert_eq!(
+                error, "attempted to convert a non-delimiter character to a delimiter",
+                "actual error: {error}"
+            );
+        }
+    }
 }

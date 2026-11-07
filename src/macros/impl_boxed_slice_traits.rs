@@ -140,6 +140,21 @@ macro_rules! impl_boxed_slice_traits {
                 self.as_str() == rhs.as_str()
             }
         }
+
+        // ---------------------------------------------------------------------
+        #[cfg(feature = "serde")]
+        impl<'de, B: Boundary, D: Delimiter, P: CasedProfile> serde::Deserialize<'de>
+            for Box<$name<B, D, P>>
+        {
+            fn deserialize<DE>(deserializer: DE) -> Result<Self, DE::Error>
+            where
+                DE: serde::Deserializer<'de>,
+            {
+                use serde::de::Error;
+                let s = String::deserialize(deserializer)?;
+                $name::new_boxed(s).map_err(DE::Error::custom)
+            }
+        }
     };
 }
 

@@ -816,3 +816,18 @@ impl<'a, B, D, P> crate::type_erased::TypeErased for &'a Ident<B, D, P> {
         self.as_str()
     }
 }
+
+// -----------------------------------------------------------------------------
+#[cfg(feature = "serde")]
+impl<'de, B: Boundary, D: Delimiter, P: CasedProfile> serde::Deserialize<'de>
+    for &'de Ident<B, D, P>
+{
+    fn deserialize<DE>(deserializer: DE) -> Result<Self, DE::Error>
+    where
+        DE: serde::Deserializer<'de>,
+    {
+        use serde::de::Error;
+        let s = <&'de str>::deserialize(deserializer)?;
+        Ident::new(s).map_err(DE::Error::custom)
+    }
+}
