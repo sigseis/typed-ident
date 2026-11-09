@@ -1001,15 +1001,15 @@ impl<'a, B, D, P> crate::type_erased::TypeErased for &'a Fragment<B, D, P> {
 
 // -----------------------------------------------------------------------------
 #[cfg(feature = "serde")]
-impl<'de, B: Boundary, D: Delimiter, P: CasedProfile> serde::Deserialize<'de>
-    for &'de Fragment<B, D, P>
+impl<'de: 'a, 'a, B: Boundary, D: Delimiter, P: CasedProfile> serde::Deserialize<'de>
+    for &'a Fragment<B, D, P>
 {
     fn deserialize<DE>(deserializer: DE) -> Result<Self, DE::Error>
     where
         DE: serde::Deserializer<'de>,
     {
         use serde::de::Error;
-        let s = <&'de str>::deserialize(deserializer)?;
+        let s = <&'a str>::deserialize(deserializer)?;
         Fragment::new(s).map_err(DE::Error::custom)
     }
 }

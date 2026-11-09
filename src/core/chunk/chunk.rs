@@ -459,15 +459,15 @@ impl<'a, B, D, P> crate::type_erased::TypeErased for &'a Chunk<B, D, P> {
 
 // -----------------------------------------------------------------------------
 #[cfg(feature = "serde")]
-impl<'de, B: Boundary, D: Delimiter, P: CasedProfile> serde::Deserialize<'de>
-    for &'de Chunk<B, D, P>
+impl<'de: 'a, 'a, B: Boundary, D: Delimiter, P: CasedProfile> serde::Deserialize<'de>
+    for &'a Chunk<B, D, P>
 {
     fn deserialize<DE>(deserializer: DE) -> Result<Self, DE::Error>
     where
         DE: serde::Deserializer<'de>,
     {
         use serde::de::Error;
-        let s = <&'de str>::deserialize(deserializer)?;
+        let s = <&'a str>::deserialize(deserializer)?;
         Chunk::new(s).map_err(DE::Error::custom)
     }
 }

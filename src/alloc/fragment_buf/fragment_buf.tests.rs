@@ -14,7 +14,12 @@ use crate::syntax::*;
 const VALID: &[&str] = &["", "test", "01234", "_test", "test_", "test_test", "_"];
 
 // -----------------------------------------------------------------------------
-const INVALID: &[&str] = &["日本語", "-test", "test-", "test-test"];
+const INVALID: &[(&str, &str)] = &[
+    ("日本語", "invalid format: at byte offset 0"),
+    ("-test", "invalid format: at byte offset 0"),
+    ("test-", "invalid format: at byte offset 4"),
+    ("test-test", "invalid format: at byte offset 4"),
+];
 
 // =============================================================================
 // CONFIGURATION
@@ -44,7 +49,7 @@ mod impls {
 
     #[test]
     fn new_invalid() -> Result<(), Error> {
-        for test in INVALID {
+        for (test, _) in INVALID {
             assert!(FragmentBufUnderTest::from_str(test).is_err());
         }
         Ok(())
@@ -117,40 +122,33 @@ mod traits {
 
     #[test]
     #[cfg(feature = "serde")]
-    fn serde_valid() {
+    fn serde_round_trip_json() -> Result<(), serde_json::Error> {
         for test in VALID.iter().copied() {
-            // It's a valid value, so we should be able to construct it.
             let value = FragmentBufUnderTest::from_str(test).unwrap();
-
-            // Validate that it serializes as expected.
-            let json_value = serde_json::to_value(&value).unwrap();
-            let serialized = serde_json::to_string(&json_value).unwrap();
-            assert_eq!(json_value.as_str(), Some(test));
-
-            // Validate that it deserializes as expected.
-            let deserialized: FragmentBufUnderTest = serde_json::from_str(&serialized).unwrap();
-            assert_eq!(deserialized, value);
+            let ser = serde_json::to_string(&value)?;
+            let de: FragmentBufUnderTest = serde_json::from_str(&ser)?;
+            assert_eq!(de, value);
         }
+        Ok(())
     }
 
     #[test]
     #[cfg(feature = "serde")]
-    fn serde_invalid() {
-        use std_alloc::string::ToString;
-        for test in INVALID.iter().copied() {
-            // Validate that it serializes as expected.
-            let json_value = serde_json::to_value(test).unwrap();
-            let serialized = serde_json::to_string(&json_value).unwrap();
-            assert_eq!(json_value.as_str(), Some(test));
+    fn serde_tokens_valid() -> Result<(), Error> {
+        use serde_test::{Token, assert_tokens};
+        for test in VALID.iter().copied() {
+            let value = FragmentBufUnderTest::from_str(test)?;
+            assert_tokens(&value, &[Token::String(test)]);
+        }
+        Ok(())
+    }
 
-            // This is an invalid value, so it should fail deserialization.
-            let deserialized: Result<FragmentBufUnderTest, serde_json::Error> =
-                serde_json::from_str(&serialized);
-            let error = deserialized.unwrap_err().to_string();
-            assert!(
-                error.starts_with("invalid format: at byte offset"),
-                "actual error: {error}"
-            );
+    #[test]
+    #[cfg(all(feature = "alloc", feature = "serde"))]
+    fn serde_tokens_invalid() {
+        use serde_test::{Token, assert_de_tokens_error};
+        for (test, error) in INVALID.iter().copied() {
+            assert_de_tokens_error::<FragmentBufUnderTest>(&[Token::String(test)], error);
         }
     }
 
@@ -176,7 +174,7 @@ mod traits {
     #[test]
     fn try_from_str_invalid() -> Result<(), Error> {
         use std_alloc::string::ToString;
-        for test in INVALID {
+        for (test, _) in INVALID {
             let fragment: Result<FragmentBufUnderTest, Error> = TryFrom::try_from(test.to_string());
             assert!(fragment.is_err());
         }

@@ -6,6 +6,51 @@
 use super::*;
 
 // =============================================================================
+// CONSTANTS
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+#[cfg(feature = "serde")]
+const VALUES: &[AsciiPunctuation] = &[
+    AsciiPunctuation::ExclamationMark,
+    AsciiPunctuation::QuotationMark,
+    AsciiPunctuation::NumberSign,
+    AsciiPunctuation::DollarSign,
+    AsciiPunctuation::PercentSign,
+    AsciiPunctuation::Ampersand,
+    AsciiPunctuation::Apostrophe,
+    AsciiPunctuation::LeftParenthesis,
+    AsciiPunctuation::RightParenthesis,
+    AsciiPunctuation::Asterisk,
+    AsciiPunctuation::PlusSign,
+    AsciiPunctuation::Comma,
+    AsciiPunctuation::HyphenMinus,
+    AsciiPunctuation::FullStop,
+    AsciiPunctuation::Solidus,
+    AsciiPunctuation::Colon,
+    AsciiPunctuation::Semicolon,
+    AsciiPunctuation::LessThanSign,
+    AsciiPunctuation::EqualsSign,
+    AsciiPunctuation::GreaterThanSign,
+    AsciiPunctuation::QuestionMark,
+    AsciiPunctuation::CommercialAt,
+    AsciiPunctuation::LeftSquareBracket,
+    AsciiPunctuation::ReverseSolidus,
+    AsciiPunctuation::RightSquareBracket,
+    AsciiPunctuation::CircumflexAccent,
+    AsciiPunctuation::LowLine,
+    AsciiPunctuation::GraveAccent,
+    AsciiPunctuation::LeftCurlyBracket,
+    AsciiPunctuation::VerticalLine,
+    AsciiPunctuation::RightCurlyBracket,
+    AsciiPunctuation::Tilde,
+];
+
+// -----------------------------------------------------------------------------
+#[cfg(feature = "serde")]
+const INVALID: &[char] = &['A', ' ', 'z'];
+
+// =============================================================================
 // TESTS: IMPLS
 // =============================================================================
 
@@ -205,40 +250,32 @@ mod traits {
 
     #[test]
     #[cfg(feature = "serde")]
-    fn serde_valid() {
-        for (value, string) in [
-            (AsciiPunctuation::HyphenMinus, "-"),
-            (AsciiPunctuation::LowLine, "_"),
-            (AsciiPunctuation::Ampersand, "&"),
-        ] {
-            // Validate that it serializes as expected.
-            let json_value = serde_json::to_value(value).unwrap();
-            let serialized = serde_json::to_string(&json_value).unwrap();
-            assert_eq!(json_value.as_str(), Some(string));
+    fn serde_round_trip_json() -> Result<(), serde_json::Error> {
+        for value in VALUES {
+            let ser = serde_json::to_string(value)?;
+            let de: AsciiPunctuation = serde_json::from_str(&ser)?;
+            assert_eq!(de, *value);
+        }
+        Ok(())
+    }
 
-            // Validate that it deserializes as expected.
-            let deserialized: AsciiPunctuation = serde_json::from_str(&serialized).unwrap();
-            assert_eq!(deserialized, value);
+    #[test]
+    #[cfg(feature = "serde")]
+    fn serde_tokens_valid() {
+        use serde_test::{Token, assert_tokens};
+        for value in VALUES {
+            assert_tokens(value, &[Token::Char(value.as_char())]);
         }
     }
 
     #[test]
-    #[cfg(all(feature = "alloc", feature = "serde"))]
-    fn serde_invalid() {
-        use std_alloc::string::ToString;
-        for (test, string) in [('A', "A"), (' ', " "), ('z', "z")] {
-            // Validate that it serializes as expected.
-            let json_value = serde_json::to_value(test).unwrap();
-            let serialized = serde_json::to_string(&json_value).unwrap();
-            assert_eq!(json_value.as_str(), Some(string));
-
-            // This is an invalid value, so it should fail deserialization.
-            let deserialized: Result<AsciiPunctuation, serde_json::Error> =
-                serde_json::from_str(&serialized);
-            let error = deserialized.unwrap_err().to_string();
-            assert_eq!(
-                error, "attempted to convert a non-delimiter character to a delimiter",
-                "actual error: {error}"
+    #[cfg(feature = "serde")]
+    fn serde_tokens_invalid() {
+        use serde_test::{Token, assert_de_tokens_error};
+        for value in INVALID.iter().copied() {
+            assert_de_tokens_error::<AsciiPunctuation>(
+                &[Token::Char(value)],
+                "attempted to convert a non-delimiter character to a delimiter",
             );
         }
     }
