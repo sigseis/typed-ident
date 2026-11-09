@@ -184,7 +184,7 @@ mod traits {
     }
 
     #[test]
-    #[cfg(all(feature = "alloc", feature = "serde"))]
+    #[cfg(feature = "serde")]
     fn serde_ref_tokens_invalid() {
         use serde_test::{Token, assert_de_tokens_error};
         for (test, error) in INVALID.iter().copied() {
