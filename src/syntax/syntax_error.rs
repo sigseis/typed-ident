@@ -41,3 +41,6 @@ impl Display for SyntaxError {
         }
     }
 }
+
+// -----------------------------------------------------------------------------
+impl core::error::Error for SyntaxError {}

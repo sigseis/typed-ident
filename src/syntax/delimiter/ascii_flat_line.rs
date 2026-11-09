@@ -226,3 +226,27 @@ impl core::fmt::Display for AsciiFlatLine {
         f.write_str((*self).to_str())
     }
 }
+
+// -----------------------------------------------------------------------------
+#[cfg(feature = "serde")]
+impl serde::Serialize for AsciiFlatLine {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_char(self.as_char())
+    }
+}
+
+// -----------------------------------------------------------------------------
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for AsciiFlatLine {
+    fn deserialize<DE>(deserializer: DE) -> Result<Self, DE::Error>
+    where
+        DE: serde::Deserializer<'de>,
+    {
+        use serde::de::Error;
+        let c = char::deserialize(deserializer)?;
+        Self::try_from(c).map_err(DE::Error::custom)
+    }
+}

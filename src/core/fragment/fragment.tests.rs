@@ -22,7 +22,12 @@ use crate::syntax::*;
 const VALID: &[&str] = &["", "test", "01234", "_test", "test_", "test_test", "_"];
 
 // -----------------------------------------------------------------------------
-const INVALID: &[&str] = &["日本語", "-test", "test-", "test-test"];
+const INVALID: &[(&str, &str)] = &[
+    ("日本語", "invalid format: at byte offset 0"),
+    ("-test", "invalid format: at byte offset 0"),
+    ("test-", "invalid format: at byte offset 4"),
+    ("test-test", "invalid format: at byte offset 4"),
+];
 
 // =============================================================================
 // CONFIGURATION
@@ -52,7 +57,7 @@ mod impls {
 
     #[test]
     fn new_invalid() -> Result<(), Error> {
-        for test in INVALID {
+        for (test, _) in INVALID {
             assert!(FragmentUnderTest::new(test).is_err());
         }
         Ok(())
@@ -118,6 +123,107 @@ mod traits {
     }
 
     #[test]
+    #[cfg(all(feature = "alloc", feature = "serde"))]
+    fn serde_boxed_round_trip_json() -> Result<(), serde_json::Error> {
+        use std_alloc::boxed::Box;
+        for test in VALID.iter().copied() {
+            let value = FragmentUnderTest::new_boxed(test).unwrap();
+            let ser = serde_json::to_string(&value)?;
+            let de: Box<FragmentUnderTest> = serde_json::from_str(&ser)?;
+            assert_eq!(de, value);
+        }
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(all(feature = "alloc", feature = "serde"))]
+    fn serde_boxed_tokens_valid() -> Result<(), Error> {
+        use serde_test::{Token, assert_tokens};
+        for test in VALID.iter().copied() {
+            let value = FragmentUnderTest::new_boxed(test)?;
+            assert_tokens(&value, &[Token::String(test)]);
+        }
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(all(feature = "alloc", feature = "serde"))]
+    fn serde_boxed_tokens_invalid() {
+        use serde_test::{Token, assert_de_tokens_error};
+        use std_alloc::boxed::Box;
+        for (test, error) in INVALID.iter().copied() {
+            assert_de_tokens_error::<Box<FragmentUnderTest>>(&[Token::String(test)], error);
+        }
+    }
+
+    #[test]
+    #[cfg(all(feature = "alloc", feature = "serde"))]
+    fn serde_cow_round_trip_json() -> Result<(), serde_json::Error> {
+        use std_alloc::borrow::Cow;
+        for test in VALID.iter().copied() {
+            let value = Cow::Borrowed(FragmentUnderTest::new(test).unwrap());
+            let ser = serde_json::to_string(&value)?;
+            let de: Cow<FragmentUnderTest> = serde_json::from_str(&ser)?;
+            assert_eq!(de, value);
+        }
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(all(feature = "alloc", feature = "serde"))]
+    fn serde_cow_tokens_valid() -> Result<(), Error> {
+        use serde_test::{Token, assert_tokens};
+        use std_alloc::borrow::Cow;
+        for test in VALID.iter().copied() {
+            let value = Cow::Borrowed(FragmentUnderTest::new(test)?);
+            assert_tokens(&value, &[Token::String(test)]);
+        }
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(all(feature = "alloc", feature = "serde"))]
+    fn serde_cow_tokens_invalid() {
+        use serde_test::{Token, assert_de_tokens_error};
+        use std_alloc::borrow::Cow;
+        for (test, error) in INVALID.iter().copied() {
+            assert_de_tokens_error::<Cow<FragmentUnderTest>>(&[Token::String(test)], error);
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "serde")]
+    fn serde_ref_round_trip_json() -> Result<(), serde_json::Error> {
+        for test in VALID.iter().copied() {
+            let value = FragmentUnderTest::new(test).unwrap();
+            let ser = serde_json::to_string(&value)?;
+            let de: &FragmentUnderTest = serde_json::from_str(&ser)?;
+            assert_eq!(de, value);
+        }
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(feature = "serde")]
+    fn serde_ref_tokens_valid() -> Result<(), Error> {
+        use serde_test::{Token, assert_tokens};
+        for test in VALID.iter().copied() {
+            let value = FragmentUnderTest::new(test)?;
+            assert_tokens(&value, &[Token::BorrowedStr(test)]);
+        }
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(feature = "serde")]
+    fn serde_ref_tokens_invalid() {
+        use serde_test::{Token, assert_de_tokens_error};
+        for (test, error) in INVALID.iter().copied() {
+            assert_de_tokens_error::<&FragmentUnderTest>(&[Token::BorrowedStr(test)], error);
+        }
+    }
+
+    #[test]
     fn str_partial_ord_fragment() -> Result<(), Error> {
         let fragment = FragmentUnderTest::new("abc")?;
         assert!("abc" <= fragment);
@@ -155,7 +261,7 @@ mod traits {
 
     #[test]
     fn try_from_str_invalid() -> Result<(), Error> {
-        for test in INVALID {
+        for (test, _) in INVALID {
             let fragment: Result<&FragmentUnderTest, Error> = TryFrom::try_from(*test);
             assert!(fragment.is_err());
         }

@@ -6,6 +6,18 @@
 use super::*;
 
 // =============================================================================
+// CONSTANTS
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+#[cfg(feature = "serde")]
+const VALUES: &[AsciiFlatLine] = &[AsciiFlatLine::HyphenMinus, AsciiFlatLine::LowLine];
+
+// -----------------------------------------------------------------------------
+#[cfg(feature = "serde")]
+const INVALID: &[char] = &['?', '!', 'A', ' '];
+
+// =============================================================================
 // TESTS: IMPLS
 // =============================================================================
 
@@ -14,7 +26,7 @@ mod impls {
     use super::*;
 
     #[test]
-    fn from_char() {
+    fn from_char_valid() {
         assert_eq!(
             AsciiFlatLine::from_char('-'),
             Some(AsciiFlatLine::HyphenMinus)
@@ -184,5 +196,37 @@ mod traits {
         use std_alloc::string::ToString;
         assert_eq!(AsciiFlatLine::HyphenMinus.to_string(), "-");
         assert_eq!(AsciiFlatLine::LowLine.to_string(), "_");
+    }
+
+    #[test]
+    #[cfg(feature = "serde")]
+    fn serde_round_trip_json() -> Result<(), serde_json::Error> {
+        for value in VALUES {
+            let ser = serde_json::to_string(value)?;
+            let de: AsciiFlatLine = serde_json::from_str(&ser)?;
+            assert_eq!(de, *value);
+        }
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(feature = "serde")]
+    fn serde_tokens_valid() {
+        use serde_test::{Token, assert_tokens};
+        for value in VALUES {
+            assert_tokens(value, &[Token::Char(value.as_char())]);
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "serde")]
+    fn serde_tokens_invalid() {
+        use serde_test::{Token, assert_de_tokens_error};
+        for value in INVALID.iter().copied() {
+            assert_de_tokens_error::<AsciiFlatLine>(
+                &[Token::Char(value)],
+                "attempted to convert a non-delimiter character to a delimiter",
+            );
+        }
     }
 }

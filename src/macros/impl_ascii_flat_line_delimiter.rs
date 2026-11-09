@@ -156,6 +156,30 @@ macro_rules! impl_ascii_flat_line_delimiter {
         /// Proof: AsciiFlatLine very obviously contains a flat-line symbol ('_' or '-').
         // ---------------------------------------------------------------------
         impl crate::syntax::SubsetOf<AsciiFlatLine> for $name {}
+
+        // ---------------------------------------------------------------------
+        #[cfg(feature = "serde")]
+        impl serde::Serialize for $name {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
+                serializer.serialize_char(self.as_char())
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        #[cfg(feature = "serde")]
+        impl<'de> serde::Deserialize<'de> for $name {
+            fn deserialize<DE>(deserializer: DE) -> Result<Self, DE::Error>
+            where
+                DE: serde::Deserializer<'de>,
+            {
+                use serde::de::Error;
+                let c = char::deserialize(deserializer)?;
+                Self::try_from(c).map_err(DE::Error::custom)
+            }
+        }
     };
 }
 

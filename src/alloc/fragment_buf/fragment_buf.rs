@@ -1,4 +1,13 @@
 // =============================================================================
+// MODULES
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+#[cfg(test)]
+#[path = "fragment_buf.tests.rs"]
+mod tests;
+
+// =============================================================================
 // USES
 // =============================================================================
 
@@ -1580,5 +1589,20 @@ impl<B, D, P> crate::type_erased::TypeErased for FragmentBuf<B, D, P> {
     #[inline(always)]
     fn type_erased(self) -> Self::Erased {
         self.into_string()
+    }
+}
+
+// -----------------------------------------------------------------------------
+#[cfg(feature = "serde")]
+impl<'de, B: Boundary, D: Delimiter, P: CasedProfile> serde::Deserialize<'de>
+    for FragmentBuf<B, D, P>
+{
+    fn deserialize<DE>(deserializer: DE) -> Result<Self, DE::Error>
+    where
+        DE: serde::Deserializer<'de>,
+    {
+        use serde::de::Error;
+        let s = String::deserialize(deserializer)?;
+        FragmentBuf::from_string(s).map_err(DE::Error::custom)
     }
 }

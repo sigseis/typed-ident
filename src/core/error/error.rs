@@ -112,3 +112,6 @@ impl From<SyntaxError> for Error {
         }
     }
 }
+
+// -----------------------------------------------------------------------------
+impl core::error::Error for Error {}
