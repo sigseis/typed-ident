@@ -32,19 +32,21 @@ fi
 CHANGES_CARGO=false
 CHANGES_CHANGELOG=false
 CHANGES=$(git status --porcelain --untracked-files=all)
-while IFS= read -r line; do
-    # Porcelain v1 puts the path after the two status characters and a space.
-    path=${line:3}
-    case "$path" in
-        Cargo.toml)    CHANGES_CARGO=true ;;
-        CHANGELOG.md)  CHANGES_CHANGELOG=true ;;
-        *)
-            echo "error: unexpected modified file: $path" >&2
-            echo "       please commit and push it separately" >&2
-            exit 1
-            ;;
-    esac
-done <<< "$CHANGES"
+if [[ -n $CHANGES ]]; then
+    while IFS= read -r line; do
+        # Porcelain v1 puts the path after the two status characters and a space.
+        path=${line:3}
+        case "$path" in
+            Cargo.toml)    CHANGES_CARGO=true ;;
+            CHANGELOG.md)  CHANGES_CHANGELOG=true ;;
+            *)
+                echo "error: unexpected modified file: $path" >&2
+                echo "       please commit and push it separately" >&2
+                exit 1
+                ;;
+        esac
+    done <<< "$CHANGES"
+fi
 if [[ "$CARGO_CHANGED" != "$CHANGELOG_CHANGED" ]]; then
     echo "error: Cargo.toml and CHANGELOG.md must either both be updated or both be unchanged" >&2
     echo "       did you forget to promote the new changes as released in the CHANGELOG.md?" >&2
