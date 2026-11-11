@@ -47,7 +47,7 @@ if [[ -n $CHANGES ]]; then
         esac
     done <<< "$CHANGES"
 fi
-if [[ "$CARGO_CHANGED" != "$CHANGELOG_CHANGED" ]]; then
+if [[ "$CHANGES_CARGO" != "$CHANGES_CHANGELOG" ]]; then
     echo "error: Cargo.toml and CHANGELOG.md must either both be updated or both be unchanged" >&2
     echo "       did you forget to promote the new changes as released in the CHANGELOG.md?" >&2
     exit 1
