@@ -24,9 +24,9 @@ use core::num::NonZero;
 /// The [`Profile`] type knows what is and isn't a valid Unicode code-point
 /// (`char`). And so it knows how to validly iterate over text graphemes.
 ///
-/// * For ASCII text, you only need a simple iterator, which looks at each
+/// - For ASCII text, you only need a simple iterator, which looks at each
 ///   character.
-/// * For non-ASCII text, you need a more complex iterator (typically
+/// - For non-ASCII text, you need a more complex iterator (typically
 ///   `unicode-segmentation`).
 ///
 /// Then, `Boundary` knows how to look over this text to identify places to

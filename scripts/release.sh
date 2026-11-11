@@ -28,10 +28,26 @@ if [[ $(git rev-list --count @{upstream}..HEAD) -ne 0 ]]; then
     exit 1
 fi
 
-# Check that only certain allowed files are changed.
+# Check that only certain combinations of allowed files are changed.
+CHANGES_CARGO=false
+CHANGES_CHANGELOG=false
 CHANGES=$(git status --porcelain --untracked-files=all)
-if [[ -n ${CHANGES-} && ${CHANGES-} != " M Cargo.toml" && ${CHANGES-} != "M  Cargo.toml" ]]; then
-    echo "error: files other than Cargo.toml have been modified - please commit and push them separately" >&2
+while IFS= read -r line; do
+    # Porcelain v1 puts the path after the two status characters and a space.
+    path=${line:3}
+    case "$path" in
+        Cargo.toml)    CHANGES_CARGO=true ;;
+        CHANGELOG.md)  CHANGES_CHANGELOG=true ;;
+        *)
+            echo "error: unexpected modified file: $path" >&2
+            echo "       please commit and push it separately" >&2
+            exit 1
+            ;;
+    esac
+done <<< "$CHANGES"
+if [[ "$CARGO_CHANGED" != "$CHANGELOG_CHANGED" ]]; then
+    echo "error: Cargo.toml and CHANGELOG.md must either both be updated or both be unchanged" >&2
+    echo "       did you forget to promote the new changes as released in the CHANGELOG.md?" >&2
     exit 1
 fi
 
@@ -81,7 +97,7 @@ if [[ -n ${CHANGES-} ]]; then
     if [[ $DRY_RUN == true ]]; then
         echo "dry run enabled - skipping git commit step"
     else
-        git add Cargo.toml
+        git add Cargo.toml CHANGELOG.md
         git diff --cached --check
         git commit -m "Release $TARGET_TAG"
     fi

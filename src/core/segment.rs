@@ -24,13 +24,13 @@ use crate::{Chunk, Error, ErrorKind, StrSegment};
 ///
 /// The default type contents of a segment are:
 ///
-/// * `D`: The delimiter from the fragment/identifier.
-/// * `C`: A chunk formed from the type parameters ([`&Chunk<B, D, P>`]).
+/// - `D`: The delimiter from the fragment/identifier.
+/// - `C`: A chunk formed from the type parameters ([`&Chunk<B, D, P>`]).
 ///
 /// You have two main things you can control about how segmentation happens;
 ///
-/// * Whether or not indices are returned along with the segments.
-/// * Whether or not we return the entire chunk, versus further splitting the
+/// - Whether or not indices are returned along with the segments.
+/// - Whether or not we return the entire chunk, versus further splitting the
 ///   chunk into "words" based on the identifier's defined [`Boundary`].
 ///
 /// |            | **No Indices**       | **Indices**                 |

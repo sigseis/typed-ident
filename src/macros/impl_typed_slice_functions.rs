@@ -21,9 +21,9 @@ macro_rules! impl_typed_slice_functions {
             ///
             /// This function will be able to be called, if:
             ///
-            /// * `Target::B: Boundary`, *and...*
-            /// * `Source::D: SubsetOf<Target::D>`, *and...*
-            /// * `Source::P: SubsetOf<Target::P>`
+            /// - `Target::B: Boundary`, *and...*
+            /// - `Source::D: SubsetOf<Target::D>`, *and...*
+            /// - `Source::P: SubsetOf<Target::P>`
             ///
             /// If these invariants are not upheld, attempting to call this
             /// function will result in a compilation failure.
@@ -259,9 +259,9 @@ macro_rules! impl_typed_slice_functions {
             /// Callers of this function are responsible that these preconditions
             /// are satisfied:
             ///
-            /// * The starting index must not exceed the ending index;
-            /// * Indexes must be within bounds of the original slice;
-            /// * Indexes must lie on UTF-8 sequence boundaries.
+            /// - The starting index must not exceed the ending index;
+            /// - Indexes must be within bounds of the original slice;
+            /// - Indexes must lie on UTF-8 sequence boundaries.
             ///
             /// Failing that, the returned slice may reference invalid memory or
             #[doc = concat!("violate the invariants communicated by the `", stringify!($name) ,"` type.")]

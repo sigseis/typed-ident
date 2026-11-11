@@ -45,8 +45,8 @@ impl<C: Casing, D: Delimiter, P: CasedProfile> Validator<C, D, P> {
         // profile variants can be enlightening.
         //
         // Looking at a basic configuration (unit delimiter, no casing rules):
-        // * ASCII -> 193 lines (closed), 339 lines (open)
-        // * Unicode -> 273 lines (closed), 465 lines (open)
+        // - ASCII -> 193 lines (closed), 339 lines (open)
+        // - Unicode -> 273 lines (closed), 465 lines (open)
         match (!ALLOW_DELIMS || D::APPEND_CLOSED.at_least_fragment())
             && P::APPEND_CLOSED.at_least_fragment()
             && C::UNIFORM
@@ -124,14 +124,14 @@ impl<C: Casing, D: Delimiter, P: CasedProfile> Validator<C, D, P> {
         // Greatly simplified if both `D` and `P` are fragment append-closed.
         //
         // Recall what `APPEND_CLOSED` means for `D` and `P`:
-        // * For delimiters, it means `is_chunk_delim` is a superset of
+        // - For delimiters, it means `is_chunk_delim` is a superset of
         //   `is_ident_start`.
-        //   * This means that `is_delim` = `is_chunk_delim`, and so for a
+        //   - This means that `is_delim` = `is_chunk_delim`, and so for a
         //     fragment you only need to use `is_delim` everywhere.
-        // * For profiles, it means `is_chunk_continue` is a superset of
+        // - For profiles, it means `is_chunk_continue` is a superset of
         //   `is_ident_start` and `is_chunk_start`, *and* that `is_chunk_start`
         //   is identical to `is_chunk_continue`.
-        //   * This means that `in_profile` = `is_chunk_continue`, since it must
+        //   - This means that `in_profile` = `is_chunk_continue`, since it must
         //     be the superset, and so for a fragment you only need to use
         //     `in_profile` everywhere.
         //

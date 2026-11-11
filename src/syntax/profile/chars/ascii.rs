@@ -23,8 +23,8 @@ use crate::syntax::{SubsetOf, segmentation};
 ///
 /// # Character Set
 ///
-/// * **Start** => any character that passes `c.is_ascii_alphabetic()`.
-/// * **Continue** => any character that passes `c.is_ascii_alphanumeric()`.
+/// - **Start** => any character that passes `c.is_ascii_alphabetic()`.
+/// - **Continue** => any character that passes `c.is_ascii_alphanumeric()`.
 pub enum Ascii {}
 
 // =============================================================================

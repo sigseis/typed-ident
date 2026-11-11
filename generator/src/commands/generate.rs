@@ -308,9 +308,9 @@ pub const UNICODE_VERSION: (u32, u32, u32) = ({major}, {minor}, {patch});
 
 /// Returns true if the character is any one of the following:
 ///
-/// * EnclosingMark
-/// * SpacingMark
-/// * NonspacingMark
+/// - EnclosingMark
+/// - SpacingMark
+/// - NonspacingMark
 #[cfg(feature = "unicode")]
 {is_combining_mark}
 

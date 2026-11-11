@@ -2,10 +2,10 @@ Syntax definitions for identifiers.
 
 This module contains traits that are needed to define an identifier. It also contains reasonable default implementations of these traits for certain obvious cases.
 
-* [`boundary`] defines how chunks are broken during segmentation (if at all)
-* [`delimiter`] defines the kinds of characters that always delimit a chunk regardless of the boundary
-* [`profile`] defines a subset of the set of all valid UTF-8 characters that are valid for an identifier
-* [`segmentation`] defines the valid ways in which you can iterate over graphemes
+- [`boundary`] defines how chunks are broken during segmentation (if at all)
+- [`delimiter`] defines the kinds of characters that always delimit a chunk regardless of the boundary
+- [`profile`] defines a subset of the set of all valid UTF-8 characters that are valid for an identifier
+- [`segmentation`] defines the valid ways in which you can iterate over graphemes
 
 For more details, especially if you plan on implementing any of these syntax traits, see the respective documentation for each item.
 
@@ -59,12 +59,12 @@ assert!(CustomIdent::new("日本語").is_err());      // Non-ASCII          (dis
 
 Validation works on one Unicode scalar value (`char`) at a time, and checks if each character is either a valid delimiter or within the profile selected. Some case checks are interdependent, particularly for the `Cased*` types, but this is a useful high-level explanation.
 
-* There must be one or more characters to form a valid identifier.
-* Every character belonging to the target `Delimiter` is valid.
-* Non-delimiter characters must match based on the following definitions:
-  * [`Profile::is_ident_start_char`] is called if it's the very first character.
-  * [`Profile::is_chunk_start`] is called if it's the first character after a delimiter.
-  * [`Profile::is_chunk_continue`] is called for any remaining non-delimiter characters.
+- There must be one or more characters to form a valid identifier.
+- Every character belonging to the target `Delimiter` is valid.
+- Non-delimiter characters must match based on the following definitions:
+  - [`Profile::is_ident_start_char`] is called if it's the very first character.
+  - [`Profile::is_chunk_start`] is called if it's the first character after a delimiter.
+  - [`Profile::is_chunk_continue`] is called for any remaining non-delimiter characters.
 
 [`Profile::is_ident_start_char`]: crate::syntax::profile::Profile::is_ident_start_char
 [`Profile::is_chunk_start`]: crate::syntax::profile::Profile::is_chunk_start

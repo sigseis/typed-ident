@@ -28,14 +28,14 @@
 ///
 /// For [`Delimiter`], you can implement `SubsetOf<Super>` if:
 ///
-/// * `Self::is_ident_start_delim` ⊆ `Super::is_ident_start_delim`, *and...*
-/// * `Self::is_chunk_delim` ⊆ `Super::is_chunk_delim`
+/// - `Self::is_ident_start_delim` ⊆ `Super::is_ident_start_delim`, *and...*
+/// - `Self::is_chunk_delim` ⊆ `Super::is_chunk_delim`
 ///
 /// For [`Profile`], you can implement `SubsetOf<Super>` if:
 ///
-/// * `Self::is_ident_start_char` ⊆ `Super::is_ident_start_char`, *and...*
-/// * `Self::is_chunk_start` ⊆ `Super::is_chunk_start`, *and...*
-/// * `Self::is_chunk_continue` ⊆ `Super::is_chunk_continue`
+/// - `Self::is_ident_start_char` ⊆ `Super::is_ident_start_char`, *and...*
+/// - `Self::is_chunk_start` ⊆ `Super::is_chunk_start`, *and...*
+/// - `Self::is_chunk_continue` ⊆ `Super::is_chunk_continue`
 ///
 /// Another way to say this is:
 ///

@@ -18,8 +18,8 @@ If the issue is `documentation`, pointing to the file in question, and the relev
 
 Before working on a pull request, please read this:
 
-* **No pull request will even be considered if it didn't originate from a triaged issue!**
-* **If a work item is already assigned that means someone is already working on it - do not steal work items!**
+- **No pull request will even be considered if it didn't originate from a triaged issue!**
+- **If a work item is already assigned that means someone is already working on it - do not steal work items!**
 
 This is to avoid having others do a bunch of work all for us to say "no, thank you".
 
@@ -69,9 +69,7 @@ Then you can run the coverage testing via:
 ./scripts/coverage.sh
 ```
 
-After running your tests, you can find the HTML output at:
-
-* `${TARGET}/tarpaulin-report.html`
+After running your tests, you can find the HTML output at `${TARGET}/tarpaulin-report.html`.
 
 ### Publishing a New Version
 

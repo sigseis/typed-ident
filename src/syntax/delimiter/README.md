@@ -2,11 +2,11 @@ Syntax definitions for identifier chunk delimiters.
 
 The provided implementations are:
 
-* [`AsciiFlatLine`]: Any "flat-line" looking ASCII symbol (`_` or `-`).
-* [`AsciiPunctuation`]: Any ASCII punctuation (whitespace and non-visual characters excluded).
-* [`HyphenMinus`]: Explicitly the ASCII hyphen-minus symbol (`-`).
-* [`LowLine`]: Explicitly the ASCII low line symbol (`_`).
-* [`NotDelimited`]: No delimiter is allowed (it's all one big chunk).
+- [`AsciiFlatLine`]: Any "flat-line" looking ASCII symbol (`_` or `-`).
+- [`AsciiPunctuation`]: Any ASCII punctuation (whitespace and non-visual characters excluded).
+- [`HyphenMinus`]: Explicitly the ASCII hyphen-minus symbol (`-`).
+- [`LowLine`]: Explicitly the ASCII low line symbol (`_`).
+- [`NotDelimited`]: No delimiter is allowed (it's all one big chunk).
 
 None of the provided implementations delimit on anything other than the ASCII code points.
 
@@ -48,8 +48,8 @@ If there are more than one valid delimiter values, or if some delimiter values a
 
 Minimally, you need to implement the following functions:
 
-* [`Delimiter::as_char`] returns the delimiter as its character value
-* [`Delimiter::from_char`] returns an instance of the delimiter from a character value
+- [`Delimiter::as_char`] returns the delimiter as its character value
+- [`Delimiter::from_char`] returns an instance of the delimiter from a character value
 
 But depending on how complicated the delimiter is, you may wish to provide a custom implementation of the other provided functions.
 

@@ -26,8 +26,8 @@ use crate::syntax::{SubsetOf, segmentation};
 ///
 /// This profile uses the [`unicode-ident`] crate.
 ///
-/// * **Start** => any character that passes `is_xid_start(c)`.
-/// * **Continue** => any character that passes `is_xid_continue(c)` (except
+/// - **Start** => any character that passes `is_xid_start(c)`.
+/// - **Continue** => any character that passes `is_xid_continue(c)` (except
 ///   LOW LINE).
 ///
 /// # About Low Line Omission

@@ -47,8 +47,8 @@ unicode-general-category = "1"
 #
 # Justification:
 #
-# * Presets make it so that you don't have to configure your own identifiers.
-# * Since most folks are going to work with Rust code, likely you want unicode.
+# - Presets make it so that you don't have to configure your own identifiers.
+# - Since most folks are going to work with Rust code, likely you want unicode.
 # ------------------------------------------------------------------------------
 default = [
     "unicode",

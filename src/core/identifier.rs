@@ -30,7 +30,7 @@ use crate::{Chunk, Error, Fragment, Ident, Segment};
 /// fn print_segments<I: Identifier + ?Sized>(ident: &I) {
 ///     println!("segments:");
 ///     for s in ident.segments() {
-///         println!("* {s:?}");
+///         println!("- {s:?}");
 ///     }
 /// }
 ///
@@ -558,9 +558,9 @@ pub trait Identifier {
     /// Callers of this function are responsible that these preconditions
     /// are satisfied:
     ///
-    /// * The starting index must not exceed the ending index;
-    /// * Indexes must be within bounds of the original slice;
-    /// * Indexes must lie on UTF-8 sequence boundaries.
+    /// - The starting index must not exceed the ending index;
+    /// - Indexes must be within bounds of the original slice;
+    /// - Indexes must lie on UTF-8 sequence boundaries.
     #[must_use]
     #[inline]
     unsafe fn get_unchecked<

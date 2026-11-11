@@ -92,11 +92,11 @@ use std_alloc::string::String;
 ///
 /// The type parameters used on this type are:
 ///
-/// * `B`: [`Boundary`] (a boundary definition; usually [`Standard`])
-/// * `D`: [`Delimiter`] (a delimiter type; [`HyphenMinus`], [`LowLine`], etc.)
-/// * `P`: [`CasedProfile`] (a cased profile; which is...)
-///   * A wrapping case profile (e.g. [`Mixed`], [`Lower`], etc.)
-///   * A specific character profile (e.g. [`Ascii`], [`Unicode`], etc.)
+/// - `B`: [`Boundary`] (a boundary definition; usually [`Standard`])
+/// - `D`: [`Delimiter`] (a delimiter type; [`HyphenMinus`], [`LowLine`], etc.)
+/// - `P`: [`CasedProfile`] (a cased profile; which is...)
+///   - A wrapping case profile (e.g. [`Mixed`], [`Lower`], etc.)
+///   - A specific character profile (e.g. [`Ascii`], [`Unicode`], etc.)
 ///
 /// See the [`syntax`] module definition if you plan on defining your own type
 /// aliases to understand better what these types mean and how they work.

@@ -1,3 +1,11 @@
+<div align="center">
+    <a href="https://crates.io/crates/typed-ident">
+        <img src="https://img.shields.io/crates/v/typed-ident.svg" alt="crates.io">
+        <img src="https://img.shields.io/crates/d/typed-ident.svg" alt="Downloads">
+    </a>
+    <a href="https://docs.rs/typed-ident"><img src="https://docs.rs/typed-ident/badge.svg" alt="docs.rs"></a>
+</div>
+
 # typed-ident
 
 A Rust crate for type-safe identifier validation, inspection, and mutation.
@@ -9,9 +17,9 @@ A Rust crate for type-safe identifier validation, inspection, and mutation.
 
 The Unicode-based identifier profiles and boundary calculations follow:
 
-* [Unicode Standard Annex #31](https://www.unicode.org/reports/tr31/)
+- [Unicode Standard Annex #31](https://www.unicode.org/reports/tr31/)
   for identifier character profiles
-* [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)
+- [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)
   for identifier boundary calculation
 
 ## Example
@@ -30,7 +38,7 @@ let upper_camel = UpperCamelIdent::new("HTTPServer")?;
 // Inspect all of the delimiters and words of the identifier.
 println!("identifier segments:");
 for segment in upper_camel.segments() {
-    println!("* {segment:?}"); // [Chunk("HTTP"), Chunk("Server")]
+    println!("- {segment:?}"); // [Chunk("HTTP"), Chunk("Server")]
 }
 
 // Interpret as a different displayable format ("http_server").
@@ -41,10 +49,11 @@ println!("as lower_snake: {}", upper_camel.as_lower_snake());
 // (This does not do any work, so it's basically a type cast.)
 let cased_camel: &CasedCamelIdent = upper_camel.cast();
 let mixed_camel: &CamelIdent = upper_camel.cast();
+```
 
-// ---------------------------------------------------------------------
-// Mutation functionality (requires "alloc" feature).
-// ---------------------------------------------------------------------
+By enabling the `alloc` feature, you can use functionality to safely mutate identifiers.
+
+```rust
 use typed_ident::convert::ToLowerKebab;
 
 // Convert to a different identifier preset format.
@@ -78,21 +87,21 @@ defined syntax.
 
 Use it when you need to:
 
-* Check that an input is a valid identifier
-* Distinguish between different identifier casing conventions at the type level
-* Inspect identifier boundaries, delimiters, or segments
-* Convert between different identifier casing conventions while preserving
+- Check that an input is a valid identifier
+- Distinguish between different identifier casing conventions at the type level
+- Inspect identifier boundaries, delimiters, or segments
+- Convert between different identifier casing conventions while preserving
   identifier semantics
-* Safely build or modify identifiers without accidentally producing invalid
+- Safely build or modify identifiers without accidentally producing invalid
   values
 
 Typical use cases include:
 
-* Programming language implementations
-* Procedural macros and code generation
-* Compiler, formatter, or linter tooling
-* Schema, API, or serialization code that generates fields, types, or methods
-* Refactoring and rename tools
+- Programming language implementations
+- Procedural macros and code generation
+- Compiler, formatter, or linter tooling
+- Schema, API, or serialization code that generates fields, types, or methods
+- Refactoring and rename tools
 
 For ordinary string conversion, use a general-purpose crate such as
 [`convert_case`](https://crates.io/crates/convert_case/).

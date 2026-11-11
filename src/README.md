@@ -12,11 +12,10 @@ A Rust crate for type-safe identifier validation, inspection, and mutation.
 
 The Unicode-based identifier profiles and boundary calculations follow:
 
-* [Unicode Standard Annex #31](https://www.unicode.org/reports/tr31/)
+- [Unicode Standard Annex #31](https://www.unicode.org/reports/tr31/)
   for identifier character profiles
-* [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)
+- [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)
   for identifier boundary calculation
-
 
 ## Core Features
 
@@ -34,7 +33,7 @@ let upper_camel = UpperCamelIdent::new("HTTPServer")?;
 // Inspect all of the delimiters and words of the identifier.
 println!("identifier segments:");
 for segment in upper_camel.segments() {
-    println!("* {segment:?}"); // [Chunk("HTTP"), Chunk("Server")]
+    println!("- {segment:?}"); // [Chunk("HTTP"), Chunk("Server")]
 }
 
 // Interpret as a different displayable format ("http_server").
@@ -99,9 +98,9 @@ There is no `IdentBuf` type. Since you can clear a buffer, and since an empty st
 
 For an owned, dynamically-produced `Ident`; use `Box<Ident>` (requires "alloc" feature).
 
-* [`Ident::to_boxed_ident`] to construct a boxed identifier from an immutable identifier reference
-* [`Ident::new_boxed`] to fallibly construct a boxed identifier from a plain string buffer
-* [`FragmentBuf::into_boxed_ident`] to fallibly construct a boxed identifier from a fragment buffer
+- [`Ident::to_boxed_ident`] to construct a boxed identifier from an immutable identifier reference
+- [`Ident::new_boxed`] to fallibly construct a boxed identifier from a plain string buffer
+- [`FragmentBuf::into_boxed_ident`] to fallibly construct a boxed identifier from a fragment buffer
 
 [`Chunk`]: crate::Chunk
 [`Fragment`]: crate::Fragment
@@ -118,19 +117,19 @@ For an owned, dynamically-produced `Ident`; use `Box<Ident>` (requires "alloc" f
 
 Use it when you need to:
 
-* Check that an input is a valid identifier
-* Distinguish between different identifier casing conventions at the type level
-* Inspect identifier boundaries, delimiters, or segments
-* Convert between different identifier casing conventions while preserving identifier semantics
-* Safely build or modify identifiers without accidentally producing invalid values
+- Check that an input is a valid identifier
+- Distinguish between different identifier casing conventions at the type level
+- Inspect identifier boundaries, delimiters, or segments
+- Convert between different identifier casing conventions while preserving identifier semantics
+- Safely build or modify identifiers without accidentally producing invalid values
 
 Typical use cases include:
 
-* Programming language implementations
-* Procedural macros and code generation
-* Compiler, formatter, or linter tooling
-* Schema, API, or serialization code that generates fields, types, or methods
-* Refactoring and rename tools
+- Programming language implementations
+- Procedural macros and code generation
+- Compiler, formatter, or linter tooling
+- Schema, API, or serialization code that generates fields, types, or methods
+- Refactoring and rename tools
 
 For ordinary string conversion, use a general-purpose crate such as [`convert_case`](https://crates.io/crates/convert_case/).
 

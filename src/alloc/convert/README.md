@@ -2,14 +2,14 @@ String conversion to another cased format.
 
 The main conversions traits defined by this module are:
 
-* [`ToLowerCamel`] - for identifiers of the format `lowerCamelCase`.
-* [`ToLowerHybrid`] - for identifiers of the format `-_lowerHybridCase`.
-* [`ToLowerKebab`] - for identifiers of the format `lower-kebab-case`.
-* [`ToLowerSnake`] - for identifiers of the format `lower_snake_case`.
-* [`ToUpperCamel`] - for identifiers of the format `UpperCamelCase`.
-* [`ToUpperHybrid`] - for identifiers of the format `-_UpperHybridCase`.
-* [`ToUpperKebab`] - for identifiers of the format `UPPER-KEBAB-CASE`.
-* [`ToUpperSnake`] - for identifiers of the format `UPPER_SNAKE_CASE`.
+- [`ToLowerCamel`] - for identifiers of the format `lowerCamelCase`.
+- [`ToLowerHybrid`] - for identifiers of the format `-_lowerHybridCase`.
+- [`ToLowerKebab`] - for identifiers of the format `lower-kebab-case`.
+- [`ToLowerSnake`] - for identifiers of the format `lower_snake_case`.
+- [`ToUpperCamel`] - for identifiers of the format `UpperCamelCase`.
+- [`ToUpperHybrid`] - for identifiers of the format `-_UpperHybridCase`.
+- [`ToUpperKebab`] - for identifiers of the format `UPPER-KEBAB-CASE`.
+- [`ToUpperSnake`] - for identifiers of the format `UPPER_SNAKE_CASE`.
 
 If you include the trait, then you should be able to use any of the defined methods, as all valid identifiers support these conversion operations.
 

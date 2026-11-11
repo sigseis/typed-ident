@@ -14,8 +14,8 @@ use core::fmt::{Display, Formatter};
 /// This type is used within the `syntax` crate to restrict the number of errors
 /// we can report. When validating syntax, it's usually only one of two things;
 ///
-/// * An empty input, where we expected non-empty
-/// * An invalid character at a specific byte-offset
+/// - An empty input, where we expected non-empty
+/// - An invalid character at a specific byte-offset
 #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum SyntaxError {
     /// The value is an empty string, and an empty string is not allowed.

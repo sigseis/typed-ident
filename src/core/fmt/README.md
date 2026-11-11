@@ -2,14 +2,14 @@ Infallible formatting operations to another cased format.
 
 The main formatting traits defined by this module are:
 
-* [`AsLowerCamel`] - for identifiers of the format `lowerCamelCase`.
-* [`AsLowerHybrid`] - for identifiers of the format `-_lowerHybridCase`.
-* [`AsLowerKebab`] - for identifiers of the format `lower-kebab-case`.
-* [`AsLowerSnake`] - for identifiers of the format `lower_snake_case`.
-* [`AsUpperCamel`] - for identifiers of the format `UpperCamelCase`.
-* [`AsUpperHybrid`] - for identifiers of the format `-_UpperHybridCase`.
-* [`AsUpperKebab`] - for identifiers of the format `UPPER-KEBAB-CASE`.
-* [`AsUpperSnake`] - for identifiers of the format `UPPER_SNAKE_CASE`.
+- [`AsLowerCamel`] - for identifiers of the format `lowerCamelCase`.
+- [`AsLowerHybrid`] - for identifiers of the format `-_lowerHybridCase`.
+- [`AsLowerKebab`] - for identifiers of the format `lower-kebab-case`.
+- [`AsLowerSnake`] - for identifiers of the format `lower_snake_case`.
+- [`AsUpperCamel`] - for identifiers of the format `UpperCamelCase`.
+- [`AsUpperHybrid`] - for identifiers of the format `-_UpperHybridCase`.
+- [`AsUpperKebab`] - for identifiers of the format `UPPER-KEBAB-CASE`.
+- [`AsUpperSnake`] - for identifiers of the format `UPPER_SNAKE_CASE`.
 
 These traits can be called if you just need to reformat an identifier for some logged or displayed output, or if you need a string (obtainable by calling `.to_string()` on the result).
 

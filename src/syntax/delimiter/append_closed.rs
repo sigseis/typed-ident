@@ -19,16 +19,16 @@ pub enum AppendClosed {
     /// The delimiter is append-closed even from the context of a fragment, as
     /// long as one of the following is true:
     ///
-    /// * the fragment consists only of delimiter characters, *or...*
-    /// * if it does contain in-profile non-delimiter characters, the profile in
+    /// - the fragment consists only of delimiter characters, *or...*
+    /// - if it does contain in-profile non-delimiter characters, the profile in
     ///   question is also `Fragment` append-closed.
     Fragment,
 
     /// The delimiter is append-closed, even from the context of an identifier,
     /// as long as one of the following is true:
     ///
-    /// * the identifier consists only of delimiter characters, *or...*
-    /// * if it does contain in-profile non-delimiter characters, the profile in
+    /// - the identifier consists only of delimiter characters, *or...*
+    /// - if it does contain in-profile non-delimiter characters, the profile in
     ///   question is also `Identifier` append-closed.
     Identifier,
 }

@@ -147,12 +147,12 @@ pub trait Delimiter:
     ///
     /// Imagine we represent delimiter characters in a fragment as:
     ///
-    /// * `I` = Ident Start Delimiter
-    /// * `D` = Chunk Delimiter
+    /// - `I` = Ident Start Delimiter
+    /// - `D` = Chunk Delimiter
     ///
     /// Abstractly, all valid fragments containing only delimiters would be:
     ///
-    /// * `` `` and `ID*` (empty string, or `I` followed by zero or more `D`)
+    /// - `` `` and `ID*` (empty string, or `I` followed by zero or more `D`)
     ///
     /// A valid fragment of delimiters may be `ID*`, after appending some other
     /// string we may be left with `ID*ID*`, but if `I ⊆ D`, then we can
@@ -167,8 +167,8 @@ pub trait Delimiter:
     ///
     /// Simply put, the delimiter needs to have the following properties:
     ///
-    /// * It must be `Fragment` append-closed (see above), *and...*
-    /// * [`is_ident_start_delim`] must be identical to [`is_chunk_delim`].
+    /// - It must be `Fragment` append-closed (see above), *and...*
+    /// - [`is_ident_start_delim`] must be identical to [`is_chunk_delim`].
     ///
     /// # What Happens If This Is Set Incorrectly?
     ///
@@ -250,7 +250,7 @@ pub trait Delimiter:
     ///
     /// e.g. this should always be true:
     ///
-    /// * `assert_eq!(D::from_char(c).is_some(), D::is_delim(c))`
+    /// - `assert_eq!(D::from_char(c).is_some(), D::is_delim(c))`
     #[must_use]
     #[inline]
     fn is_delim(c: char) -> bool {
@@ -261,7 +261,7 @@ pub trait Delimiter:
     ///
     /// e.g. this should always be true:
     ///
-    /// * `assert_eq!(D::from_ident_start(c).is_some(), D::is_ident_start_delim(c))`
+    /// - `assert_eq!(D::from_ident_start(c).is_some(), D::is_ident_start_delim(c))`
     #[must_use]
     #[inline]
     fn is_ident_start_delim(c: char) -> bool {
@@ -272,7 +272,7 @@ pub trait Delimiter:
     ///
     /// e.g. this should always be true:
     ///
-    /// * `assert_eq!(D::from_chunk_delim(c).is_some(), D::is_chunk_delim(c))`
+    /// - `assert_eq!(D::from_chunk_delim(c).is_some(), D::is_chunk_delim(c))`
     #[must_use]
     #[inline]
     fn is_chunk_delim(c: char) -> bool {

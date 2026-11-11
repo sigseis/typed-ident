@@ -118,11 +118,11 @@ use core::marker::PhantomData;
 ///
 /// The type parameters used on this type are:
 ///
-/// * `B`: [`Boundary`] (a boundary definition; usually [`Standard`])
-/// * `D`: [`Delimiter`] (a delimiter type; [`HyphenMinus`], [`LowLine`], etc.)
-/// * `P`: [`CasedProfile`] (a cased profile; which is...)
-///   * A wrapping case profile (e.g. [`Mixed`], [`Lower`], etc.)
-///   * A specific character profile (e.g. [`Ascii`], [`Unicode`], etc.)
+/// - `B`: [`Boundary`] (a boundary definition; usually [`Standard`])
+/// - `D`: [`Delimiter`] (a delimiter type; [`HyphenMinus`], [`LowLine`], etc.)
+/// - `P`: [`CasedProfile`] (a cased profile; which is...)
+///   - A wrapping case profile (e.g. [`Mixed`], [`Lower`], etc.)
+///   - A specific character profile (e.g. [`Ascii`], [`Unicode`], etc.)
 ///
 /// See the [`syntax`] module definition if you plan on defining your own type
 /// aliases to understand better what these types mean and how they work.
@@ -233,8 +233,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// Produces an iterator over the [`Segment`]s (chunks and delimiters) of a
     /// fragment.
     ///
-    /// * The `Delimiter` variant is of type `D`.
-    /// * The `Chunk` variant is of type [`Chunk<'_, B, D, P>`].
+    /// - The `Delimiter` variant is of type `D`.
+    /// - The `Chunk` variant is of type [`Chunk<'_, B, D, P>`].
     ///
     /// Usually, when breaking into segments, you want to also break chunks into
     /// words. However, this iterator *will not* do that. It simply breaks into
@@ -299,8 +299,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// Produces an iterator over the [`Segment`]s (chunks and delimiters) of a
     /// fragment, and their positions.
     ///
-    /// * The `Delimiter` variant is of type `D`.
-    /// * The `Chunk` variant is of type [`Chunk<'_, B, D, P>`].
+    /// - The `Delimiter` variant is of type `D`.
+    /// - The `Chunk` variant is of type [`Chunk<'_, B, D, P>`].
     ///
     /// Usually, when breaking into segments, you want to also break chunk
     /// boundaries. However, this iterator *will not* do that. It simply breaks
@@ -396,8 +396,8 @@ impl<B: Boundary, D: Delimiter, P: CasedProfile> Fragment<B, D, P> {
     /// Produces an iterator over the [`Segment`]s (chunks and delimiters) of a
     /// fragment, with each chunk further sub-divided into words.
     ///
-    /// * The `Delimiter` variant is of type `D`.
-    /// * The `Chunk` variant is of type [`Chunk<'_, B, D, P>`].
+    /// - The `Delimiter` variant is of type `D`.
+    /// - The `Chunk` variant is of type [`Chunk<'_, B, D, P>`].
     ///
     /// This is similar to [`chunked_segments`], except that it will also break
     /// chunks based on the configured [`Boundary`] type parameter. Meaning, it

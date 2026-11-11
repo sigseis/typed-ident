@@ -81,9 +81,9 @@ pub fn is_titlecase_greek_variant(tc: char) -> bool {
 
 /// Returns true if the character is any one of the following:
 ///
-/// * EnclosingMark
-/// * SpacingMark
-/// * NonspacingMark
+/// - EnclosingMark
+/// - SpacingMark
+/// - NonspacingMark
 #[cfg(feature = "unicode")]
 pub fn is_combining_mark(c: char) -> bool {
     const TABLE: &[(char, char)] = &[

@@ -2,8 +2,8 @@ Syntax definitions for chunk character profiles.
 
 Profiles are broken into two sub-categories:
 
-* [`case`], which limits a character profile based on some casing rules.
-* [`chars`], which presents a base set of rules for a chunk character profile.
+- [`case`], which limits a character profile based on some casing rules.
+- [`chars`], which presents a base set of rules for a chunk character profile.
 
 For more details, see the respective documentation for each item.
 
@@ -38,10 +38,10 @@ If the provided character profiles are insufficient for your needs, you can defi
 
 Some notes:
 
-* `CharProfile` should be `Self` if you are implementing a character profile.
-* `Segmentation` should be...
-  * [`segmentation::Char`] if your profile only contains ASCII characters.
-  * [`segmentation::Grapheme`] if your profile contains any non-ASCII characters.
+- `CharProfile` should be `Self` if you are implementing a character profile.
+- `Segmentation` should be...
+  - [`segmentation::Char`] if your profile only contains ASCII characters.
+  - [`segmentation::Grapheme`] if your profile contains any non-ASCII characters.
 
 [`segmentation::Char`]: crate::syntax::segmentation::Char
 [`segmentation::Grapheme`]: crate::syntax::segmentation::Grapheme

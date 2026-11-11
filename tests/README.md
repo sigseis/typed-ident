@@ -2,10 +2,10 @@
 
 This project has a few different kinds of tests that you can run:
 
-* **Bench Tests** - testing the performance of the crate ([see the benches documentation about this](../benches/README.md)).
-* **Doc Tests** - quick demonstration for how to use functions and types (`cargo test --all-features --doc`).
-* **Integration Tests** - testing a lot of different things at once over a number of inputs (`cargo test --all-features --test '*'`).
-* **Unit Tests** - testing specific interactions for a specific implementation for a single type (`cargo test --all-features --lib`).
+- **Bench Tests** - testing the performance of the crate ([see the benches documentation about this](../benches/README.md)).
+- **Doc Tests** - quick demonstration for how to use functions and types (`cargo test --all-features --doc`).
+- **Integration Tests** - testing a lot of different things at once over a number of inputs (`cargo test --all-features --test '*'`).
+- **Unit Tests** - testing specific interactions for a specific implementation for a single type (`cargo test --all-features --lib`).
 
 This isn't anything surprising, it's just supposed to set the stage for our test strategy.
 

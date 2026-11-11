@@ -99,11 +99,11 @@ use crate::{Chunk, Error, Fragment, Identifier, Segment};
 ///
 /// The type parameters used on this type are:
 ///
-/// * `B`: [`Boundary`] (a boundary definition; usually [`Standard`])
-/// * `D`: [`Delimiter`] (a delimiter type; [`HyphenMinus`], [`LowLine`], etc.)
-/// * `P`: [`CasedProfile`] (a cased profile; which is...)
-///   * A wrapping case profile (e.g. [`Mixed`], [`Lower`], etc.)
-///   * A specific character profile (e.g. [`Ascii`], [`Unicode`], etc.)
+/// - `B`: [`Boundary`] (a boundary definition; usually [`Standard`])
+/// - `D`: [`Delimiter`] (a delimiter type; [`HyphenMinus`], [`LowLine`], etc.)
+/// - `P`: [`CasedProfile`] (a cased profile; which is...)
+///   - A wrapping case profile (e.g. [`Mixed`], [`Lower`], etc.)
+///   - A specific character profile (e.g. [`Ascii`], [`Unicode`], etc.)
 ///
 /// See the [`syntax`] module definition if you plan on defining your own type
 /// aliases to understand better what these types mean and how they work.
@@ -538,9 +538,9 @@ impl<B, D, P> Ident<B, D, P> {
     ///
     /// This function will be able to be called, if:
     ///
-    /// * `Target::B: Boundary`, *and...*
-    /// * `Source::D: SubsetOf<Target::D>`, *and...*
-    /// * `Source::P: SubsetOf<Target::P>`
+    /// - `Target::B: Boundary`, *and...*
+    /// - `Source::D: SubsetOf<Target::D>`, *and...*
+    /// - `Source::P: SubsetOf<Target::P>`
     ///
     /// If these invariants are not upheld, attempting to call this function
     /// will result in a compilation failure.

@@ -41,16 +41,16 @@ pub mod syntax;
 ///
 /// Specifically we provide the calls for:
 ///
-/// * `is_combining_mark`
-/// * `is_titlecase`
-/// * `is_titlecase_greek_variant`
+/// - `is_combining_mark`
+/// - `is_titlecase`
+/// - `is_titlecase_greek_variant`
 ///
 /// # What Does This Mean for Combining Marks?
 ///
 /// This could change across versions, but it only impacts one profile.
 ///
-/// * **Profiles Impacted:** [`Strict`]
-/// * **What Changes:** What may or may not be considered valid for different
+/// - **Profiles Impacted:** [`Strict`]
+/// - **What Changes:** What may or may not be considered valid for different
 ///   kinds of identifiers involving combining marks at the start of a chunk.
 ///
 /// [`Strict`]: crate::syntax::profile::Strict
@@ -60,8 +60,8 @@ pub mod syntax;
 ///
 /// Titlecase characters don't tend to change very frequently (if ever).
 ///
-/// * **Profiles Impacted:** [`Strict`], [`Unicode`]
-/// * **What Changes:** What may or may not be considered valid for different
+/// - **Profiles Impacted:** [`Strict`], [`Unicode`]
+/// - **What Changes:** What may or may not be considered valid for different
 ///   kinds of identifiers involving titlecase characters, or it may change
 ///   where some boundary splits happen involving titlecase characters.
 #[cfg(feature = "unicode")]

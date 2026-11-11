@@ -24,8 +24,8 @@ use crate::syntax::generated;
 /// reason for this is because non-Greek characters have a specific visual
 /// property about them.
 ///
-/// * **Example Greek Titlecase:** ᾈ, ᾨ, ῌ, ᾚ
-/// * **Example Non-Greek Titlecase:** ǅ, ǈ, ǋ, ǲ
+/// - **Example Greek Titlecase:** ᾈ, ᾨ, ῌ, ᾚ
+/// - **Example Non-Greek Titlecase:** ǅ, ǈ, ǋ, ǲ
 ///
 /// Just looking at these characters, why such boundaries form becomes clear.
 ///
@@ -35,8 +35,8 @@ use crate::syntax::generated;
 ///
 /// As such, the decision made is:
 ///
-/// * **Greek titlecase** is equivalent to a fully uppercase code point.
-/// * **Non-Greek titlecase** is equivalent to a grapheme containing two code
+/// - **Greek titlecase** is equivalent to a fully uppercase code point.
+/// - **Non-Greek titlecase** is equivalent to a grapheme containing two code
 ///   points, the first of which is uppercase, and the remaining lower.
 ///
 /// As such, non-Greek is *NOT* completely uppercase-compatible, and we need to
@@ -60,11 +60,11 @@ impl CharCase {
     ///
     /// # Justification
     ///
-    /// * **Uncased** - Obviously justifiable. Identifiers should not fail to
+    /// - **Uncased** - Obviously justifiable. Identifiers should not fail to
     ///   parse based on case formatting because an uncased character is used.
-    /// * **Lower** - This is what we're testing for! :)
-    /// * **Upper** - This is what we're testing against! >:(
-    /// * **Title** - Titlecase consists of digraph characters containing one
+    /// - **Lower** - This is what we're testing for! :)
+    /// - **Upper** - This is what we're testing against! >:(
+    /// - **Title** - Titlecase consists of digraph characters containing one
     ///   uppercase, and maybe one lowercase character in the same code point.
     ///   The presence of the uppercase character makes these unsuitable for a
     ///   lowercase-ish test.
@@ -77,11 +77,11 @@ impl CharCase {
     ///
     /// # Justification
     ///
-    /// * **Uncased** - Obviously justifiable. Identifiers should not fail to
+    /// - **Uncased** - Obviously justifiable. Identifiers should not fail to
     ///   parse based on case formatting because an uncased character is used.
-    /// * **Lower** - This is what we're testing against! >:(
-    /// * **Upper** - This is what we're testing for! :)
-    /// * **Title** - Titlecase consists of digraph characters containing one
+    /// - **Lower** - This is what we're testing against! >:(
+    /// - **Upper** - This is what we're testing for! :)
+    /// - **Title** - Titlecase consists of digraph characters containing one
     ///   uppercase, and maybe one lowercase character in the same code point.
     ///   Not all titlecase characters will be completely uppercase-ish.
     #[inline]
@@ -93,11 +93,11 @@ impl CharCase {
     ///
     /// # Justification
     ///
-    /// * **Uncased** - Obviously justifiable. Identifiers should not fail to
+    /// - **Uncased** - Obviously justifiable. Identifiers should not fail to
     ///   parse based on case formatting because an uncased character is used.
-    /// * **Lower** - This is what we're testing against! >:(
-    /// * **Upper** - This is what we're testing for! :)
-    /// * **Title** - Titlecase consists of digraph characters containing one
+    /// - **Lower** - This is what we're testing against! >:(
+    /// - **Upper** - This is what we're testing for! :)
+    /// - **Title** - Titlecase consists of digraph characters containing one
     ///   uppercase, and maybe one lowercase character in the same code point.
     #[inline]
     pub fn is_uppercase_start_compatible(c: char) -> bool {
@@ -108,11 +108,11 @@ impl CharCase {
     ///
     /// # Justification
     ///
-    /// * **Uncased** - Obviously justifiable. Identifiers should not fail to
+    /// - **Uncased** - Obviously justifiable. Identifiers should not fail to
     ///   parse based on case formatting because an uncased character is used.
-    /// * **Lower** - This could be considered a valid uniform character.
-    /// * **Upper** - This could be considered a valid uniform character.
-    /// * **Title** - Titlecase consists of digraph characters containing one
+    /// - **Lower** - This could be considered a valid uniform character.
+    /// - **Upper** - This could be considered a valid uniform character.
+    /// - **Title** - Titlecase consists of digraph characters containing one
     ///   uppercase, and maybe one lowercase character in the same code point.
     ///   Not all titlecase characters will be completely uniform-ish.
     #[inline]

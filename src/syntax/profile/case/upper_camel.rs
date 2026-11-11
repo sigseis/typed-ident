@@ -37,9 +37,9 @@ use core::marker::PhantomData;
 ///
 /// The payload provided for that second case is:
 ///
-/// * `_` (U+005F) LOW LINE
-/// * ` ゙` (U+3099) COMBINING KATAKANA-HIRAGANA VOICED SOUND MARK
-/// * `a` (U+0061) LATIN SMALL LETTER A
+/// - `_` (U+005F) LOW LINE
+/// - ` ゙` (U+3099) COMBINING KATAKANA-HIRAGANA VOICED SOUND MARK
+/// - `a` (U+0061) LATIN SMALL LETTER A
 ///
 /// The way to prevent this is to disallow Mn/Mc/Me characters on chunk start.
 ///

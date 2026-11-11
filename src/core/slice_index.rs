@@ -39,9 +39,9 @@ pub trait SliceIndex<T: ?Sized>: private::Sealed {
     ///
     /// The caller must ensure that:
     ///
-    /// * The starting index must not exceed the ending index;
-    /// * Indexes must be within bounds of the original slice;
-    /// * Indexes must lie on UTF-8 sequence boundaries.
+    /// - The starting index must not exceed the ending index;
+    /// - Indexes must be within bounds of the original slice;
+    /// - Indexes must lie on UTF-8 sequence boundaries.
     ///
     /// Failure to uphold these promises can lead to undefined behavior.
     unsafe fn get_unchecked(self, slice: &T) -> &T;

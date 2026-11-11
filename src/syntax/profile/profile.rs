@@ -51,12 +51,12 @@ pub trait Profile: SubsetOf<Self> + Sized {
     ///
     /// Imagine we represent profile characters in a chunk as:
     ///
-    /// * `S` = Chunk/Ident Start Character
-    /// * `C` = Chunk Continue Character
+    /// - `S` = Chunk/Ident Start Character
+    /// - `C` = Chunk Continue Character
     ///
     /// Abstractly, all valid chunks would be:
     ///
-    /// * `` `` and `SC*` (empty string, or `S` followed by one or more `C`)
+    /// - `` `` and `SC*` (empty string, or `S` followed by one or more `C`)
     ///
     /// A valid chunk of characters may be `SC*`, after appending some other
     /// string we may be left with `SC*SC*`, but if `S ⊆ C`, then we can
@@ -71,20 +71,20 @@ pub trait Profile: SubsetOf<Self> + Sized {
     ///
     /// Simply put, the profile needs to have the following properties:
     ///
-    /// * It must be `Chunk` append-closed (see above), *and...*
-    /// * [`is_chunk_start`] must be identical to [`is_chunk_continue`].
+    /// - It must be `Chunk` append-closed (see above), *and...*
+    /// - [`is_chunk_start`] must be identical to [`is_chunk_continue`].
     ///
     /// It's easiest to understand this by looking at a case where it's *not*
     /// true - `UpperCamel` (or `lowerCamel`, but let's just focus on upper).
     ///
     /// Two valid `UpperCamel` fragments are:
     ///
-    /// * `Upper_` (a perfectly valid start, but also has a trailing delimiter).
-    /// * `camel` (a continuation of a chunk, not the start of one)
+    /// - `Upper_` (a perfectly valid start, but also has a trailing delimiter).
+    /// - `camel` (a continuation of a chunk, not the start of one)
     ///
     /// If we append one onto the other, it may lead to an invalid fragment:
     ///
-    /// * `Upper_` + `camel` = `Upper_camel` *(which is not valid)*
+    /// - `Upper_` + `camel` = `Upper_camel` *(which is not valid)*
     ///
     /// # When Is a Profile `Identifier` Append-Closed?
     ///
@@ -94,8 +94,8 @@ pub trait Profile: SubsetOf<Self> + Sized {
     ///
     /// Simply put, the profile needs to have the following properties:
     ///
-    /// * It must be `Fragment` append-closed (see above), *and...*
-    /// * [`is_ident_start_char`] must be identical to [`is_chunk_start`] *and*
+    /// - It must be `Fragment` append-closed (see above), *and...*
+    /// - [`is_ident_start_char`] must be identical to [`is_chunk_start`] *and*
     ///   [`is_chunk_continue`].
     ///
     /// # What Happens If This Is Set Incorrectly?
@@ -137,8 +137,8 @@ pub trait Profile: SubsetOf<Self> + Sized {
     ///
     /// The recommendation is:
     ///
-    /// * If your profile only consists of ASCII characters, use [`Char`].
-    /// * Otherwise you should use the [`Grapheme`] strategy.
+    /// - If your profile only consists of ASCII characters, use [`Char`].
+    /// - Otherwise you should use the [`Grapheme`] strategy.
     ///
     /// # What Happens If This Is Set Incorrectly?
     ///

@@ -21,7 +21,7 @@ fn ident_segments<I: Identifier + ?Sized>(ident: &str) -> Option<Error> {
     };
     println!("{ident} segments:");
     for segment in ident.segments().type_erased() {
-        println!("* {segment:?}");
+        println!("- {segment:?}");
     }
     println!();
     None

@@ -32,11 +32,11 @@ fn new_group<'a>(
 // FUNCTION: `Ident::new`
 // -----------------------------------------------------------------------------
 // VARIANTS:
-// * `baseline`
-//   * A simple comparison with a basic `is_xid_ident` function.
+// - `baseline`
+//   - A simple comparison with a basic `is_xid_ident` function.
 //     (Note: this does not enforce a specific format like `new`)
-// * `typed`
-//   * The actual call to `Ident::new` from `typed-ident`.
+// - `typed`
+//   - The actual call to `Ident::new` from `typed-ident`.
 // -----------------------------------------------------------------------------
 fn bench_new(
     c: &mut Criterion,
@@ -68,15 +68,15 @@ fn bench_new(
 // FUNCTION: `Ident::to_*` conversions
 // -----------------------------------------------------------------------------
 // VARIANTS:
-// * `ccase`
-//   * The default formatting operation as implemented by `convert_case`.
-// * `heck`
-//   * The default formatting operation as implemented by `heck`.
-// * `canonical`
-//   * The canonical-form formatting operation as implemented by `typed-ident`.
+// - `ccase`
+//   - The default formatting operation as implemented by `convert_case`.
+// - `heck`
+//   - The default formatting operation as implemented by `heck`.
+// - `canonical`
+//   - The canonical-form formatting operation as implemented by `typed-ident`.
 //     (Note: This is the most equivalent to `ccase` and `heck`.)
-// * `decorated`
-//   * The decorated-form formatting operation as implemented by `typed-ident`.
+// - `decorated`
+//   - The decorated-form formatting operation as implemented by `typed-ident`.
 // -----------------------------------------------------------------------------
 #[allow(clippy::too_many_arguments)]
 fn bench_convert(
@@ -125,12 +125,12 @@ fn bench_convert(
 // FUNCTION: `Ident::segments`
 // -----------------------------------------------------------------------------
 // VARIANTS:
-// * `ccase`
-//   * The default by-word split operation as implemented by `convert_case`.
-// * `segments`
-//   * The default segments operation as implemented by `typed-ident`.
-// * `words`
-//   * An equivalent by-word split operation as implemented by `typed-ident`.
+// - `ccase`
+//   - The default by-word split operation as implemented by `convert_case`.
+// - `segments`
+//   - The default segments operation as implemented by `typed-ident`.
+// - `words`
+//   - An equivalent by-word split operation as implemented by `typed-ident`.
 //     (Note: This is the most equivalent to `ccase`.)
 // -----------------------------------------------------------------------------
 fn bench_segmentation(

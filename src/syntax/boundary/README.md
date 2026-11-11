@@ -2,8 +2,8 @@ Syntax definitions for how chunks (runs of non-delimiter characters) should be b
 
 There is only one provided boundary implementation, but it is configurable.
 
-* [`Standard`], the provided standard boundary implementation
-* [`Options`], options for configuring the provided boundary implementation
+- [`Standard`], the provided standard boundary implementation
+- [`Options`], options for configuring the provided boundary implementation
 
 ## Customizing Boundary Rules
 
@@ -18,20 +18,20 @@ For most use-cases, you will not need to implement your own boundary definition.
 
 The [`Options`] trait defines the following configurations (based on [Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks)):
 
-* `CAMEL`: Break based on camel-casing rules
-  * *An identifier word boundary exists after a lowercase or non-Greek titlecase letter followed by an uppercase or titlecase letter*
-* `HAT`: Break based on hat rules ([Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks))
-  * *An identifier word boundary exists before an uppercase or titlecase letter followed by a lowercase letter, or before a non-Greek titlecase letter*
-* `DIGIT_TO_LOWER`: Break if we go from an ASCII digit to a lowercase letter.
-* `DIGIT_TO_UPPER`: Break if we go from an ASCII digit to an uppercase or titlecase letter.
-* `LOWER_TO_DIGIT`: Break if we go from a lowercase or non-greek titlecase letter to an ASCII digit.
-* `UPPER_TO_DIGIT`: Break if we go from an uppercase or greek titlecase letter to an ASCII digit.
+- `CAMEL`: Break based on camel-casing rules
+  - *An identifier word boundary exists after a lowercase or non-Greek titlecase letter followed by an uppercase or titlecase letter*
+- `HAT`: Break based on hat rules ([Unicode Technical Standard #55](https://www.unicode.org/reports/tr55/#Identifier-Chunks))
+  - *An identifier word boundary exists before an uppercase or titlecase letter followed by a lowercase letter, or before a non-Greek titlecase letter*
+- `DIGIT_TO_LOWER`: Break if we go from an ASCII digit to a lowercase letter.
+- `DIGIT_TO_UPPER`: Break if we go from an ASCII digit to an uppercase or titlecase letter.
+- `LOWER_TO_DIGIT`: Break if we go from a lowercase or non-greek titlecase letter to an ASCII digit.
+- `UPPER_TO_DIGIT`: Break if we go from an uppercase or greek titlecase letter to an ASCII digit.
 
 Given these options, there are three provided options implementations:
 
-* [`Default`]: Only `CAMEL` and `HAT` boundaries.
-* [`AllBoundaries`]: All boundary options are enabled.
-* [`NoBoundaries`]: No boundary options are enabled.
+- [`Default`]: Only `CAMEL` and `HAT` boundaries.
+- [`AllBoundaries`]: All boundary options are enabled.
+- [`NoBoundaries`]: No boundary options are enabled.
 
 However, if you want an obscure combination of these options, you can implement your own options type:
 
@@ -78,9 +78,9 @@ distinct from the other syntax definition types that you have implemented.
 
 You only need to provide three functions:
 
-* [`Boundary::find_boundary`] returns the next boundary from the start of the string
-* [`Boundary::rfind_boundary`] returns the next boundary from the end of the string
-* [`Boundary::has_boundary_at`] returns whether or not there is a boundary for some provided chunk string, at some provided byte offset
+- [`Boundary::find_boundary`] returns the next boundary from the start of the string
+- [`Boundary::rfind_boundary`] returns the next boundary from the end of the string
+- [`Boundary::has_boundary_at`] returns whether or not there is a boundary for some provided chunk string, at some provided byte offset
 
 ```rust
 # use typed_ident::*;
